@@ -1,0 +1,74 @@
+import { slugify } from '../../utils/slugify.js';
+
+/**
+ * Mock data for GET /api/public/projects (Courses — spec §4.2).
+ */
+const raw = [
+  {
+    id: 'c0000000-0001-4000-8000-000000000001',
+    name: 'Intro to Robotics',
+    description:
+      'Learners meet the Quarky robot, learn to control its motors and sensors, and build five mini-projects from a line-follower to an obstacle-avoider.',
+    coverImage: null,
+    ageMin: 8,
+    ageMax: 12,
+    sessionCount: 12,
+    requirements: ['A Quarky kit (provided in-class)', 'A laptop or Chromebook'],
+  },
+  {
+    id: 'c0000000-0002-4000-8000-000000000002',
+    name: 'Python Foundations',
+    description:
+      'A gentle first programming course: variables, loops, functions and a final text-based game project.',
+    coverImage: null,
+    ageMin: 10,
+    ageMax: 15,
+    sessionCount: 16,
+    requirements: ['A laptop with Python 3 installed'],
+  },
+  {
+    id: 'c0000000-0003-4000-8000-000000000003',
+    name: 'Computer Vision Basics',
+    description:
+      'Learners train simple image classifiers and build a project that reacts to what the camera sees.',
+    coverImage: null,
+    ageMin: 13,
+    ageMax: 18,
+    sessionCount: 10,
+    requirements: ['Completion of Python Foundations or equivalent', 'A laptop with a webcam'],
+  },
+  {
+    id: 'c0000000-0004-4000-8000-000000000004',
+    name: 'Creative Electronics',
+    description:
+      'Hands-on circuits, soldering safety, sensors and actuators — culminating in a self-designed interactive object.',
+    coverImage: null,
+    ageMin: 9,
+    ageMax: 14,
+    sessionCount: 14,
+    requirements: ['Electronics kit (provided)', 'Closed-toe shoes for soldering sessions'],
+  },
+];
+
+const details = {
+  'c0000000-0001-4000-8000-000000000001': {
+    modules: ['Meet Quarky', 'Motors & Movement', 'Reading Sensors', 'Line Following', 'Obstacle Avoidance', 'Showcase Project'],
+  },
+  'c0000000-0002-4000-8000-000000000002': {
+    modules: ['Getting Started', 'Variables & Types', 'Loops', 'Functions', 'Lists & Dictionaries', 'Final Game Project'],
+  },
+  'c0000000-0003-4000-8000-000000000003': {
+    modules: ['How Computers See', 'Collecting Data', 'Training a Classifier', 'Evaluating Accuracy', 'Camera Project'],
+  },
+  'c0000000-0004-4000-8000-000000000004': {
+    modules: ['Circuit Basics', 'Soldering Safety', 'Sensors', 'Actuators', 'Design Studio', 'Final Build'],
+  },
+};
+
+export const projects = raw.map((p) => ({ ...p, slug: slugify(p.name) }));
+
+export function projectDetail(idOrSlug) {
+  const item = projects.find((p) => p.id === idOrSlug || p.slug === idOrSlug);
+  if (!item) return null;
+  return { ...item, ...(details[item.id] || { modules: [] }) };
+}

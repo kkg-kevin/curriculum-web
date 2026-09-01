@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/logo-placeholder.svg" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!--
+      Colour-mode boot: runs before React so the first paint is the right theme
+      (no flash). Mirrors src/theme/colorMode.js — keep the two in sync.
+    -->
+    <script>
+      (function () {
+        try {
+          var KEY = 'digifunzi-color-mode';
+          var stored = null;
+          try { stored = localStorage.getItem(KEY); } catch (e) {}
+          var pref = (stored === 'light' || stored === 'dark') ? stored : 'system';
+          var sysDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var mode = pref === 'system' ? (sysDark ? 'dark' : 'light') : pref;
+          var root = document.documentElement;
+          root.setAttribute('data-color-mode', mode);
+          root.style.colorScheme = mode;
+          root.style.backgroundColor = mode === 'dark' ? '#0B1220' : '#FFFFFF';
+        } catch (e) {}
+      })();
+    </script>
+
+    <!--
+      Per-route <title>, description, OG/Twitter tags and JSON-LD are injected at
+      runtime by react-helmet-async and frozen into static HTML by scripts/prerender.js.
+      The values below are the crawl-safe fallback for the bare SPA shell.
+    -->
+    <title>Digifunzi — Robotics &amp; STEM Learning for Kids in Kenya</title>
+    <meta
+      name="description"
+      content="Digifunzi teaches robotics, coding and STEM to children across Kenya through hands-on projects, bootcamps and the Quarky robot."
+    />
+    <!-- theme-color is set per colour-mode by ThemeColorMeta (react-helmet-async);
+         prerendered pages carry it, the bare SPA shell adds it on hydration. -->
+
+    <meta property="og:site_name" content="Digifunzi" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Digifunzi — Robotics &amp; STEM Learning for Kids in Kenya" />
+    <meta
+      property="og:description"
+      content="Hands-on robotics, coding and STEM education for children across Kenya."
+    />
+    <meta property="og:image" content="/og-default.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

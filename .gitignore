@@ -1,0 +1,26 @@
+node_modules
+dist
+dist-ssr
+Guide/*.zip
+*.local
+
+# Environment files — all kept out of git. Recreate from .env.example
+# (see README.md / DEPLOYMENT.md for the real deploy values).
+.env
+.env.*
+!.env.example
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Puppeteer / build artifacts
+.cache

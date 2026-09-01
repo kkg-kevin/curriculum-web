@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+
+# The build step (scripts/generate-sitemap.js) overwrites this with the correct
+# absolute Sitemap URL for the target environment.
+Sitemap: https://africa.digifunzi.com/sitemap.xml
