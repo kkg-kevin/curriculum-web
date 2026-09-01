@@ -12,7 +12,8 @@
  *
  * TODO before launch (spec §9):
  *  - Fill in real address, phone, email and social links.
- *  - Swap the placeholder logo for the real brand asset.
+ *  - logoPath points at /logo.png (the mascot cropped from the brand
+ *    illustration). Swap for a proper logo mark / wordmark SVG when ready.
  */
 
 export const ORG = {
@@ -37,7 +38,7 @@ export const ORG = {
     'https://www.linkedin.com/company/digifunzi',
   ],
   // Relative to the site root; callers prefix with the base URL.
-  logoPath: '/logo-placeholder.svg',
+  logoPath: '/logo.png',
   ogImagePath: '/og-default.png',
 };
 

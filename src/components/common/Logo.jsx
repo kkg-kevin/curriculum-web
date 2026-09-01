@@ -2,13 +2,17 @@ import { Link as RouterLink } from 'react-router-dom';
 import Box from '@mui/material/Box';
 
 /**
- * Text-based placeholder logo (spec §9 item 5). Replace with the real brand
- * asset — drop an SVG at /public/logo.svg and swap the markup here.
+ * Brand logo: the Digifunzi mascot (public/logo.png — cropped from the brand
+ * illustration) plus the wordmark. The mascot is a figure, not a wordmark, so
+ * the "Digifunzi" text is always shown alongside it for legibility at small
+ * sizes.
  *
- * The wordmark inherits `color` from its context (dark text on light header,
- * light text in the footer). The icon tile keeps the brand blue in both modes —
- * a logo mark doesn't invert — but its colours come from the theme's brand
- * scale so they track any rebrand.
+ * The wordmark inherits `color` from its context (dark text on the light
+ * header, light text in the footer). The mascot is a raster image and does not
+ * invert — it reads on both the light header and the dark footer band.
+ *
+ * TODO (spec §9 item 5): replace public/logo.png with a proper logo mark /
+ * wordmark SVG when the brand asset is ready, and drop the text fallback.
  */
 export default function Logo({ onClick }) {
   return (
@@ -29,23 +33,17 @@ export default function Logo({ onClick }) {
       }}
     >
       <Box
+        component="img"
+        src="/logo.png"
+        alt=""
         aria-hidden="true"
         sx={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: 32,
-          height: 32,
-          borderRadius: 2,
-          color: '#fff',
-          fontSize: '1rem',
-          fontWeight: 800,
-          background: (t) =>
-            `linear-gradient(135deg, ${t.palette.brand.blue[700]}, ${t.palette.brand.blue[400]})`,
+          height: 36,
+          width: 'auto',
+          display: 'block',
+          flexShrink: 0,
         }}
-      >
-        D
-      </Box>
+      />
       Digifunzi
     </Box>
   );

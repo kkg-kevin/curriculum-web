@@ -12,6 +12,9 @@ import Container from '@mui/material/Container';
  *   tone="inverse"  → dark band in both modes (surface.inverse)
  *
  * `bg` still accepts any theme colour path for one-offs.
+ *
+ * `dots` overlays a faint decorative dot-grid on the section ground (see
+ * `surface.dotGrid`). Purely presentational; sits behind the contained content.
  */
 const TONE_SX = {
   default: {},
@@ -24,7 +27,8 @@ export default function Section({
   children,
   tone = 'default',
   bg,
-  py = { xs: 6, md: 10 },
+  dots = false,
+  py = { xs: 8, md: 13 },
   maxWidth = 'lg',
   component = 'section',
   sx,
@@ -34,13 +38,31 @@ export default function Section({
     <Box
       component={component}
       sx={{
+        position: 'relative',
         py,
         ...(bg ? { backgroundColor: bg } : TONE_SX[tone] || TONE_SX.default),
         ...sx,
       }}
       {...rest}
     >
-      <Container maxWidth={maxWidth}>{children}</Container>
+      {dots && (
+        <Box
+          aria-hidden
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            pointerEvents: 'none',
+            backgroundImage: (t) => `radial-gradient(${t.palette.surface.dotGrid} 1px, transparent 1.6px)`,
+            backgroundSize: '26px 26px',
+            maskImage: 'radial-gradient(ellipse 70% 60% at 50% 0%, #000 30%, transparent 75%)',
+            WebkitMaskImage:
+              'radial-gradient(ellipse 70% 60% at 50% 0%, #000 30%, transparent 75%)',
+          }}
+        />
+      )}
+      <Container maxWidth={maxWidth} sx={{ position: 'relative' }}>
+        {children}
+      </Container>
     </Box>
   );
 }
