@@ -42,6 +42,44 @@ a {
 /* Fonts load via @fontsource/inter with font-display: swap by default,
    so text is never blocked on the webfont. */
 
+/* ---------------------------------------------------------------------------
+   Shared decorative keyframes.
+
+   These live in the global stylesheet (not per-element via emotion `sx`) so
+   they are guaranteed to be registered before first paint. Emotion can inject
+   an `@keyframes` rule a frame late, which — for an element that starts at
+   opacity/transform 0 with `animation-fill-mode: both` — can leave it stuck
+   invisible. Anything that gates content visibility must use one of these, a
+   CSS transition, or the <Reveal> component instead.
+   --------------------------------------------------------------------------- */
+@keyframes df-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+@keyframes df-float-lg {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-16px); }
+}
+@keyframes df-wash {
+  from { background-position: 0% 50%; }
+  to { background-position: 100% 50%; }
+}
+@keyframes df-sheen {
+  from { background-position-x: 100%; }
+  to { background-position-x: 0%; }
+}
+@keyframes df-word-rise {
+  from { transform: translateY(110%); }
+  to { transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .df-anim,
+  [class*='df-anim'] {
+    animation: none !important;
+  }
+}
+
 /* Respect reduced-motion for the whole site (also disables the theme cross-fade). */
 @media (prefers-reduced-motion: reduce) {
   html {

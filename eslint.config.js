@@ -23,6 +23,7 @@ export default [
         process: 'readonly',
         Intl: 'readonly',
         MutationObserver: 'readonly',
+        IntersectionObserver: 'readonly',
       },
     },
     plugins: { react, 'react-hooks': reactHooks },
