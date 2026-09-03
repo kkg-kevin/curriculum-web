@@ -12,8 +12,8 @@
  * interactive experience changes — crawlers and slow connections just get real
  * content immediately.
  *
- * Dynamic routes (/bootcamps/:slug, /projects/:slug) are discovered from the
- * public API, or from local fixtures when VITE_USE_MOCK=true.
+ * Dynamic routes (/bootcamps/:slug, /projects/:slug, /pathways/:slug) are
+ * discovered from the public API, or from local fixtures when VITE_USE_MOCK=true.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -32,7 +32,7 @@ const SETTLE_WAIT_MS = 400; // small extra buffer after ready, for Helmet flush
 // only prerender these if the API is actually reachable — otherwise we'd bake a
 // "couldn't load" error page into static HTML. Skipped routes still work as a
 // normal client-rendered SPA via the index.html fallback.
-const DATA_DRIVEN_STATIC = new Set(['/bootcamps', '/projects']);
+const DATA_DRIVEN_STATIC = new Set(['/bootcamps', '/projects', '/pathways']);
 
 let apiReachable = useMock; // mock adapter always "reachable"
 
@@ -105,7 +105,11 @@ async function main() {
     return;
   }
 
-  const [bootcampSlugs, projectSlugs] = await Promise.all([getSlugs('bootcamps'), getSlugs('projects')]);
+  const [bootcampSlugs, projectSlugs, pathwaySlugs] = await Promise.all([
+    getSlugs('bootcamps'),
+    getSlugs('projects'),
+    getSlugs('pathways'),
+  ]);
 
   // Static routes: prerender all, except the data-driven ones when the API is
   // unreachable in a real build (they'd snapshot an error state).
@@ -119,6 +123,7 @@ async function main() {
     ...staticRoutes,
     ...bootcampSlugs.map((s) => `/bootcamps/${s}`),
     ...projectSlugs.map((s) => `/projects/${s}`),
+    ...pathwaySlugs.map((s) => `/pathways/${s}`),
   ];
 
   if (!useMock && !apiReachable) {

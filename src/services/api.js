@@ -47,6 +47,9 @@ export const publicApi = {
   listProjects: () => api.get('/api/public/projects').then((r) => r.data),
   getProject: (slug) => api.get(`/api/public/projects/${encodeURIComponent(slug)}`).then((r) => r.data),
 
+  listPathways: () => api.get('/api/public/pathways').then((r) => r.data),
+  getPathway: (slug) => api.get(`/api/public/pathways/${encodeURIComponent(slug)}`).then((r) => r.data),
+
   /** Enroll + Contact share this endpoint, differentiated by `interestedIn` (spec §4.5). */
   submitLead: (payload) => api.post('/api/public/leads', payload).then((r) => r.data),
 

@@ -53,6 +53,7 @@ export const STATIC_ROUTES = [
   { path: '/', changefreq: 'weekly', priority: 1.0 },
   { path: '/bootcamps', changefreq: 'weekly', priority: 0.9 },
   { path: '/projects', changefreq: 'weekly', priority: 0.9 },
+  { path: '/pathways', changefreq: 'weekly', priority: 0.9 },
   { path: '/competitions', changefreq: 'monthly', priority: 0.7 },
   { path: '/quarky', changefreq: 'monthly', priority: 0.8 },
   { path: '/about', changefreq: 'monthly', priority: 0.6 },

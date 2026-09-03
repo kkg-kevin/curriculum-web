@@ -2,9 +2,9 @@
  * Writes dist/sitemap.xml and dist/robots.txt at build time (spec §7).
  *
  * Static routes come from src/config/site.js. Dynamic detail routes
- * (/bootcamps/:slug, /projects/:slug) are pulled from the live public API —
- * or, when VITE_USE_MOCK=true, from the local fixtures so the build still works
- * before the real endpoints exist.
+ * (/bootcamps/:slug, /projects/:slug, /pathways/:slug) are pulled from the live
+ * public API — or, when VITE_USE_MOCK=true, from the local fixtures so the build
+ * still works before the real endpoints exist.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -60,13 +60,20 @@ async function main() {
     );
   }
 
-  const [bootcampSlugs, projectSlugs] = await Promise.all([getSlugs('bootcamps'), getSlugs('projects')]);
+  const [bootcampSlugs, projectSlugs, pathwaySlugs] = await Promise.all([
+    getSlugs('bootcamps'),
+    getSlugs('projects'),
+    getSlugs('pathways'),
+  ]);
 
   for (const slug of bootcampSlugs) {
     entries.push(urlEntry({ loc: `${siteUrl}/bootcamps/${slug}`, changefreq: 'weekly', priority: 0.7, lastmod: today }));
   }
   for (const slug of projectSlugs) {
     entries.push(urlEntry({ loc: `${siteUrl}/projects/${slug}`, changefreq: 'monthly', priority: 0.7, lastmod: today }));
+  }
+  for (const slug of pathwaySlugs) {
+    entries.push(urlEntry({ loc: `${siteUrl}/pathways/${slug}`, changefreq: 'monthly', priority: 0.7, lastmod: today }));
   }
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -85,7 +92,7 @@ Sitemap: ${siteUrl}/sitemap.xml
   fs.writeFileSync(path.join(DIST, 'robots.txt'), robots, 'utf8');
 
   console.log(
-    `[sitemap] wrote ${entries.length} URLs (${STATIC_ROUTES.length} static, ${bootcampSlugs.length} bootcamps, ${projectSlugs.length} projects) + robots.txt`,
+    `[sitemap] wrote ${entries.length} URLs (${STATIC_ROUTES.length} static, ${bootcampSlugs.length} bootcamps, ${projectSlugs.length} projects, ${pathwaySlugs.length} pathways) + robots.txt`,
   );
 }
 
