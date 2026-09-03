@@ -7,6 +7,7 @@
  */
 import { bootcamps, bootcampDetail } from './fixtures/bootcamps.js';
 import { projects, projectDetail } from './fixtures/projects.js';
+import { pathways, pathwayDetail } from './fixtures/pathways.js';
 
 // Simulated latency so dev exercises loading states; disabled under test.
 const IS_TEST =
@@ -72,6 +73,18 @@ export async function mockAdapter(config) {
   if (method === 'get' && m) {
     const detail = projectDetail(decodeURIComponent(m[1]));
     return detail ? ok(detail, config) : fail(404, 'Project not found', config);
+  }
+
+  // ---- GET /api/public/pathways ----
+  if (method === 'get' && path === '/api/public/pathways') {
+    return ok(pathways, config);
+  }
+
+  // ---- GET /api/public/pathways/:idOrSlug ----
+  m = path.match(/^\/api\/public\/pathways\/([^/]+)$/);
+  if (method === 'get' && m) {
+    const detail = pathwayDetail(decodeURIComponent(m[1]));
+    return detail ? ok(detail, config) : fail(404, 'Pathway not found', config);
   }
 
   // ---- POST /api/public/leads ----

@@ -10,14 +10,17 @@ import EnrollForm from '../components/forms/EnrollForm.jsx';
 const VALID_INTEREST = ['bootcamp', 'project', 'quarky', 'general'];
 
 /**
- * Standalone enroll page. Accepts optional ?interest= and ?ref= query params
- * so "Enroll" buttons elsewhere can pre-fill context.
+ * Standalone enroll page. Accepts optional query params so "Enroll" buttons
+ * elsewhere can pre-fill context:
+ *   - interest / interestedIn — which programme type
+ *   - ref / referenceId       — the bootcamp / course / pathway it came from
+ * Both spellings are accepted (detail pages use interestedIn / referenceId).
  */
 export default function EnrollPage() {
   const [params] = useSearchParams();
-  const interestParam = params.get('interest');
+  const interestParam = params.get('interestedIn') || params.get('interest');
   const defaultInterest = VALID_INTEREST.includes(interestParam) ? interestParam : 'general';
-  const referenceId = params.get('ref') || null;
+  const referenceId = params.get('referenceId') || params.get('ref') || null;
 
   return (
     <>

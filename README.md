@@ -76,13 +76,13 @@ src/
   components/
     layout/      Header, Footer, MobileMenu
     home/        Hero, ValueProps, SectionSummaries, Testimonials, CTABanner
-    cards/       BootcampCard, ProjectCard
+    cards/       BootcampCard, ProjectCard, PathwayCard
     forms/       EnrollForm, ContactForm, Zod schemas, Honeypot, FormStatus
-    seo/         SeoHead (helmet wrapper), JsonLd (Organization/Course/Event/Product/FAQPage)
+    seo/         SeoHead (helmet wrapper), JsonLd (Organization/Course/Event/Product/FAQPage/ItemList)
     common/      Logo, Section, PageHeader, SmartImage, StateViews,
                  ColorModeToggle, ThemeColorMeta
   content/       hand-authored copy: home, about, competitions, quarky
-  hooks/         useBootcamps, useProjects, useLeadSubmission (React Query)
+  hooks/         useBootcamps, useProjects, usePathways, useLeadSubmission (React Query)
   services/      api.js — single axios instance + mock adapter wiring
   mocks/         mockApi.js + fixtures/ (active while VITE_USE_MOCK=true)
   utils/         slugify, dates, format, prerenderSignal
@@ -122,6 +122,11 @@ limiting. Until it ships, this site runs entirely on mocks.
 
 Competitions and Quarky are **static content** (`src/content/`) by design
 (spec §4.3 / §4.4, Option A) — no API involved.
+
+The **Learning Pathways** section (`/pathways`, `/pathways/:slug`) is live —
+backed by `GET /api/public/pathways` on the main system (implemented in
+`server/src/modules/public-site/`). Full contract, curl test matrix, and the
+schema gaps for richer pathway pages are in **[`PATHWAYS.md`](./PATHWAYS.md)**.
 
 ## Deployment
 

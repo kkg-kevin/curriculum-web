@@ -40,6 +40,39 @@ describe('mockApi adapter — GET', () => {
     expect(Array.isArray(detail.modules)).toBe(true);
   });
 
+  it('lists pathways with the public contract shape', async () => {
+    const { data } = await api.get('/api/public/pathways');
+    expect(Array.isArray(data)).toBe(true);
+    expect(data.length).toBeGreaterThan(0);
+    expect(data[0]).toMatchObject({
+      id: expect.any(String),
+      slug: expect.any(String),
+      name: expect.any(String),
+      description: expect.any(String),
+      color: expect.any(String),
+      courseCount: expect.any(Number),
+    });
+  });
+
+  it('fetches a pathway by slug with an ordered course list', async () => {
+    const { data } = await api.get('/api/public/pathways/robotics');
+    expect(data.slug).toBe('robotics');
+    expect(Array.isArray(data.courses)).toBe(true);
+    expect(data.courses.length).toBe(data.courseCount);
+    expect(data.courses[0]).toMatchObject({
+      name: expect.any(String),
+      description: expect.any(String),
+    });
+    // course objects must not leak internal fields
+    expect(data.courses[0]).not.toHaveProperty('id');
+  });
+
+  it('404s an unknown pathway', async () => {
+    await expect(api.get('/api/public/pathways/does-not-exist')).rejects.toMatchObject({
+      response: { status: 404 },
+    });
+  });
+
   it('resolves the path whether the URL is relative or absolute', async () => {
     const abs = await api.request({ method: 'get', url: 'http://localhost:5000/api/public/projects' });
     expect(abs.data.length).toBeGreaterThan(0);

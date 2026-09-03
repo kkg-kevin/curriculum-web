@@ -14,6 +14,8 @@ const BootcampsListPage = lazy(() => import('../pages/BootcampsListPage.jsx'));
 const BootcampDetailPage = lazy(() => import('../pages/BootcampDetailPage.jsx'));
 const ProjectsListPage = lazy(() => import('../pages/ProjectsListPage.jsx'));
 const ProjectDetailPage = lazy(() => import('../pages/ProjectDetailPage.jsx'));
+const PathwaysListPage = lazy(() => import('../pages/PathwaysListPage.jsx'));
+const PathwayDetailPage = lazy(() => import('../pages/PathwayDetailPage.jsx'));
 const CompetitionsPage = lazy(() => import('../pages/CompetitionsPage.jsx'));
 const QuarkyPage = lazy(() => import('../pages/QuarkyPage.jsx'));
 const EnrollPage = lazy(() => import('../pages/EnrollPage.jsx'));
@@ -31,6 +33,8 @@ export const routes = [
       { path: 'bootcamps/:slug', element: <BootcampDetailPage /> },
       { path: 'projects', element: <ProjectsListPage /> },
       { path: 'projects/:slug', element: <ProjectDetailPage /> },
+      { path: 'pathways', element: <PathwaysListPage /> },
+      { path: 'pathways/:slug', element: <PathwayDetailPage /> },
       { path: 'competitions', element: <CompetitionsPage /> },
       { path: 'quarky', element: <QuarkyPage /> },
       { path: 'enroll', element: <EnrollPage /> },

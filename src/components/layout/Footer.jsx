@@ -13,6 +13,7 @@ const COLUMNS = [
       { label: 'Bootcamps', to: '/bootcamps' },
       { label: 'Competitions', to: '/competitions' },
       { label: 'Projects', to: '/projects' },
+      { label: 'Pathways', to: '/pathways' },
       { label: 'Quarky', to: '/quarky' },
     ],
   },
