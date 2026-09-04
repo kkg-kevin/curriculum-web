@@ -37,14 +37,19 @@ export const sectionSummaries = [
     blurb: 'Intensive, dated holiday programmes where learners go deep on one theme and finish with a showcase project.',
   },
   {
-    title: 'Competitions',
-    to: '/competitions',
-    blurb: 'Friendly, team-based challenges that give learners a real goal to build towards and a stage to present on.',
-  },
-  {
     title: 'Projects',
     to: '/projects',
     blurb: 'Our termly courses — robotics, coding, computer vision and electronics — taught weekly in small groups.',
+  },
+  {
+    title: 'Pathways',
+    to: '/pathways',
+    blurb: 'Structured, multi-course tracks that take a learner from first steps to job-ready in one area, at their own pace.',
+  },
+  {
+    title: 'Competitions',
+    to: '/competitions',
+    blurb: 'Friendly, team-based challenges that give learners a real goal to build towards and a stage to present on.',
   },
   {
     title: 'Quarky',

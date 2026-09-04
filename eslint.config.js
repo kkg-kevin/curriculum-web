@@ -50,6 +50,23 @@ export default [
     },
   },
   {
+    // Standalone API (server/) — Node runtime, not the browser bundle.
+    files: ['server/**/*.js'],
+    languageOptions: {
+      globals: {
+        process: 'readonly',
+        console: 'readonly',
+        Buffer: 'readonly',
+        URL: 'readonly',
+        setTimeout: 'readonly',
+        setInterval: 'readonly',
+      },
+    },
+    rules: {
+      'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+    },
+  },
+  {
     files: ['**/*.test.{js,jsx}'],
     languageOptions: {
       globals: {

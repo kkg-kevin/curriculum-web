@@ -4,11 +4,20 @@ dist-ssr
 Guide/*.zip
 *.local
 
+# Standalone API runtime data — form submissions. Content JSON under
+# data/content/ IS tracked; the submission stores are not.
+data/leads.json
+data/contacts.json
+data/*.tmp
+data/**/*.tmp
+
 # Environment files — all kept out of git. Recreate from .env.example
-# (see README.md / DEPLOYMENT.md for the real deploy values).
+# (see README.md for the real deploy values).
 .env
 .env.*
 !.env.example
+!.env.server.example
+!server/.env.example
 
 # Editor
 .vscode/*

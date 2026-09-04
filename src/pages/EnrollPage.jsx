@@ -13,14 +13,18 @@ const VALID_INTEREST = ['bootcamp', 'project', 'quarky', 'general'];
  * Standalone enroll page. Accepts optional query params so "Enroll" buttons
  * elsewhere can pre-fill context:
  *   - interest / interestedIn — which programme type
- *   - ref / referenceId       — the bootcamp / course / pathway it came from
- * Both spellings are accepted (detail pages use interestedIn / referenceId).
+ *   - ref / referenceId       — slug of the bootcamp / course / pathway it came from
+ * Both spellings are accepted (the Pathway detail page links here with
+ * interestedIn / referenceId; other detail pages embed the form directly).
  */
 export default function EnrollPage() {
   const [params] = useSearchParams();
   const interestParam = params.get('interestedIn') || params.get('interest');
   const defaultInterest = VALID_INTEREST.includes(interestParam) ? interestParam : 'general';
   const referenceId = params.get('referenceId') || params.get('ref') || null;
+  // Set by the pathway page's "Find your starting point" widget (age-based
+  // placement, client-side only — see StartingPointFinder.jsx).
+  const suggestedCourse = params.get('course') || null;
 
   return (
     <>
@@ -38,7 +42,14 @@ export default function EnrollPage() {
 
       <Section>
         <Box sx={{ maxWidth: 640 }}>
-          <EnrollForm defaultInterest={defaultInterest} referenceId={referenceId} />
+          <EnrollForm
+            defaultInterest={defaultInterest}
+            referenceId={referenceId}
+            referenceLabel={suggestedCourse ? `${suggestedCourse} (suggested starting course)` : undefined}
+            defaultMessage={
+              suggestedCourse ? `Suggested starting course based on age: ${suggestedCourse}` : undefined
+            }
+          />
           <Typography variant="body2" color="text.secondary" sx={{ mt: 4 }}>
             Prefer to talk first? Use the <a href="/contact">contact form</a> and we’ll call you back.
           </Typography>

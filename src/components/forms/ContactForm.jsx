@@ -16,8 +16,11 @@ import Honeypot, { HONEYPOT_DEFAULT, isBot } from './Honeypot.jsx';
  * By default it posts to POST /api/public/contact ({ name, email, phone, message },
  * notify-only). Set `useLeadsEndpoint` to route it through POST /api/public/leads
  * with interestedIn: 'general' instead — decide once the backend picks one (spec §4.5).
+ *
+ * `defaultMessage` pre-fills the message field (e.g. "Re: <competition> —
+ * entry details" from the Competitions page).
  */
-export default function ContactForm({ useLeadsEndpoint = false }) {
+export default function ContactForm({ useLeadsEndpoint = false, defaultMessage = '' }) {
   const contactMutation = useContactSubmission();
   const leadMutation = useLeadSubmission();
   const mutation = useLeadsEndpoint ? leadMutation : contactMutation;
@@ -30,7 +33,7 @@ export default function ContactForm({ useLeadsEndpoint = false }) {
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(contactSchema),
-    defaultValues: { name: '', email: '', phone: '', message: '', ...HONEYPOT_DEFAULT },
+    defaultValues: { name: '', email: '', phone: '', message: defaultMessage, ...HONEYPOT_DEFAULT },
   });
 
   const onSubmit = async (values) => {
@@ -68,7 +71,7 @@ export default function ContactForm({ useLeadsEndpoint = false }) {
     <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate sx={{ display: 'grid', gap: 2 }}>
       <FormStatus
         status={status}
-        successMessage={mutation.data?.message || 'Message received. We usually reply within one working day.'}
+        successMessage={mutation.data?.message || 'Thanks — your message has been received and our team will be in touch.'}
         error={mutation.error}
       />
 

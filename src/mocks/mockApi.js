@@ -1,7 +1,10 @@
 /**
- * In-code mock for the /api/public/* contract (spec §4).
- * Active when VITE_USE_MOCK=true. Returns fixture data with a small simulated
- * latency so loading states are exercised in dev.
+ * In-code mock for the /api/public/* contract.
+ *
+ * Active only when VITE_USE_MOCK=true — a fully-offline fallback with no API.
+ * The normal standalone setup is the real server/ API (see SYSTEM_INTEGRATION.md
+ * and README "Standalone mode"); this mock mirrors its shapes so tests and the
+ * offline mode stay honest.
  *
  * Wired into the axios instance as an adapter in src/services/api.js.
  */
@@ -16,11 +19,11 @@ const LATENCY_MS = IS_TEST ? 0 : 350;
 
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
-function ok(data, config) {
+function ok(data, config, status = 200) {
   return {
     data,
-    status: 200,
-    statusText: 'OK',
+    status,
+    statusText: status === 201 ? 'Created' : 'OK',
     headers: {},
     config,
     request: {},
@@ -29,7 +32,10 @@ function ok(data, config) {
 
 function fail(status, message, config) {
   const err = new Error(message);
-  err.response = { data: { message }, status, statusText: message, headers: {}, config };
+  // GET 404s return { message }; POST 400s return the admin API's Zod error
+  // envelope { success:false, message, errors } (SYSTEM_INTEGRATION.md §3.1).
+  const data = status === 400 ? { success: false, message, errors: [] } : { message };
+  err.response = { data, status, statusText: message, headers: {}, config };
   err.config = config;
   err.isAxiosError = true;
   return Promise.reject(err);
@@ -88,24 +94,57 @@ export async function mockAdapter(config) {
   }
 
   // ---- POST /api/public/leads ----
+  // Mirrors server/lib: 201 + { ok, success, message, data }, 400 on invalid,
+  // honeypot (companyWebsite non-empty) → silent fake success, nothing stored.
   if (method === 'post' && path === '/api/public/leads') {
     const body = safeParse(config.data);
-    // Mimic the server's minimal validation.
-    if (!body?.parentEmail || !body?.parentName) {
-      return fail(422, 'parentName and parentEmail are required', config);
+    if (body?.companyWebsite?.trim()) {
+      return ok({ ok: true, success: true, message: 'Thanks! Our team will be in touch.' }, config, 201);
     }
-    console.info('[mockApi] lead captured:', body);
-    return ok({ ok: true, message: 'Thanks! Our team will be in touch shortly.' }, config);
+    if (!body?.parentEmail || !body?.parentName) {
+      return fail(400, 'parentName and parentEmail are required', config);
+    }
+    console.warn(
+      '[mockApi] OFFLINE MODE (VITE_USE_MOCK=true) — lead NOT stored, only logged. ' +
+        'Run the real API (npm run api) and set VITE_USE_MOCK=false to store it.',
+      body,
+    );
+    return ok(
+      {
+        ok: true,
+        success: true,
+        message: 'Thanks! Our team will be in touch to arrange next steps.',
+        data: { id: 'mock-lead-0000', ...body, status: 'new', createdAt: new Date().toISOString() },
+      },
+      config,
+      201,
+    );
   }
 
   // ---- POST /api/public/contact ----
   if (method === 'post' && path === '/api/public/contact') {
     const body = safeParse(config.data);
-    if (!body?.email || !body?.message) {
-      return fail(422, 'email and message are required', config);
+    if (body?.companyWebsite?.trim()) {
+      return ok({ ok: true, success: true, message: 'Message received.' }, config, 201);
     }
-    console.info('[mockApi] contact message:', body);
-    return ok({ ok: true, message: 'Message received. We usually reply within one working day.' }, config);
+    if (!body?.email || !body?.message) {
+      return fail(400, 'email and message are required', config);
+    }
+    console.warn(
+      '[mockApi] OFFLINE MODE (VITE_USE_MOCK=true) — contact message NOT stored, only logged. ' +
+        'Run the real API (npm run api) and set VITE_USE_MOCK=false to store it.',
+      body,
+    );
+    return ok(
+      {
+        ok: true,
+        success: true,
+        message: 'Thanks — your message has been received and our team will be in touch.',
+        data: { id: 'mock-lead-0001', ...body, status: 'new', createdAt: new Date().toISOString() },
+      },
+      config,
+      201,
+    );
   }
 
   return fail(404, `No mock handler for ${method.toUpperCase()} ${path}`, config);

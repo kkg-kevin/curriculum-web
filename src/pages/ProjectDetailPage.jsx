@@ -15,6 +15,7 @@ import { LoadingBlock, ErrorBlock } from '../components/common/StateViews.jsx';
 import EnrollForm from '../components/forms/EnrollForm.jsx';
 import { useProject } from '../hooks/useProjects.js';
 import { ageLabel } from '../utils/format.js';
+import { resolveMediaUrl } from '../utils/media.js';
 
 export default function ProjectDetailPage() {
   const { slug } = useParams();
@@ -55,7 +56,7 @@ export default function ProjectDetailPage() {
         title={name}
         description={description?.slice(0, 155)}
         type="article"
-        image={coverImage || undefined}
+        image={resolveMediaUrl(coverImage) || undefined}
       />
       <JsonLd data={[organizationSchema(), courseSchema(data, pathname)]} />
 
@@ -142,7 +143,7 @@ export default function ProjectDetailPage() {
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                 Share your details and our team will get you set up for the next term.
               </Typography>
-              <EnrollForm defaultInterest="project" referenceId={data.id} referenceLabel={name} />
+              <EnrollForm defaultInterest="project" referenceId={data.slug} referenceLabel={name} />
             </Box>
           </Box>
         </Box>

@@ -60,6 +60,17 @@ const ACCENTS = {
       </>
     ),
   },
+  '/pathways': {
+    color: 'info.main',
+    tint: (t) => t.palette.info.main,
+    motif: (
+      <>
+        <circle cx="14" cy="16" r="5" />
+        <path d="M14 21v6a8 8 0 0 0 8 8h4a8 8 0 0 1 8 8v6" />
+        <circle cx="34" cy="47" r="5" />
+      </>
+    ),
+  },
 };
 
 export default function SectionSummaries() {
@@ -67,8 +78,8 @@ export default function SectionSummaries() {
     <Section tone="subtle">
       <SectionHeading
         eyebrow="Programmes"
-        title="Four ways to learn with us"
-        lead="Weekly courses, holiday intensives, team competitions and the robot they run on — designed to fit together into one path."
+        title="Five ways to learn with us"
+        lead="Weekly courses, structured pathways, holiday intensives, team competitions and the robot they run on — designed to fit together into one path."
         sx={{ mb: { xs: 5, md: 7 } }}
       />
 
@@ -76,7 +87,7 @@ export default function SectionSummaries() {
         sx={{
           display: 'grid',
           gap: { xs: 2.5, md: 3 },
-          gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
+          gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
         }}
       >
         {sectionSummaries.map((s, i) => {

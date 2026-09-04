@@ -18,7 +18,11 @@ const api = axios.create({
 
 if (USE_MOCK) {
   api.defaults.adapter = mockAdapter;
-  console.info('[api] mock mode ON — serving fixtures from src/mocks/. Set VITE_USE_MOCK=false for the real API.');
+  console.info(
+    '[api] OFFLINE MODE (VITE_USE_MOCK=true) — data from src/mocks/ fixtures, ' +
+      'form submissions not stored. Run the real API (npm run api) and set ' +
+      'VITE_USE_MOCK=false. See SYSTEM_INTEGRATION.md.',
+  );
 }
 
 /**

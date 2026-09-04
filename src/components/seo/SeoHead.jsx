@@ -12,7 +12,9 @@ const DEFAULT_OG_IMAGE = `${SITE_URL}${ORG.ogImagePath}`;
  * Props:
  *  - title:        page title (site name is appended unless titleTemplate=false)
  *  - description:  meta description, written for humans
- *  - image:        absolute or root-relative OG image URL
+ *  - image:        OG image — an absolute URL, or a path relative to THIS site's
+ *                  origin. API-hosted media (coverImage) must be resolved to an
+ *                  absolute URL by the caller (utils/media.js) before it's passed.
  *  - noindex:      set true for thin/utility pages
  *  - canonicalPath override (defaults to current pathname, query stripped)
  *  - type:         og:type (default "website")

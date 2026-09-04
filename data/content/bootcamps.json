@@ -1,0 +1,47 @@
+[
+  {
+    "id": "b1a2c3d4-0001-4000-8000-000000000001",
+    "name": "Junior Robotics Bootcamp",
+    "description": "A two-week intensive where learners build, wire and program their first autonomous robot using the Quarky platform. Runs during the April school holiday.",
+    "coverImage": null,
+    "status": "upcoming",
+    "startDate": "2026-04-06",
+    "endDate": "2026-04-17",
+    "educationLevel": "Primary",
+    "gradeFrom": "Grade 4",
+    "gradeTo": "Grade 6",
+    "classes": ["Robotics A — Morning", "Robotics B — Afternoon"],
+    "courses": [{ "name": "Intro to Robotics", "slug": "intro-to-robotics" }]
+  },
+  {
+    "id": "b1a2c3d4-0002-4000-8000-000000000002",
+    "name": "AI & Coding Accelerator",
+    "description": "Teens explore machine-learning concepts, build a computer-vision project and present it on demo day. Held over the August holiday.",
+    "coverImage": null,
+    "status": "active",
+    "startDate": "2026-08-04",
+    "endDate": "2026-08-22",
+    "educationLevel": "Secondary",
+    "gradeFrom": "Form 1",
+    "gradeTo": "Form 4",
+    "classes": ["AI Cohort 2026"],
+    "courses": [
+      { "name": "Python Foundations", "slug": "python-foundations" },
+      { "name": "Computer Vision Basics", "slug": "computer-vision-basics" }
+    ]
+  },
+  {
+    "id": "b1a2c3d4-0003-4000-8000-000000000003",
+    "name": "Creative Electronics Camp",
+    "description": "Learners design wearable and interactive art pieces with sensors, LEDs and micro-controllers. Completed cohort — next run to be announced.",
+    "coverImage": null,
+    "status": "completed",
+    "startDate": "2025-12-01",
+    "endDate": "2025-12-12",
+    "educationLevel": "Primary",
+    "gradeFrom": "Grade 5",
+    "gradeTo": "Grade 8",
+    "classes": ["Electronics December 2025"],
+    "courses": []
+  }
+]

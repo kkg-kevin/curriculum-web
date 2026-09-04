@@ -38,8 +38,8 @@ export default function ProjectsListPage() {
               gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(3, 1fr)' },
             }}
           >
-            {data.map((p) => (
-              <ProjectCard key={p.id} project={p} />
+            {data.map((p, i) => (
+              <ProjectCard key={p.id} project={p} index={i} />
             ))}
           </Box>
         )}
