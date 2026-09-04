@@ -14,6 +14,7 @@ import SmartImage from '../components/common/SmartImage.jsx';
 import { ErrorBlock } from '../components/common/StateViews.jsx';
 import { usePathway } from '../hooks/usePathways.js';
 import { ageLabel } from '../utils/format.js';
+import StartingPointFinder from '../components/pathways/StartingPointFinder.jsx';
 
 const FALLBACK_ACCENT = '#25476a';
 
@@ -196,9 +197,19 @@ export default function PathwayDetailPage() {
           ))}
         </Box>
 
+        <Box sx={{ mt: 6, maxWidth: 820 }}>
+          <StartingPointFinder
+            pathwaySlug={slug}
+            pathwayName={name}
+            courses={courses}
+            accent={accent}
+          />
+        </Box>
+
         <Box
           sx={{
-            mt: 6,
+            mt: 4,
+            maxWidth: 820,
             p: 3,
             border: '1px solid',
             borderColor: 'divider',
@@ -210,8 +221,8 @@ export default function PathwayDetailPage() {
             Ready to start {name}?
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Register your interest and our team will get the learner set up at the right step for
-            their age and experience.
+            Not sure yet? Use the starting-point tool above, or register interest now and our team
+            will get the learner set up at the right step for their age and experience.
           </Typography>
           <Button component={RouterLink} to={enrollTo} variant="contained" size="large">
             Enroll in this pathway

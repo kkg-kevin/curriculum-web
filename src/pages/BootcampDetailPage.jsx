@@ -15,6 +15,7 @@ import { LoadingBlock, ErrorBlock } from '../components/common/StateViews.jsx';
 import EnrollForm from '../components/forms/EnrollForm.jsx';
 import { useBootcamp } from '../hooks/useBootcamps.js';
 import { formatDateRange } from '../utils/dates.js';
+import { resolveMediaUrl } from '../utils/media.js';
 
 const STATUS_COLOR = { upcoming: 'primary', active: 'success', completed: 'default' };
 
@@ -57,7 +58,7 @@ export default function BootcampDetailPage() {
         title={name}
         description={description?.slice(0, 155)}
         type="article"
-        image={coverImage || undefined}
+        image={resolveMediaUrl(coverImage) || undefined}
       />
       <JsonLd data={[organizationSchema(), eventSchema(data, pathname)]} />
 
@@ -155,7 +156,7 @@ export default function BootcampDetailPage() {
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                 Send us your details and our team will confirm a place and next steps.
               </Typography>
-              <EnrollForm defaultInterest="bootcamp" referenceId={data.id} referenceLabel={name} />
+              <EnrollForm defaultInterest="bootcamp" referenceId={data.slug} referenceLabel={name} />
             </Box>
           </Box>
         </Box>

@@ -82,31 +82,42 @@ describe('mockApi adapter — GET', () => {
 describe('mockApi adapter — POST', () => {
   const api = makeClient();
 
-  it('accepts a valid lead', async () => {
-    const { data } = await api.post('/api/public/leads', {
+  it('accepts a valid lead (201 + { success, message, data })', async () => {
+    const res = await api.post('/api/public/leads', {
       parentName: 'Al',
       parentEmail: 'a@b.com',
       parentPhone: '0700',
       learnerName: 'Kid',
       learnerAge: 9,
       interestedIn: 'bootcamp',
+      referenceId: 'junior-robotics-bootcamp',
     });
-    expect(data.ok).toBe(true);
+    expect(res.status).toBe(201);
+    expect(res.data.success).toBe(true);
+    expect(typeof res.data.message).toBe('string');
+    expect(res.data.data).toMatchObject({ status: 'new' });
   });
 
-  it('422s a lead missing required fields', async () => {
+  it('400s a lead missing required fields', async () => {
     await expect(api.post('/api/public/leads', { parentName: '' })).rejects.toMatchObject({
-      response: { status: 422 },
+      response: { status: 400, data: { success: false } },
     });
   });
 
-  it('accepts a valid contact message', async () => {
-    const { data } = await api.post('/api/public/contact', {
+  it('accepts a valid contact message (201)', async () => {
+    const res = await api.post('/api/public/contact', {
       name: 'Al',
       email: 'a@b.com',
       phone: '',
       message: 'hello there',
     });
-    expect(data.ok).toBe(true);
+    expect(res.status).toBe(201);
+    expect(res.data.success).toBe(true);
+  });
+
+  it('400s a contact message missing required fields', async () => {
+    await expect(api.post('/api/public/contact', { name: 'Al' })).rejects.toMatchObject({
+      response: { status: 400 },
+    });
   });
 });

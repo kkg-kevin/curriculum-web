@@ -3,9 +3,11 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Public marketing/landing site for Digifunzi. Standalone SPA that talks to the main system over /api/public/*.",
+  "description": "Public marketing/landing site for Digifunzi. Standalone SPA + JSON-backed API (server/).",
   "scripts": {
     "dev": "vite",
+    "api": "node --env-file=server/.env server/index.js",
+    "api:install": "npm --prefix server install",
     "build": "vite build && npm run postbuild",
     "postbuild": "node scripts/generate-sitemap.js --mode production && node scripts/prerender.js --mode production",
     "build:spa": "vite build",

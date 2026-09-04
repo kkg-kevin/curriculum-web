@@ -5,13 +5,17 @@ import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import Box from '@mui/material/Box';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import RouteIcon from '@mui/icons-material/Route';
 
 const FALLBACK_ACCENT = '#25476a';
 
 /**
- * A Pathway is an ordered track of courses. The card shows the name, a truncated
- * description and a course-count badge, with the pathway's own colour as a subtle
- * left-border accent. Links to /pathways/:slug.
+ * A Pathway is an ordered track of courses. Pathways have no cover image (the
+ * list endpoint only ever returns name/description/color/courseCount), so the
+ * card leans on the pathway's own accent colour as the visual instead of a
+ * photo: a tinted header band with a route glyph, then name + description
+ * below. Links to /pathways/:slug.
  */
 export default function PathwayCard({ pathway }) {
   const { slug, name, description, color, courseCount } = pathway;
@@ -24,8 +28,9 @@ export default function PathwayCard({ pathway }) {
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        borderLeft: '4px solid',
-        borderLeftColor: accent,
+        overflow: 'hidden',
+        transition: 'transform 200ms ease, box-shadow 200ms ease',
+        '&:hover': { transform: 'translateY(-3px)', boxShadow: 4 },
       }}
     >
       <CardActionArea
@@ -33,28 +38,67 @@ export default function PathwayCard({ pathway }) {
         to={`/pathways/${slug}`}
         sx={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', height: '100%' }}
       >
-        <CardContent sx={{ flexGrow: 1, width: '100%' }}>
-          <Box sx={{ display: 'flex', gap: 1, mb: 1.5, flexWrap: 'wrap' }}>
-            <Chip
-              size="small"
-              label={`${courseCount} ${courseCount === 1 ? 'course' : 'courses'}`}
-              sx={{
-                bgcolor: `${accent}1A`, // ~10% tint
-                color: 'text.primary',
-                fontWeight: 600,
-              }}
-            />
-          </Box>
+        <Box
+          sx={{
+            position: 'relative',
+            height: 96,
+            flexShrink: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            overflow: 'hidden',
+            backgroundImage: `linear-gradient(135deg, ${accent} 0%, ${accent}CC 100%)`,
+          }}
+        >
+          <RouteIcon
+            aria-hidden
+            sx={{ fontSize: 132, color: '#fff', opacity: 0.16, transform: 'rotate(-12deg)' }}
+          />
+          <Chip
+            size="small"
+            label={`${courseCount} ${courseCount === 1 ? 'course' : 'courses'}`}
+            sx={{
+              position: 'absolute',
+              top: 12,
+              left: 12,
+              bgcolor: 'rgba(255,255,255,0.92)',
+              color: '#1a1a1a',
+              fontWeight: 700,
+            }}
+          />
+        </Box>
+
+        <CardContent sx={{ flexGrow: 1, width: '100%', display: 'flex', flexDirection: 'column' }}>
           <Typography variant="h4" component="h3" gutterBottom>
             {name}
           </Typography>
           <Typography
             variant="body2"
             color="text.secondary"
-            sx={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
+            sx={{
+              flexGrow: 1,
+              display: '-webkit-box',
+              WebkitLineClamp: 3,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+            }}
           >
             {description}
           </Typography>
+          <Box
+            sx={{
+              mt: 2,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 0.5,
+              color: accent,
+              fontWeight: 700,
+              fontSize: '0.875rem',
+            }}
+          >
+            View pathway
+            <ArrowForwardIcon sx={{ fontSize: 18 }} />
+          </Box>
         </CardContent>
       </CardActionArea>
     </Card>

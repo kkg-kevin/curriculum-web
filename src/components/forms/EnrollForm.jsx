@@ -23,10 +23,20 @@ const INTEREST_OPTIONS = [
  *
  * Props:
  *  - defaultInterest: pre-selects "interested in" (e.g. 'bootcamp' from a detail page)
- *  - referenceId: id of the bootcamp/course they came from, passed straight through
+ *  - referenceId: the slug of the bootcamp/course/pathway they came from, passed
+ *    straight through as `referenceId`. The API accepts a slug or a uuid and
+ *    stores it as a bare string; we send the slug so staff see a readable
+ *    "came from" value on the Enquiries page (SYSTEM_INTEGRATION.md §3.1).
  *  - referenceLabel: human label shown as read-only context
+ *  - defaultMessage: pre-fills the "anything else" field (e.g. an age-based
+ *    starting-course suggestion from the pathway page)
  */
-export default function EnrollForm({ defaultInterest = 'general', referenceId = null, referenceLabel }) {
+export default function EnrollForm({
+  defaultInterest = 'general',
+  referenceId = null,
+  referenceLabel,
+  defaultMessage = '',
+}) {
   const mutation = useLeadSubmission();
   const [spamBlocked, setSpamBlocked] = useState(false);
   const {
@@ -43,7 +53,7 @@ export default function EnrollForm({ defaultInterest = 'general', referenceId = 
       learnerName: '',
       learnerAge: '',
       interestedIn: defaultInterest,
-      message: '',
+      message: defaultMessage,
       ...HONEYPOT_DEFAULT,
     },
   });

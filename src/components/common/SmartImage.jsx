@@ -1,16 +1,22 @@
 import { useState } from 'react';
 import Box from '@mui/material/Box';
+import { resolveMediaUrl } from '../../utils/media.js';
 
 /**
  * Image with a graceful fallback and lazy-loading by default (spec §7 —
  * page speed is a ranking factor, and cover images may be null from the API).
+ *
+ * `src` may be an absolute URL or a server-relative `/uploads/...` path as the
+ * curriculum API returns it — it's resolved here (see utils/media.js), so every
+ * caller can pass the raw API value.
  *
  * Props: src, alt (REQUIRED — always write real alt text), ratio (e.g. '16/9'),
  * eager (set true only for above-the-fold hero images).
  */
 export default function SmartImage({ src, alt, ratio = '16 / 9', eager = false, rounded = true, sx }) {
   const [failed, setFailed] = useState(false);
-  const showFallback = !src || failed;
+  const resolved = resolveMediaUrl(src);
+  const showFallback = !resolved || failed;
 
   return (
     <Box
@@ -40,7 +46,7 @@ export default function SmartImage({ src, alt, ratio = '16 / 9', eager = false, 
         </Box>
       ) : (
         <img
-          src={src}
+          src={resolved}
           alt={alt}
           loading={eager ? 'eager' : 'lazy'}
           decoding="async"

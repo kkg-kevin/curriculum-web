@@ -13,14 +13,30 @@ export const about = {
   mission:
     'To make hands-on robotics, coding and STEM learning normal, joyful and accessible for children across Kenya.',
   values: [
-    { title: 'Make it real', body: 'If a learner can hold it, run it or show it, they understand it.' },
-    { title: 'Meet learners where they are', body: 'Small groups, patient mentors, and a path that adjusts to each child.' },
-    { title: 'Support the adults too', body: 'Teachers and parents get materials, training and a person to call.' },
+    { title: 'Make it real', body: 'If a learner can hold it, run it or show it, they understand it.', icon: 'build' },
+    {
+      title: 'Meet learners where they are',
+      body: 'Small groups, patient mentors, and a path that adjusts to each child.',
+      icon: 'diversity',
+    },
+    {
+      title: 'Support the adults too',
+      body: 'Teachers and parents get materials, training and a person to call.',
+      icon: 'support',
+    },
   ],
-  // TODO: real numbers once verified.
+  // TODO: real numbers once verified. Left blank (not '—') deliberately — the
+  // About page only renders a stat once `value` is set, rather than showing a
+  // placeholder dash that reads as a broken page.
   stats: [
-    { value: '—', label: 'Learners taught' },
-    { value: '—', label: 'Partner schools' },
-    { value: '—', label: 'Bootcamps run' },
+    { value: '', label: 'Learners taught' },
+    { value: '', label: 'Partner schools' },
+    { value: '', label: 'Bootcamps run' },
+  ],
+  programmes: [
+    { title: 'Project courses', body: 'Weekly, termly, small-group.', to: '/projects', icon: 'code' },
+    { title: 'Bootcamps', body: 'Intensive, dated, holiday.', to: '/bootcamps', icon: 'rocket' },
+    { title: 'Pathways', body: 'Structured multi-course tracks.', to: '/pathways', icon: 'route' },
+    { title: 'Competitions', body: 'Team-based, mentor-supported.', to: '/competitions', icon: 'trophy' },
   ],
 };
