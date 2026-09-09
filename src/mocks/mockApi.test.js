@@ -41,6 +41,36 @@ describe('mockApi adapter — GET', () => {
     });
   });
 
+  it('lists for-sale store items with the public contract shape', async () => {
+    const { data: list } = await api.get('/api/public/store');
+    expect(Array.isArray(list)).toBe(true);
+    expect(list.length).toBeGreaterThan(0);
+    expect(list[0]).toMatchObject({
+      id: expect.any(String),
+      slug: expect.any(String),
+      name: expect.any(String),
+      storeCategory: expect.any(String),
+      highlightCount: expect.any(Number),
+    });
+    // list projection must not carry the detail-only arrays
+    expect(list[0]).not.toHaveProperty('specs');
+  });
+
+  it('fetches a store item by slug with the full marketing detail', async () => {
+    const { data } = await api.get('/api/public/store/quarky-robot-kit');
+    expect(data.slug).toBe('quarky-robot-kit');
+    expect(typeof data.description).toBe('string');
+    expect(Array.isArray(data.highlights)).toBe(true);
+    expect(Array.isArray(data.includes)).toBe(true);
+    expect(Array.isArray(data.specs)).toBe(true);
+  });
+
+  it('404s an unknown store item', async () => {
+    await expect(api.get('/api/public/store/does-not-exist')).rejects.toMatchObject({
+      response: { status: 404 },
+    });
+  });
+
   it('lists pathways with the public contract shape', async () => {
     const { data } = await api.get('/api/public/pathways');
     expect(Array.isArray(data)).toBe(true);

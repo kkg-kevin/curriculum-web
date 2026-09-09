@@ -54,6 +54,12 @@ export const publicApi = {
   listProjects: () => api.get('/api/public/projects').then((r) => r.data),
   getProject: (slug) => api.get(`/api/public/projects/${encodeURIComponent(slug)}`).then((r) => r.data),
 
+  // Store = the designated admin's shared `inventory` items flipped "For sale" in the portal's
+  // Inventory panel (WEBSITE_INTEGRATION_CONTRACT.md §3.5/§3.6). Physical goods — the Quarky
+  // robot, kits, accessories.
+  listStoreItems: () => api.get('/api/public/store').then((r) => r.data),
+  getStoreItem: (slug) => api.get(`/api/public/store/${encodeURIComponent(slug)}`).then((r) => r.data),
+
   /** Enroll + Contact share this endpoint, differentiated by `interestedIn` (spec §4.5). */
   submitLead: (payload) => api.post('/api/public/leads', payload).then((r) => r.data),
 
