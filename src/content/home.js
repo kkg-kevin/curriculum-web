@@ -6,7 +6,7 @@
 export const hero = {
   eyebrow: 'Robotics · Coding · STEM for kids',
   heading: 'Where Kenya’s young makers learn to build',
-  sub: 'Digifunzi teaches children to design, code and build real things — through weekly projects, holiday bootcamps, competitions, and the Quarky robot.',
+  sub: 'Digifunzi teaches children to design, code and build real things — through structured pathways, competitions, guided projects you buy and keep, and the Quarky robot.',
   primaryCta: { label: 'Enroll a learner', to: '/enroll' },
   secondaryCta: { label: 'Browse projects', to: '/projects' },
 };
@@ -32,19 +32,14 @@ export const valueProps = [
 
 export const sectionSummaries = [
   {
-    title: 'Bootcamps',
-    to: '/bootcamps',
-    blurb: 'Intensive, dated holiday programmes where learners go deep on one theme and finish with a showcase project.',
+    title: 'Pathways',
+    to: '/pathways',
+    blurb: 'Structured, multi-course tracks that take a learner from first steps to job-ready in one area, at their own pace.',
   },
   {
     title: 'Projects',
     to: '/projects',
-    blurb: 'Our termly courses — robotics, coding, computer vision and electronics — taught weekly in small groups.',
-  },
-  {
-    title: 'Pathways',
-    to: '/pathways',
-    blurb: 'Structured, multi-course tracks that take a learner from first steps to job-ready in one area, at their own pace.',
+    blurb: 'Guided build projects you buy once and keep for life — lessons, checkpoints and a finished thing to show.',
   },
   {
     title: 'Competitions',
@@ -52,9 +47,9 @@ export const sectionSummaries = [
     blurb: 'Friendly, team-based challenges that give learners a real goal to build towards and a stage to present on.',
   },
   {
-    title: 'Quarky',
-    to: '/quarky',
-    blurb: 'The rugged learning robot at the centre of Digifunzi’s courses, and available for schools and families to buy.',
+    title: 'Store',
+    to: '/store',
+    blurb: 'The hardware side — the Quarky robot, classroom bundles and accessories to build with.',
   },
 ];
 

@@ -20,8 +20,8 @@ if (USE_MOCK) {
   api.defaults.adapter = mockAdapter;
   console.info(
     '[api] OFFLINE MODE (VITE_USE_MOCK=true) — data from src/mocks/ fixtures, ' +
-      'form submissions not stored. Run the real API (npm run api) and set ' +
-      'VITE_USE_MOCK=false. See SYSTEM_INTEGRATION.md.',
+      'form submissions not stored. Point VITE_API_URL at the curriculum system\'s ' +
+      'backend and set VITE_USE_MOCK=false to use live data. See SYSTEM_INTEGRATION.md.',
   );
 }
 
@@ -45,11 +45,9 @@ export default api;
 // ---- Public API surface (spec §4) --------------------------------------------
 
 export const publicApi = {
-  listBootcamps: () => api.get('/api/public/bootcamps').then((r) => r.data),
-  getBootcamp: (slug) => api.get(`/api/public/bootcamps/${encodeURIComponent(slug)}`).then((r) => r.data),
-
-  listProjects: () => api.get('/api/public/projects').then((r) => r.data),
-  getProject: (slug) => api.get(`/api/public/projects/${encodeURIComponent(slug)}`).then((r) => r.data),
+  // Bootcamps/Projects endpoints were removed from the curriculum backend on 4 Sep
+  // 2026 (see Guide/WEBSITE_INTEGRATION_CONTRACT.md in the curriculum repo) — no
+  // replacement content API exists yet, so there's nothing for this site to call.
 
   listPathways: () => api.get('/api/public/pathways').then((r) => r.data),
   getPathway: (slug) => api.get(`/api/public/pathways/${encodeURIComponent(slug)}`).then((r) => r.data),
@@ -59,4 +57,37 @@ export const publicApi = {
 
   /** Optional simpler general-inquiry variant (spec §4.5). */
   submitContact: (payload) => api.post('/api/public/contact', payload).then((r) => r.data),
+
+  // ---- Public diagnostics (WEBSITE_INTEGRATION_CONTRACT.md §3.8, §4.3) ----------
+
+  /** GET /api/public/diagnostics/:pathwayIdOrSlug/availability — never errors. */
+  getDiagnosticAvailability: (pathwayIdOrSlug) =>
+    api
+      .get(`/api/public/diagnostics/${encodeURIComponent(pathwayIdOrSlug)}/availability`)
+      .then((r) => r.data),
+
+  /** GET /api/public/diagnostics/:pathwayIdOrSlug?age= — question set for that age. */
+  getDiagnostic: (pathwayIdOrSlug, age) =>
+    api
+      .get(`/api/public/diagnostics/${encodeURIComponent(pathwayIdOrSlug)}`, { params: { age } })
+      .then((r) => r.data),
+
+  /**
+   * GET /api/public/diagnostics/attempts/:attemptId — the permanent, shareable graded report.
+   * `attemptId` is the opaque uuid the submit response returned. 404 for an unknown id.
+   */
+  getDiagnosticReport: (attemptId) =>
+    api
+      .get(`/api/public/diagnostics/attempts/${encodeURIComponent(attemptId)}`)
+      .then((r) => r.data),
+
+  /**
+   * POST /api/public/diagnostics/:pathwayIdOrSlug/submit — grades synchronously and returns the
+   * report (+ a permanent `attemptId`). Body is just `{ answers, childName?, childAge }` — no
+   * contact info; no lead is created here.
+   */
+  submitDiagnostic: (pathwayIdOrSlug, payload) =>
+    api
+      .post(`/api/public/diagnostics/${encodeURIComponent(pathwayIdOrSlug)}/submit`, payload)
+      .then((r) => r.data),
 };

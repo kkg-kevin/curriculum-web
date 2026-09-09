@@ -7,7 +7,7 @@ export const about = {
   lead: 'We are a Kenyan STEM education company on a simple mission: give every child the chance to build with technology, not just consume it.',
   story: [
     'Digifunzi started with a small set of after-school robotics clubs and a belief that children learn engineering best by making real things they care about.',
-    'Today we run weekly project courses, holiday bootcamps and competitions, and we build the Quarky robot that ties the hands-on parts of our curriculum together.',
+    'Today we run structured learning pathways and competitions, sell buildable projects and kits, and build the Quarky robot that ties the hands-on parts of our curriculum together.',
     'We work with families directly and partner with schools to bring structured, well-supported STEM programmes into classrooms across the country.',
   ],
   mission:
@@ -34,9 +34,9 @@ export const about = {
     { value: '', label: 'Bootcamps run' },
   ],
   programmes: [
-    { title: 'Project courses', body: 'Weekly, termly, small-group.', to: '/projects', icon: 'code' },
-    { title: 'Bootcamps', body: 'Intensive, dated, holiday.', to: '/bootcamps', icon: 'rocket' },
     { title: 'Pathways', body: 'Structured multi-course tracks.', to: '/pathways', icon: 'route' },
+    { title: 'Projects', body: 'Guided builds you buy and keep.', to: '/projects', icon: 'code' },
     { title: 'Competitions', body: 'Team-based, mentor-supported.', to: '/competitions', icon: 'trophy' },
+    { title: 'Store', body: 'The Quarky robot, kits and bundles.', to: '/store', icon: 'rocket' },
   ],
 };

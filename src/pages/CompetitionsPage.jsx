@@ -144,7 +144,7 @@ export default function CompetitionsPage() {
         heading="Want your school to enter a team?"
         body="Tell us your learners’ ages and we’ll share the next competition calendar and entry details."
         primary={{ label: 'Get in touch', to: '/contact' }}
-        secondary={{ label: 'Explore projects', to: '/projects' }}
+        secondary={{ label: 'Explore pathways', to: '/pathways' }}
       />
     </>
   );

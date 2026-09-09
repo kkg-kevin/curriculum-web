@@ -20,16 +20,6 @@ import { sectionSummaries } from '../../content/home.js';
  */
 
 const ACCENTS = {
-  '/bootcamps': {
-    color: 'secondary.main',
-    tint: (t) => t.palette.secondary.main,
-    motif: (
-      <>
-        <path d="M20 44 44 20M32 12l16 16M12 32l16 16" />
-        <circle cx="46" cy="18" r="4" />
-      </>
-    ),
-  },
   '/competitions': {
     color: 'primary.main',
     tint: (t) => t.palette.primary.main,
@@ -43,20 +33,21 @@ const ACCENTS = {
   '/projects': {
     color: 'success.main',
     tint: (t) => t.palette.success.main,
+    // interlocking puzzle piece
     motif: (
       <>
-        <rect x="12" y="14" width="40" height="30" rx="3" />
-        <path d="M22 26l-5 5 5 5M42 26l5 5-5 5M34 22l-4 18" />
+        <path d="M16 16h13a5 5 0 0 1 10 0h9v9a5 5 0 0 1 0 10v13H35a5 5 0 0 0-10 0H16V35a5 5 0 0 1 0-10V16Z" />
       </>
     ),
   },
-  '/quarky': {
+  '/store': {
     color: 'warning.main',
     tint: (t) => t.palette.warning.main,
+    // storefront / shopping bag
     motif: (
       <>
-        <rect x="16" y="20" width="32" height="24" rx="5" />
-        <path d="M32 12v8M24 12h16M22 32h4M38 32h4M26 44v4M38 44v4" />
+        <path d="M14 20h36l-3 28a4 4 0 0 1-4 3.5H21a4 4 0 0 1-4-3.5L14 20Z" />
+        <path d="M24 20v-2a8 8 0 0 1 16 0v2" />
       </>
     ),
   },
@@ -78,8 +69,8 @@ export default function SectionSummaries() {
     <Section tone="subtle">
       <SectionHeading
         eyebrow="Programmes"
-        title="Five ways to learn with us"
-        lead="Weekly courses, structured pathways, holiday intensives, team competitions and the robot they run on — designed to fit together into one path."
+        title="Ways to learn with us"
+        lead="Structured pathways, guided projects you buy and keep, team competitions, and the robots to build with — designed to fit together into one path."
         sx={{ mb: { xs: 5, md: 7 } }}
       />
 
@@ -91,7 +82,7 @@ export default function SectionSummaries() {
         }}
       >
         {sectionSummaries.map((s, i) => {
-          const accent = ACCENTS[s.to] || ACCENTS['/projects'];
+          const accent = ACCENTS[s.to] || ACCENTS['/pathways'];
           return (
             <Reveal key={s.to} delay={i * 90}>
               <Box

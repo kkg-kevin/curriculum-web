@@ -20,7 +20,7 @@ export const ORG = {
   name: 'Digifunzi',
   legalName: 'Digifunzi',
   description:
-    'Digifunzi teaches robotics, coding and STEM to children across Kenya through hands-on projects, dated bootcamps and the Quarky robot.',
+    'Digifunzi teaches robotics, coding and STEM to children across Kenya through structured learning pathways, competitions, buildable projects and the Quarky robot.',
   email: 'hello@digifunzi.com', // TODO confirm
   telephone: '+254-000-000000', // TODO confirm
   address: {
@@ -43,19 +43,19 @@ export const ORG = {
 };
 
 /**
- * Static routes that always exist. Dynamic detail routes
- * (/bootcamps/:slug, /projects/:slug) are appended by the sitemap script
- * from live API data at build time.
+ * Static routes that always exist. Dynamic detail routes (/pathways/:slug,
+ * /projects/:slug, /store/:slug) are appended by the sitemap / prerender
+ * scripts — pathways from live API data, projects & store items from
+ * src/content/{projects,store}.js — at build time.
  *
  * changefreq / priority are advisory hints for sitemap.xml.
  */
 export const STATIC_ROUTES = [
   { path: '/', changefreq: 'weekly', priority: 1.0 },
-  { path: '/bootcamps', changefreq: 'weekly', priority: 0.9 },
-  { path: '/projects', changefreq: 'weekly', priority: 0.9 },
   { path: '/pathways', changefreq: 'weekly', priority: 0.9 },
+  { path: '/projects', changefreq: 'weekly', priority: 0.9 },
+  { path: '/store', changefreq: 'weekly', priority: 0.9 },
   { path: '/competitions', changefreq: 'monthly', priority: 0.7 },
-  { path: '/quarky', changefreq: 'monthly', priority: 0.8 },
   { path: '/about', changefreq: 'monthly', priority: 0.6 },
   { path: '/enroll', changefreq: 'monthly', priority: 0.8 },
   { path: '/contact', changefreq: 'yearly', priority: 0.5 },

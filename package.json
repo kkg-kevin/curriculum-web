@@ -3,13 +3,11 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Public marketing/landing site for Digifunzi. Standalone SPA + JSON-backed API (server/).",
+  "description": "Public marketing/landing site for Digifunzi. SPA served by the curriculum system's backend API (VITE_API_URL).",
   "scripts": {
     "dev": "vite",
-    "api": "node --env-file=server/.env server/index.js",
-    "api:install": "npm --prefix server install",
     "build": "vite build && npm run postbuild",
-    "postbuild": "node scripts/generate-sitemap.js --mode production && node scripts/prerender.js --mode production",
+    "postbuild": "node scripts/prerender.js --mode production && node scripts/generate-sitemap.js --mode production",
     "build:spa": "vite build",
     "package": "node scripts/package.js",
     "deploy:build": "npm run build && npm run package",
@@ -19,7 +17,7 @@
     "test:watch": "vitest",
     "sitemap": "node scripts/generate-sitemap.js",
     "prerender": "node scripts/prerender.js",
-    "verify:pipeline": "vite build --mode mockbuild && node scripts/generate-sitemap.js --mode mockbuild && node scripts/prerender.js --mode mockbuild"
+    "verify:pipeline": "vite build --mode mockbuild && node scripts/prerender.js --mode mockbuild && node scripts/generate-sitemap.js --mode mockbuild"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

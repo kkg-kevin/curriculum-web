@@ -186,12 +186,15 @@ Same object; `modules[]` populated. `404 { "message": "Project not found" }`.
 
 ### 4.6 `GET /api/public/pathways/:idOrSlug` → `200` | `404`
 
-List item **plus** an **ordered** `courses[]` (template order = learning
-sequence). Exactly five fields per course — never the course id or internal
-fields:
+List item **plus** a `diagnostic` object **plus** an **ordered** `courses[]`:
 
 ```jsonc
 {
+  "diagnostic": {              // 8 Sep 2026 — one fewer round-trip for the diagnostic CTA
+    "available": true,
+    "minAge": 8,               // integer | null (both, or both null)
+    "maxAge": 14
+  },
   "courses": [
     {
       "name": "Code Foundations 1",
@@ -205,13 +208,20 @@ fields:
 ```
 
 `404 { "message": "Pathway not found" }` for unknown id/slug **or** a pathway
-with no active courses left (it still appears in the list with `courseCount: 0`).
-Deeper notes + curl matrix: [PATHWAYS.md](PATHWAYS.md).
+with no active courses (since 9 Sep 2026 such a pathway is **omitted from the
+list**, not shown with `courseCount: 0`). `diagnostic.available` is `false` (ages
+null) unless the pathway's diagnostic is fully configured — see the curriculum
+repo's `Guide/WEBSITE_INTEGRATION_CONTRACT.md` §3.8 and
+`Guide/PUBLIC_DIAGNOSTIC_SETUP.md`. Deeper notes: [PATHWAYS.md](PATHWAYS.md).
 
+> **Source (changed 9 Sep 2026):** these read the designated admin's
+> **operational** pathways (portal → Curriculum → Competency Framework), not a
+> separate `pathway_templates` catalog. `PUBLIC_CONTENT_ADMIN_ID` on the backend
+> picks the admin.
+>
 > **Slug stability:** pathway slugs are derived from `name` at read time. Renaming
-> a pathway in Settings → Pathways changes its public URL (and breaks inbound
-> links / that page's SEO history). Acceptable today (few pathways, rarely
-> renamed); revisit with the backend if pathways get heavily marketed.
+> a pathway changes its public URL (breaks inbound links / SEO history).
+> Acceptable today; revisit with the backend if pathways get heavily marketed.
 
 ### 4.7 `POST /api/public/leads` → `201` | `400`
 

@@ -1,11 +1,13 @@
 import { slugify } from '../../utils/slugify.js';
+import { diagnosticInfoForSlug } from './diagnostics.js';
 
 /**
  * Mock data for GET /api/public/pathways (Learning Pathways).
  *
  * Shape mirrors the main system's server/src/modules/public-site contract exactly:
  *   list item: { id, slug, name, description, color, courseCount }
- *   detail:    list item + courses: [{ name, description, ageMin, ageMax, coverImage }]
+ *   detail:    list item + `diagnostic: { available, minAge, maxAge }`
+ *              + courses: [{ name, description, ageMin, ageMax, coverImage }]
  * so flipping VITE_USE_MOCK to false needs no page changes.
  *
  * A Pathway is a curriculum-agnostic roadmap — an ordered list of courses a learner
@@ -134,13 +136,15 @@ export function pathwayDetail(idOrSlug) {
   const item = raw.find((p) => p.id === idOrSlug || slugify(p.name) === idOrSlug);
   if (!item) return null;
   if (item.courses.length === 0) return null; // matches the server's "nothing to show" 404
+  const slug = slugify(item.name);
   return {
     id: item.id,
-    slug: slugify(item.name),
+    slug,
     name: item.name,
     description: item.description,
     color: item.color,
     courseCount: item.courses.length,
+    diagnostic: diagnosticInfoForSlug(slug),
     courses: item.courses.map((c) => ({
       name: c.name,
       description: c.description,

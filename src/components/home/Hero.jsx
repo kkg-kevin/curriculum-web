@@ -68,7 +68,7 @@ const headingSheen = (t) => ({
   },
 });
 
-const PILLARS = ['Weekly projects', 'Holiday bootcamps', 'Competitions', 'The Quarky robot'];
+const PILLARS = ['Learning pathways', 'Buildable projects', 'Competitions', 'The Quarky robot'];
 
 function HeroBackdrop() {
   return (
