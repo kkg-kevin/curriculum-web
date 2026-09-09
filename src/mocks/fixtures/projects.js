@@ -1,74 +1,71 @@
 import { slugify } from '../../utils/slugify.js';
 
 /**
- * Mock data for GET /api/public/projects (Courses — spec §4.2).
+ * Offline mock for GET /api/public/projects[/:idOrSlug] — the designated admin's
+ * `type: "project"` assessments marked "For sale" in the Assessment Builder
+ * (WEBSITE_INTEGRATION_CONTRACT.md §3.3/§3.4). Shape mirrors the real projection.
  */
 const raw = [
   {
-    id: 'c0000000-0001-4000-8000-000000000001',
-    name: 'Intro to Robotics',
-    description:
-      'Learners meet the Quarky robot, learn to control its motors and sensors, and build five mini-projects from a line-follower to an obstacle-avoider.',
-    coverImage: null,
+    id: 'p0000000-0001-4000-8000-000000000001',
+    name: 'Smart Home Starter',
+    tagline: 'Make a model room that reacts to you',
+    level: 'beginner',
     ageMin: 8,
     ageMax: 12,
-    sessionCount: 12,
-    requirements: ['A Quarky kit (provided in-class)', 'A laptop or Chromebook'],
+    coverImage: null,
+    price: { amount: 1800, currency: 'KES', note: 'One-time purchase — lifetime access.' },
+    description:
+      'A first automation project: a light that comes on in the dark, a fan that runs when it is hot, a buzzer that warns of an open door. No prior coding needed.',
+    overview:
+      'Five short lessons introducing inputs, outputs and simple decision logic through a model "smart room". Learners wire each device, write the rule that controls it, then combine everything into one program.',
+    deliverables: [
+      { name: 'A working smart room', description: 'All three devices responding to their sensors' },
+      { name: 'A 1-minute demo video', description: 'A walkthrough of what you built' },
+    ],
+    milestones: [
+      { name: 'A light that senses the dark', description: '' },
+      { name: 'A fan that senses heat', description: '' },
+      { name: 'A door buzzer', description: '' },
+      { name: 'Combine it into one program', description: '' },
+    ],
+    requirements: ['A Quarky robot kit', 'A laptop or Chromebook'],
   },
   {
-    id: 'c0000000-0002-4000-8000-000000000002',
-    name: 'Python Foundations',
-    description:
-      'A gentle first programming course: variables, loops, functions and a final text-based game project.',
-    coverImage: null,
+    id: 'p0000000-0002-4000-8000-000000000002',
+    name: 'Line-Following Robot',
+    tagline: 'Build a robot that drives itself around a track',
+    level: 'intermediate',
     ageMin: 10,
     ageMax: 15,
-    sessionCount: 16,
-    requirements: ['A laptop with Python 3 installed'],
-  },
-  {
-    id: 'c0000000-0003-4000-8000-000000000003',
-    name: 'Computer Vision Basics',
-    description:
-      'Learners train simple image classifiers and build a project that reacts to what the camera sees.',
     coverImage: null,
-    ageMin: 13,
-    ageMax: 18,
-    sessionCount: 10,
-    requirements: ['Completion of Python Foundations or equivalent', 'A laptop with a webcam'],
-  },
-  {
-    id: 'c0000000-0004-4000-8000-000000000004',
-    name: 'Creative Electronics',
+    price: { amount: 2500, currency: 'KES', note: 'One-time purchase — lifetime access.' },
     description:
-      'Hands-on circuits, soldering safety, sensors and actuators — culminating in a self-designed interactive object.',
-    coverImage: null,
-    ageMin: 9,
-    ageMax: 14,
-    sessionCount: 14,
-    requirements: ['Electronics kit (provided)', 'Closed-toe shoes for soldering sessions'],
+      'Use light sensors and a control loop to make a robot follow a black line around a track, then tune it to take corners cleanly.',
+    overview:
+      'Six lessons on sensors, thresholds and feedback loops. Ends with a timed run on a track the learner designs.',
+    deliverables: [
+      { name: 'A line-following robot', description: 'Completes a lap unaided' },
+      { name: 'A track design', description: 'Drawn and tested by the learner' },
+    ],
+    milestones: [
+      { name: 'Read the light sensors', description: '' },
+      { name: 'Decide: on the line or off it?', description: '' },
+      { name: 'Steer back onto the line', description: '' },
+      { name: 'Tune for corners', description: '' },
+      { name: 'Timed lap', description: '' },
+    ],
+    requirements: ['A Quarky robot kit', 'A line-follower track (printable)'],
   },
 ];
 
-const details = {
-  'c0000000-0001-4000-8000-000000000001': {
-    modules: ['Meet Quarky', 'Motors & Movement', 'Reading Sensors', 'Line Following', 'Obstacle Avoidance', 'Showcase Project'],
-  },
-  'c0000000-0002-4000-8000-000000000002': {
-    modules: ['Getting Started', 'Variables & Types', 'Loops', 'Functions', 'Lists & Dictionaries', 'Final Game Project'],
-  },
-  'c0000000-0003-4000-8000-000000000003': {
-    modules: ['How Computers See', 'Collecting Data', 'Training a Classifier', 'Evaluating Accuracy', 'Camera Project'],
-  },
-  'c0000000-0004-4000-8000-000000000004': {
-    modules: ['Circuit Basics', 'Soldering Safety', 'Sensors', 'Actuators', 'Design Studio', 'Final Build'],
-  },
-};
-
-export const projects = raw.map((p) => ({ ...p, slug: slugify(p.name) }));
+export const projects = raw.map((p) => ({
+  ...p,
+  slug: slugify(p.name),
+  deliverableCount: p.deliverables.length,
+  milestoneCount: p.milestones.length,
+}));
 
 export function projectDetail(idOrSlug) {
-  const item = projects.find((p) => p.id === idOrSlug || p.slug === idOrSlug);
-  if (!item) return null;
-  return { ...item, ...(details[item.id] || { modules: [] }) };
+  return projects.find((p) => p.id === idOrSlug || p.slug === idOrSlug) || null;
 }

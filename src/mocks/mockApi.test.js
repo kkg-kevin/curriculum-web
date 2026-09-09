@@ -14,30 +14,31 @@ function makeClient() {
 describe('mockApi adapter — GET', () => {
   const api = makeClient();
 
-  it('lists bootcamps with slugs', async () => {
-    const { data } = await api.get('/api/public/bootcamps');
-    expect(Array.isArray(data)).toBe(true);
-    expect(data.length).toBeGreaterThan(0);
-    expect(data[0]).toHaveProperty('slug');
-  });
-
-  it('fetches a bootcamp by slug', async () => {
-    const { data } = await api.get('/api/public/bootcamps/junior-robotics-bootcamp');
-    expect(data.slug).toBe('junior-robotics-bootcamp');
-    expect(Array.isArray(data.classes)).toBe(true);
-  });
-
-  it('404s an unknown bootcamp', async () => {
-    await expect(api.get('/api/public/bootcamps/does-not-exist')).rejects.toMatchObject({
-      response: { status: 404 },
+  it('lists for-sale projects with the public contract shape', async () => {
+    const { data: list } = await api.get('/api/public/projects');
+    expect(Array.isArray(list)).toBe(true);
+    expect(list.length).toBeGreaterThan(0);
+    expect(list[0]).toMatchObject({
+      id: expect.any(String),
+      slug: expect.any(String),
+      name: expect.any(String),
+      deliverableCount: expect.any(Number),
+      milestoneCount: expect.any(Number),
     });
   });
 
-  it('lists projects and fetches one with modules', async () => {
-    const { data: list } = await api.get('/api/public/projects');
-    expect(list[0]).toHaveProperty('sessionCount');
-    const { data: detail } = await api.get('/api/public/projects/intro-to-robotics');
-    expect(Array.isArray(detail.modules)).toBe(true);
+  it('fetches a project by slug with build detail', async () => {
+    const { data } = await api.get('/api/public/projects/smart-home-starter');
+    expect(data.slug).toBe('smart-home-starter');
+    expect(Array.isArray(data.deliverables)).toBe(true);
+    expect(Array.isArray(data.milestones)).toBe(true);
+    expect(Array.isArray(data.requirements)).toBe(true);
+  });
+
+  it('404s an unknown project', async () => {
+    await expect(api.get('/api/public/projects/does-not-exist')).rejects.toMatchObject({
+      response: { status: 404 },
+    });
   });
 
   it('lists pathways with the public contract shape', async () => {

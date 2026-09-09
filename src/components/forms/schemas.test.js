@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { enrollSchema, contactSchema, storeEnquirySchema } from './schemas.js';
+import { HONEYPOT_FIELD } from './Honeypot.jsx';
 
 const validEnroll = {
   parentName: 'Alex Doe',
@@ -42,9 +43,9 @@ describe('enrollSchema', () => {
   });
 
   it('keeps the honeypot field when present', () => {
-    const r = enrollSchema.safeParse({ ...validEnroll, companyWebsite: 'http://spam' });
+    const r = enrollSchema.safeParse({ ...validEnroll, [HONEYPOT_FIELD]: 'http://spam' });
     expect(r.success).toBe(true);
-    expect(r.data.companyWebsite).toBe('http://spam');
+    expect(r.data[HONEYPOT_FIELD]).toBe('http://spam');
   });
 });
 

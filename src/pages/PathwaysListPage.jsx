@@ -1,5 +1,6 @@
 import Box from '@mui/material/Box';
 import Skeleton from '@mui/material/Skeleton';
+import Typography from '@mui/material/Typography';
 import SeoHead from '../components/seo/SeoHead.jsx';
 import JsonLd, { organizationSchema, itemListSchema } from '../components/seo/JsonLd.jsx';
 import PageHeader from '../components/common/PageHeader.jsx';
@@ -11,15 +12,39 @@ import { usePathways } from '../hooks/usePathways.js';
 
 const GRID_SX = {
   display: 'grid',
-  gap: 3,
-  gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(3, 1fr)' },
+  gap: { xs: 2.5, md: 3 },
+  gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
 };
+
+function CardSkeleton() {
+  return (
+    <Box
+      sx={{
+        borderRadius: 4,
+        overflow: 'hidden',
+        border: '1px solid',
+        borderColor: 'divider',
+        bgcolor: 'surface.card',
+      }}
+    >
+      <Skeleton variant="rectangular" height={116} />
+      <Box sx={{ p: 3 }}>
+        <Skeleton variant="text" width="75%" height={28} />
+        <Skeleton variant="text" width="55%" height={28} />
+        <Skeleton variant="text" width="95%" sx={{ mt: 1 }} />
+        <Skeleton variant="text" width="80%" />
+        <Skeleton variant="rounded" width={120} height={12} sx={{ mt: 2, borderRadius: 999 }} />
+        <Skeleton variant="text" width="40%" sx={{ mt: 2.5 }} />
+      </Box>
+    </Box>
+  );
+}
 
 function PathwaySkeletons() {
   return (
     <Box sx={GRID_SX}>
-      {Array.from({ length: 3 }).map((_, i) => (
-        <Skeleton key={i} variant="rounded" height={220} sx={{ borderRadius: 2 }} />
+      {Array.from({ length: 6 }).map((_, i) => (
+        <CardSkeleton key={i} />
       ))}
     </Box>
   );
@@ -27,12 +52,13 @@ function PathwaySkeletons() {
 
 export default function PathwaysListPage() {
   const { data, isLoading, isError, error, refetch } = usePathways();
+  const count = data?.length || 0;
 
   return (
     <>
       <SeoHead
-        title="Learning Pathways — Robotics, Software Engineering & Data"
-        description="Structured tracks of Digifunzi courses that take a learner from beginner to job-ready in one area — robotics, software engineering, data & AI and more."
+        title="Learning Pathways — Robotics, Coding, AI & Design for Kids"
+        description="Guided tracks of Digifunzi courses a child works through in order — robotics, coding, AI, data, digital design and more — building real skills one course at a time."
       />
       <JsonLd
         data={[
@@ -46,19 +72,41 @@ export default function PathwaysListPage() {
 
       <PageHeader
         title="Learning Pathways"
-        lead="A learning pathway is a structured track of courses that takes a learner from beginner to job-ready in one area. Start at the beginning, or pick up wherever a diagnostic places you."
-      />
+        lead="A pathway is a set of courses a child works through in order — each one builds on the last. Start at the very beginning, or take a short quiz and jump in where it fits."
+      >
+        {!isLoading && !isError && count > 0 && (
+          <Box
+            sx={{
+              mt: 3,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 1,
+              px: 1.5,
+              py: 0.75,
+              borderRadius: 999,
+              border: '1px solid',
+              borderColor: 'divider',
+              bgcolor: 'surface.card',
+            }}
+          >
+            <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'success.main' }} />
+            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+              {count} {count === 1 ? 'pathway' : 'pathways'} running this term
+            </Typography>
+          </Box>
+        )}
+      </PageHeader>
 
-      <Section>
+      <Section dots>
         {isLoading && <PathwaySkeletons />}
         {isError && <ErrorBlock error={error} onRetry={refetch} />}
-        {!isLoading && !isError && (!data || data.length === 0) && (
+        {!isLoading && !isError && count === 0 && (
           <EmptyBlock
             title="Pathways are being finalised"
             body="Check back soon — or contact us and we’ll talk through the tracks we’re running this term."
           />
         )}
-        {!isLoading && !isError && data && data.length > 0 && (
+        {!isLoading && !isError && count > 0 && (
           <Box sx={GRID_SX}>
             {data.map((p) => (
               <PathwayCard key={p.id} pathway={p} />
