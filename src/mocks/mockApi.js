@@ -11,6 +11,7 @@
 import { bootcamps, bootcampDetail } from './fixtures/bootcamps.js';
 import { projects, projectDetail } from './fixtures/projects.js';
 import { pathways, pathwayDetail } from './fixtures/pathways.js';
+import { HONEYPOT_FIELD } from '../components/forms/Honeypot.jsx';
 import {
   diagnosticAvailability,
   diagnosticQuestionSet,
@@ -107,10 +108,10 @@ export async function mockAdapter(config) {
 
   // ---- POST /api/public/leads ----
   // Mirrors server/lib: 201 + { ok, success, message, data }, 400 on invalid,
-  // honeypot (companyWebsite non-empty) → silent fake success, nothing stored.
+  // honeypot field non-empty → silent fake success, nothing stored.
   if (method === 'post' && path === '/api/public/leads') {
     const body = safeParse(config.data);
-    if (body?.companyWebsite?.trim()) {
+    if (body?.[HONEYPOT_FIELD]?.trim()) {
       return ok({ ok: true, success: true, message: 'Thanks! Our team will be in touch.' }, config, 201);
     }
     if (!body?.parentEmail || !body?.parentName) {
@@ -136,7 +137,7 @@ export async function mockAdapter(config) {
   // ---- POST /api/public/contact ----
   if (method === 'post' && path === '/api/public/contact') {
     const body = safeParse(config.data);
-    if (body?.companyWebsite?.trim()) {
+    if (body?.[HONEYPOT_FIELD]?.trim()) {
       return ok({ ok: true, success: true, message: 'Message received.' }, config, 201);
     }
     if (!body?.email || !body?.message) {
