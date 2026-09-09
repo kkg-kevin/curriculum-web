@@ -13,8 +13,8 @@ import Section from '../components/common/Section.jsx';
 import SmartImage from '../components/common/SmartImage.jsx';
 import { ErrorBlock } from '../components/common/StateViews.jsx';
 import { usePathway } from '../hooks/usePathways.js';
+import { useDiagnosticAvailability } from '../hooks/useDiagnostic.js';
 import { ageLabel } from '../utils/format.js';
-import StartingPointFinder from '../components/pathways/StartingPointFinder.jsx';
 
 const FALLBACK_ACCENT = '#25476a';
 
@@ -84,6 +84,21 @@ export default function PathwayDetailPage() {
   const { slug } = useParams();
   const { pathname } = useLocation();
   const { data, isLoading, isError, error, refetch } = usePathway(slug);
+  // The detail response now embeds `diagnostic: { available, minAge, maxAge }` (resolved
+  // rename-safely via the backend FK). Only fall back to the standalone availability call
+  // once the detail has loaded and turns out NOT to carry it (an older backend).
+  const { data: diagnosticAvailability } = useDiagnosticAvailability(slug, {
+    enabled: Boolean(data) && !data.diagnostic,
+  });
+  const diagnostic =
+    data?.diagnostic ??
+    (diagnosticAvailability
+      ? {
+          available: diagnosticAvailability.diagnosticAvailable,
+          minAge: diagnosticAvailability.minAge ?? null,
+          maxAge: diagnosticAvailability.maxAge ?? null,
+        }
+      : null);
 
   if (isLoading) {
     return (
@@ -164,15 +179,21 @@ export default function PathwayDetailPage() {
             {description}
           </Typography>
 
-          <Button
-            component={RouterLink}
-            to={enrollTo}
-            variant="contained"
-            size="large"
-            sx={{ mt: 3 }}
-          >
-            Enroll in this pathway
-          </Button>
+          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mt: 3 }}>
+            <Button component={RouterLink} to={enrollTo} variant="contained" size="large">
+              Enroll in this pathway
+            </Button>
+            {diagnostic?.available && (
+              <Button
+                component={RouterLink}
+                to={`/pathways/${slug}/diagnostic`}
+                variant="outlined"
+                size="large"
+              >
+                Take the diagnostic
+              </Button>
+            )}
+          </Box>
         </Container>
       </Box>
 
@@ -181,8 +202,10 @@ export default function PathwayDetailPage() {
           The pathway
         </Typography>
         <Typography sx={{ color: 'text.secondary', mb: 5, maxWidth: 720 }}>
-          Courses are worked through in order — each one builds on the last. A learner can start at
-          the beginning or, after a short diagnostic, join further along.
+          Courses are worked through in order — each one builds on the last.
+          {diagnostic?.available
+            ? ' A learner can start at the beginning or, after a short diagnostic, join further along.'
+            : ' A learner starts at the beginning, or our team places them further along based on their age and experience.'}
         </Typography>
 
         <Box sx={{ maxWidth: 820 }}>
@@ -197,18 +220,9 @@ export default function PathwayDetailPage() {
           ))}
         </Box>
 
-        <Box sx={{ mt: 6, maxWidth: 820 }}>
-          <StartingPointFinder
-            pathwaySlug={slug}
-            pathwayName={name}
-            courses={courses}
-            accent={accent}
-          />
-        </Box>
-
         <Box
           sx={{
-            mt: 4,
+            mt: 6,
             maxWidth: 820,
             p: 3,
             border: '1px solid',
@@ -221,12 +235,25 @@ export default function PathwayDetailPage() {
             Ready to start {name}?
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Not sure yet? Use the starting-point tool above, or register interest now and our team
-            will get the learner set up at the right step for their age and experience.
+            {diagnostic?.available
+              ? 'Register interest and our team will get the learner set up — or take the short diagnostic first for an instant learner-profile report showing where to start.'
+              : 'Register interest now and our team will get the learner set up at the right step for their age and experience.'}
           </Typography>
-          <Button component={RouterLink} to={enrollTo} variant="contained" size="large">
-            Enroll in this pathway
-          </Button>
+          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+            <Button component={RouterLink} to={enrollTo} variant="contained" size="large">
+              Enroll in this pathway
+            </Button>
+            {diagnostic?.available && (
+              <Button
+                component={RouterLink}
+                to={`/pathways/${slug}/diagnostic`}
+                variant="outlined"
+                size="large"
+              >
+                Take the diagnostic
+              </Button>
+            )}
+          </Box>
         </Box>
       </Section>
     </>

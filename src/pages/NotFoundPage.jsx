@@ -19,8 +19,8 @@ export default function NotFoundPage() {
         <Button component={RouterLink} to="/" variant="contained">
           Go home
         </Button>
-        <Button component={RouterLink} to="/projects" variant="outlined">
-          Browse projects
+        <Button component={RouterLink} to="/pathways" variant="outlined">
+          Browse pathways
         </Button>
       </Box>
     </Container>

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { enrollSchema, contactSchema } from './schemas.js';
+import { enrollSchema, contactSchema, storeEnquirySchema } from './schemas.js';
 
 const validEnroll = {
   parentName: 'Alex Doe',
@@ -16,6 +16,16 @@ describe('enrollSchema', () => {
     const r = enrollSchema.safeParse(validEnroll);
     expect(r.success).toBe(true);
     expect(r.data.learnerAge).toBe(9);
+  });
+
+  it('keeps interestedIn (it is a real select, not stripped) and rejects an off-enum value', () => {
+    const r = enrollSchema.safeParse(validEnroll);
+    expect(r.data.interestedIn).toBe('bootcamp');
+    expect(enrollSchema.safeParse({ ...validEnroll, interestedIn: 'nonsense' }).success).toBe(false);
+    // omitted → defaults to 'general'
+    const noInterest = { ...validEnroll };
+    delete noInterest.interestedIn;
+    expect(enrollSchema.safeParse(noInterest).data.interestedIn).toBe('general');
   });
 
   it('rejects a bad email', () => {
@@ -35,6 +45,32 @@ describe('enrollSchema', () => {
     const r = enrollSchema.safeParse({ ...validEnroll, companyWebsite: 'http://spam' });
     expect(r.success).toBe(true);
     expect(r.data.companyWebsite).toBe('http://spam');
+  });
+});
+
+describe('storeEnquirySchema', () => {
+  const base = {
+    parentName: 'Alex Doe',
+    parentEmail: 'alex@example.com',
+    parentPhone: '0712345678',
+    interestedIn: 'quarky',
+  };
+
+  it('accepts a store enquiry with no learner name or age', () => {
+    const r = storeEnquirySchema.safeParse({ ...base, learnerName: '', learnerAge: '' });
+    expect(r.success).toBe(true);
+  });
+
+  it('still validates a learner age when one is given', () => {
+    expect(storeEnquirySchema.safeParse({ ...base, learnerAge: '25' }).success).toBe(false);
+    const ok = storeEnquirySchema.safeParse({ ...base, learnerAge: '11' });
+    expect(ok.success).toBe(true);
+    expect(ok.data.learnerAge).toBe(11);
+  });
+
+  it('still requires a valid parent email and phone', () => {
+    expect(storeEnquirySchema.safeParse({ ...base, parentEmail: 'nope' }).success).toBe(false);
+    expect(storeEnquirySchema.safeParse({ ...base, parentPhone: 'call me' }).success).toBe(false);
   });
 });
 

@@ -5,38 +5,44 @@ import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
-import { enrollSchema } from './schemas.js';
+import { enrollSchema, storeEnquirySchema } from './schemas.js';
 import { useLeadSubmission } from '../../hooks/useLeadSubmission.js';
 import FormStatus from './FormStatus.jsx';
 import Honeypot, { HONEYPOT_DEFAULT, isBot } from './Honeypot.jsx';
 
+// `value` must stay within the lead API's enum (bootcamp | project | quarky |
+// general — WEBSITE_INTEGRATION_CONTRACT §4.1); labels are free to be broader.
+// Store items pass a specific slug in `referenceId` so staff still see exactly
+// what was enquired about.
 const INTEREST_OPTIONS = [
+  { value: 'project', label: 'A project' },
+  { value: 'quarky', label: 'The Quarky robot or a kit' },
   { value: 'bootcamp', label: 'A bootcamp' },
-  { value: 'project', label: 'A project / course' },
-  { value: 'quarky', label: 'The Quarky robot' },
   { value: 'general', label: 'Not sure yet — help me choose' },
 ];
 
 /**
- * Enroll form → POST /api/public/leads (spec §4.5). Lead capture, not account
- * creation: the Digifunzi team follows up and creates the real Learner record.
+ * Enroll / store-enquiry form → POST /api/public/leads (spec §4.5). Lead
+ * capture, not account creation: the Digifunzi team follows up.
  *
  * Props:
- *  - defaultInterest: pre-selects "interested in" (e.g. 'bootcamp' from a detail page)
- *  - referenceId: the slug of the bootcamp/course/pathway they came from, passed
- *    straight through as `referenceId`. The API accepts a slug or a uuid and
- *    stores it as a bare string; we send the slug so staff see a readable
- *    "came from" value on the Enquiries page (SYSTEM_INTEGRATION.md §3.1).
+ *  - variant: 'enroll' (default) | 'enquiry'
+ *      'enquiry' is for the Store — a product/project enquiry that may not be
+ *      about one named child, so learner name/age are optional and the copy
+ *      changes. Same endpoint either way.
+ *  - defaultInterest: pre-selects "interested in" (e.g. 'quarky' from a store page)
+ *  - referenceId: slug of the store item / pathway they came from → `referenceId`
  *  - referenceLabel: human label shown as read-only context
- *  - defaultMessage: pre-fills the "anything else" field (e.g. an age-based
- *    starting-course suggestion from the pathway page)
+ *  - defaultMessage: pre-fills the "anything else" field
  */
 export default function EnrollForm({
+  variant = 'enroll',
   defaultInterest = 'general',
   referenceId = null,
   referenceLabel,
   defaultMessage = '',
 }) {
+  const isEnquiry = variant === 'enquiry';
   const mutation = useLeadSubmission();
   const [spamBlocked, setSpamBlocked] = useState(false);
   const {
@@ -45,7 +51,7 @@ export default function EnrollForm({
     reset,
     formState: { errors, isSubmitting },
   } = useForm({
-    resolver: zodResolver(enrollSchema),
+    resolver: zodResolver(isEnquiry ? storeEnquirySchema : enrollSchema),
     defaultValues: {
       parentName: '',
       parentEmail: '',
@@ -69,8 +75,8 @@ export default function EnrollForm({
       parentName: values.parentName,
       parentEmail: values.parentEmail,
       parentPhone: values.parentPhone,
-      learnerName: values.learnerName,
-      learnerAge: values.learnerAge,
+      learnerName: values.learnerName || '',
+      learnerAge: values.learnerAge === '' || values.learnerAge == null ? null : values.learnerAge,
       interestedIn: values.interestedIn,
       referenceId: referenceId || null,
       // message is not in the documented contract; send it as a note the backend can ignore or store.
@@ -82,11 +88,15 @@ export default function EnrollForm({
   const status =
     mutation.isSuccess || spamBlocked ? 'success' : mutation.isError ? 'error' : 'idle';
 
+  const defaultSuccess = isEnquiry
+    ? 'Thanks! Our team will be in touch to confirm pricing and next steps.'
+    : 'Thanks! Our team will contact you to arrange next steps.';
+
   return (
     <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate sx={{ display: 'grid', gap: 2 }}>
       <FormStatus
         status={status}
-        successMessage={mutation.data?.message || 'Thanks! Our team will contact you to arrange next steps.'}
+        successMessage={mutation.data?.message || defaultSuccess}
         error={mutation.error}
       />
 
@@ -94,7 +104,8 @@ export default function EnrollForm({
 
       {referenceLabel && (
         <Typography variant="body2" color="text.secondary">
-          Enrolling for: <strong>{referenceLabel}</strong>
+          {isEnquiry ? 'Enquiring about: ' : 'Enrolling for: '}
+          <strong>{referenceLabel}</strong>
         </Typography>
       )}
 
@@ -124,16 +135,16 @@ export default function EnrollForm({
       </Box>
       <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '2fr 1fr' } }}>
         <TextField
-          label="Learner’s name"
-          required
+          label={isEnquiry ? 'Learner’s name (optional)' : 'Learner’s name'}
+          required={!isEnquiry}
           {...register('learnerName')}
           error={!!errors.learnerName}
           helperText={errors.learnerName?.message}
         />
         <TextField
-          label="Learner’s age"
+          label={isEnquiry ? 'Learner’s age (optional)' : 'Learner’s age'}
           type="number"
-          required
+          required={!isEnquiry}
           inputProps={{ min: 3, max: 19 }}
           {...register('learnerAge')}
           error={!!errors.learnerAge}
@@ -156,7 +167,7 @@ export default function EnrollForm({
         ))}
       </TextField>
       <TextField
-        label="Anything else? (optional)"
+        label={isEnquiry ? 'Anything else? (quantity, school name, questions…)' : 'Anything else? (optional)'}
         multiline
         minRows={3}
         {...register('message')}
@@ -165,7 +176,11 @@ export default function EnrollForm({
       />
 
       <Button type="submit" variant="contained" size="large" disabled={isSubmitting || mutation.isPending}>
-        {isSubmitting || mutation.isPending ? 'Sending…' : 'Submit enrolment interest'}
+        {isSubmitting || mutation.isPending
+          ? 'Sending…'
+          : isEnquiry
+            ? 'Send enquiry'
+            : 'Submit enrolment interest'}
       </Button>
       <Typography variant="caption" color="text.secondary">
         We use your details only to contact you about Digifunzi programmes.

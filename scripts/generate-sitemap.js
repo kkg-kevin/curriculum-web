@@ -1,33 +1,52 @@
 /**
  * Writes dist/sitemap.xml and dist/robots.txt at build time (spec §7).
  *
- * Static routes come from src/config/site.js. Dynamic detail routes
- * (/bootcamps/:slug, /projects/:slug, /pathways/:slug) are pulled from the live
- * public API — or, when VITE_USE_MOCK=true, from the local fixtures so the build
- * still works before the real endpoints exist.
+ * Runs AFTER prerender.js in the pipeline (see package.json `postbuild`).
+ *
+ * Static routes come from src/config/site.js. Dynamic detail routes:
+ *   - /pathways/:slug — taken from whatever prerender.js actually wrote under
+ *     dist/pathways/*, NOT a fresh API call. prerender is the single authority on
+ *     what shipped: if its API fetch failed and it skipped those pages, they must
+ *     not be in the sitemap either (a sitemap URL pointing at an un-prerendered
+ *     SPA shell is worse than an absent one). Under VITE_USE_MOCK the fixtures'
+ *     slugs are used instead, matching what prerender does.
+ *   - /projects/:slug and /store/:slug — read straight from
+ *     src/content/{projects,store}.js (hand-authored static catalogues, no API).
  */
 import fs from 'node:fs';
 import path from 'node:path';
 import { DIST, ensureDist, getConfig } from './_shared.js';
 import { STATIC_ROUTES } from '../src/config/site.js';
+import { projects } from '../src/content/projects.js';
+import { storeItems } from '../src/content/store.js';
 
-const { siteUrl, apiUrl, useMock } = getConfig();
+const { siteUrl, useMock } = getConfig();
 
-async function getSlugs(resource) {
+/** Slugs prerender.js actually wrote HTML for — dist/pathways/<slug>/index.html. */
+function prerenderedPathwaySlugs() {
+  const dir = path.join(DIST, 'pathways');
+  if (!fs.existsSync(dir)) return [];
+  return fs
+    .readdirSync(dir, { withFileTypes: true })
+    .filter((d) => d.isDirectory() && fs.existsSync(path.join(dir, d.name, 'index.html')))
+    .map((d) => d.name)
+    .sort();
+}
+
+async function getPathwaySlugs() {
   if (useMock) {
-    const mod = await import(`../src/mocks/fixtures/${resource}.js`);
-    return (mod[resource] || []).map((x) => x.slug).filter(Boolean);
+    const mod = await import('../src/mocks/fixtures/pathways.js');
+    return (mod.pathways || []).map((x) => x.slug).filter(Boolean);
   }
-  try {
-    const res = await fetch(`${apiUrl}/api/public/${resource}`);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const list = await res.json();
-    return (Array.isArray(list) ? list : []).map((x) => x.slug).filter(Boolean);
-  } catch (err) {
-    // In a real build, skip rather than risk baking stale/fake URLs into the sitemap.
-    console.warn(`[sitemap] could not fetch ${resource} from ${apiUrl}: ${err.message}. Skipping its detail URLs.`);
-    return [];
+  const slugs = prerenderedPathwaySlugs();
+  if (slugs.length === 0) {
+    console.warn(
+      '[sitemap] no dist/pathways/*/index.html found — prerender.js skipped them ' +
+        '(API was unreachable at build time). Leaving pathway detail URLs out of the sitemap; ' +
+        're-run the build once the API is reachable.',
+    );
   }
+  return slugs;
 }
 
 function urlEntry({ loc, changefreq, priority, lastmod }) {
@@ -60,20 +79,18 @@ async function main() {
     );
   }
 
-  const [bootcampSlugs, projectSlugs, pathwaySlugs] = await Promise.all([
-    getSlugs('bootcamps'),
-    getSlugs('projects'),
-    getSlugs('pathways'),
-  ]);
+  const pathwaySlugs = await getPathwaySlugs();
+  const projectSlugs = projects.map((x) => x.slug).filter(Boolean);
+  const storeSlugs = storeItems.map((x) => x.slug).filter(Boolean);
 
-  for (const slug of bootcampSlugs) {
-    entries.push(urlEntry({ loc: `${siteUrl}/bootcamps/${slug}`, changefreq: 'weekly', priority: 0.7, lastmod: today }));
+  for (const slug of pathwaySlugs) {
+    entries.push(urlEntry({ loc: `${siteUrl}/pathways/${slug}`, changefreq: 'monthly', priority: 0.7, lastmod: today }));
   }
   for (const slug of projectSlugs) {
     entries.push(urlEntry({ loc: `${siteUrl}/projects/${slug}`, changefreq: 'monthly', priority: 0.7, lastmod: today }));
   }
-  for (const slug of pathwaySlugs) {
-    entries.push(urlEntry({ loc: `${siteUrl}/pathways/${slug}`, changefreq: 'monthly', priority: 0.7, lastmod: today }));
+  for (const slug of storeSlugs) {
+    entries.push(urlEntry({ loc: `${siteUrl}/store/${slug}`, changefreq: 'monthly', priority: 0.7, lastmod: today }));
   }
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -92,7 +109,8 @@ Sitemap: ${siteUrl}/sitemap.xml
   fs.writeFileSync(path.join(DIST, 'robots.txt'), robots, 'utf8');
 
   console.log(
-    `[sitemap] wrote ${entries.length} URLs (${STATIC_ROUTES.length} static, ${bootcampSlugs.length} bootcamps, ${projectSlugs.length} projects, ${pathwaySlugs.length} pathways) + robots.txt`,
+    `[sitemap] wrote ${entries.length} URLs (${STATIC_ROUTES.length} static, ${pathwaySlugs.length} pathways, ` +
+      `${projectSlugs.length} projects, ${storeSlugs.length} store items) + robots.txt`,
   );
 }
 

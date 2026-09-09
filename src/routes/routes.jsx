@@ -1,4 +1,5 @@
 import { lazy } from 'react';
+import { Navigate } from 'react-router-dom';
 import MainLayout from '../layouts/MainLayout.jsx';
 import HomePage from '../pages/HomePage.jsx';
 
@@ -10,14 +11,15 @@ import HomePage from '../pages/HomePage.jsx';
  * most-hit landing target and the LCP path). Everything else is code-split so the
  * initial bundle stays lean (spec §7 — keep the JS bundle small).
  */
-const BootcampsListPage = lazy(() => import('../pages/BootcampsListPage.jsx'));
-const BootcampDetailPage = lazy(() => import('../pages/BootcampDetailPage.jsx'));
-const ProjectsListPage = lazy(() => import('../pages/ProjectsListPage.jsx'));
-const ProjectDetailPage = lazy(() => import('../pages/ProjectDetailPage.jsx'));
 const PathwaysListPage = lazy(() => import('../pages/PathwaysListPage.jsx'));
 const PathwayDetailPage = lazy(() => import('../pages/PathwayDetailPage.jsx'));
+const DiagnosticPage = lazy(() => import('../pages/DiagnosticPage.jsx'));
+const DiagnosticReportPage = lazy(() => import('../pages/DiagnosticReportPage.jsx'));
 const CompetitionsPage = lazy(() => import('../pages/CompetitionsPage.jsx'));
-const QuarkyPage = lazy(() => import('../pages/QuarkyPage.jsx'));
+const ProjectsListPage = lazy(() => import('../pages/ProjectsListPage.jsx'));
+const ProjectDetailPage = lazy(() => import('../pages/ProjectDetailPage.jsx'));
+const StoreListPage = lazy(() => import('../pages/StoreListPage.jsx'));
+const StoreItemPage = lazy(() => import('../pages/StoreItemPage.jsx'));
 const EnrollPage = lazy(() => import('../pages/EnrollPage.jsx'));
 const ContactPage = lazy(() => import('../pages/ContactPage.jsx'));
 const AboutPage = lazy(() => import('../pages/AboutPage.jsx'));
@@ -29,14 +31,17 @@ export const routes = [
     element: <MainLayout />,
     children: [
       { index: true, element: <HomePage /> },
-      { path: 'bootcamps', element: <BootcampsListPage /> },
-      { path: 'bootcamps/:slug', element: <BootcampDetailPage /> },
-      { path: 'projects', element: <ProjectsListPage /> },
-      { path: 'projects/:slug', element: <ProjectDetailPage /> },
       { path: 'pathways', element: <PathwaysListPage /> },
       { path: 'pathways/:slug', element: <PathwayDetailPage /> },
+      { path: 'pathways/:slug/diagnostic', element: <DiagnosticPage /> },
+      { path: 'pathways/:slug/diagnostic/report/:attemptId', element: <DiagnosticReportPage /> },
       { path: 'competitions', element: <CompetitionsPage /> },
-      { path: 'quarky', element: <QuarkyPage /> },
+      { path: 'projects', element: <ProjectsListPage /> },
+      { path: 'projects/:slug', element: <ProjectDetailPage /> },
+      { path: 'store', element: <StoreListPage /> },
+      { path: 'store/:slug', element: <StoreItemPage /> },
+      // /quarky was the single-product page before the Store existed.
+      { path: 'quarky', element: <Navigate to="/store/quarky" replace /> },
       { path: 'enroll', element: <EnrollPage /> },
       { path: 'contact', element: <ContactPage /> },
       { path: 'about', element: <AboutPage /> },

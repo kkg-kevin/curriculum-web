@@ -41,25 +41,6 @@ export function organizationSchema() {
   };
 }
 
-/** Course schema for Project detail pages (spec §7). */
-export function courseSchema(project, path) {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'Course',
-    name: project.name,
-    description: project.description,
-    url: `${SITE_URL}${path}`,
-    provider: {
-      '@type': 'Organization',
-      name: ORG.name,
-      sameAs: SITE_URL,
-    },
-    ...(project.ageMin != null || project.ageMax != null
-      ? { typicalAgeRange: `${project.ageMin ?? ''}-${project.ageMax ?? ''}` }
-      : {}),
-  };
-}
-
 /**
  * ItemList schema — used on listing pages (e.g. Pathways) to tell search engines
  * the page is a curated list and what's in it. `items` is an array of
@@ -105,36 +86,23 @@ export function pathwayCourseSchema(pathway, path) {
   };
 }
 
-/** Event schema for Bootcamp detail pages — they have real start/end dates. */
-export function eventSchema(bootcamp, path) {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'Event',
-    name: bootcamp.name,
-    description: bootcamp.description,
-    url: `${SITE_URL}${path}`,
-    ...(bootcamp.startDate ? { startDate: bootcamp.startDate } : {}),
-    ...(bootcamp.endDate ? { endDate: bootcamp.endDate } : {}),
-    eventStatus:
-      bootcamp.status === 'completed'
-        ? 'https://schema.org/EventScheduled'
-        : 'https://schema.org/EventScheduled',
-    eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
-    organizer: { '@type': 'Organization', name: ORG.name, url: SITE_URL },
-    location: {
-      '@type': 'Place',
-      name: 'Digifunzi',
-      address: {
-        '@type': 'PostalAddress',
-        addressLocality: ORG.address.addressLocality,
-        addressCountry: ORG.address.addressCountry,
-      },
-    },
+/**
+ * Product schema for a Store item (spec §7).
+ *
+ * `product` is a store item ({ name, description, image, price: { amount,
+ * currency }, status }). An `offers` block is included only when there's a real
+ * price AND pricing is not placeholder — advertising an indicative number as a
+ * firm `Offer` would be misleading to search engines and shoppers.
+ */
+export function productSchema(product, path, { pricingIsPlaceholder = true } = {}) {
+  const availabilityMap = {
+    available: 'https://schema.org/InStock',
+    preorder: 'https://schema.org/PreOrder',
+    'coming-soon': 'https://schema.org/PreOrder',
   };
-}
+  const hasFirmPrice =
+    !pricingIsPlaceholder && product.price && typeof product.price.amount === 'number';
 
-/** Product schema for the Quarky page (spec §7). */
-export function productSchema(product, path) {
   return {
     '@context': 'https://schema.org',
     '@type': 'Product',
@@ -142,7 +110,20 @@ export function productSchema(product, path) {
     description: product.description,
     url: `${SITE_URL}${path}`,
     brand: { '@type': 'Brand', name: ORG.name },
-    ...(product.image ? { image: `${SITE_URL}${product.image}` } : {}),
+    ...(product.image
+      ? { image: product.image.startsWith('http') ? product.image : `${SITE_URL}${product.image}` }
+      : {}),
+    ...(hasFirmPrice
+      ? {
+          offers: {
+            '@type': 'Offer',
+            price: product.price.amount,
+            priceCurrency: product.price.currency || 'KES',
+            availability: availabilityMap[product.status] || 'https://schema.org/InStock',
+            url: `${SITE_URL}${path}`,
+          },
+        }
+      : {}),
   };
 }
 

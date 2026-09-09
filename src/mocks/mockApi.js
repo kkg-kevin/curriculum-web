@@ -11,6 +11,12 @@
 import { bootcamps, bootcampDetail } from './fixtures/bootcamps.js';
 import { projects, projectDetail } from './fixtures/projects.js';
 import { pathways, pathwayDetail } from './fixtures/pathways.js';
+import {
+  diagnosticAvailability,
+  diagnosticQuestionSet,
+  gradeDiagnostic,
+  diagnosticAttemptReport,
+} from './fixtures/diagnostics.js';
 
 // Simulated latency so dev exercises loading states; disabled under test.
 const IS_TEST =
@@ -56,6 +62,12 @@ export async function mockAdapter(config) {
     : `${(config.baseURL || '').replace(/\/$/, '')}/${(config.url || '').replace(/^\//, '')}`;
   const url = new URL(rawUrl, 'http://mock.local');
   const path = url.pathname.replace(/^.*?(\/api\/public\/)/, '$1');
+  // axios keeps a GET's query object in config.params rather than serialising it into
+  // config.url itself (that only happens on the real network layer) — merge it in here so
+  // handlers below can read query params via url.searchParams either way.
+  for (const [key, val] of Object.entries(config.params || {})) {
+    if (val != null) url.searchParams.set(key, val);
+  }
 
   // ---- GET /api/public/bootcamps ----
   if (method === 'get' && path === '/api/public/bootcamps') {
@@ -142,6 +154,50 @@ export async function mockAdapter(config) {
         message: 'Thanks — your message has been received and our team will be in touch.',
         data: { id: 'mock-lead-0001', ...body, status: 'new', createdAt: new Date().toISOString() },
       },
+      config,
+      201,
+    );
+  }
+
+  // ---- GET /api/public/diagnostics/attempts/:attemptId ----
+  // Before the /:pathwayIdOrSlug patterns so the literal "attempts" segment isn't captured as a slug.
+  m = path.match(/^\/api\/public\/diagnostics\/attempts\/([^/]+)$/);
+  if (method === 'get' && m) {
+    const report = diagnosticAttemptReport(decodeURIComponent(m[1]));
+    return report ? ok(report, config) : fail(404, 'Report not found', config);
+  }
+
+  // ---- GET /api/public/diagnostics/:pathwayIdOrSlug/availability ----
+  m = path.match(/^\/api\/public\/diagnostics\/([^/]+)\/availability$/);
+  if (method === 'get' && m) {
+    return ok(diagnosticAvailability(decodeURIComponent(m[1])), config);
+  }
+
+  // ---- GET /api/public/diagnostics/:pathwayIdOrSlug?age= ----
+  m = path.match(/^\/api\/public\/diagnostics\/([^/]+)$/);
+  if (method === 'get' && m) {
+    const age = url.searchParams.get('age');
+    const set = diagnosticQuestionSet(decodeURIComponent(m[1]), age);
+    return set ? ok(set, config) : fail(404, 'No public diagnostic available', config);
+  }
+
+  // ---- POST /api/public/diagnostics/:pathwayIdOrSlug/submit ----
+  // No contact info — just { answers, childName?, childAge }. Grades and returns the report;
+  // creates no lead. Enrolment happens separately via POST /api/public/leads.
+  m = path.match(/^\/api\/public\/diagnostics\/([^/]+)\/submit$/);
+  if (method === 'post' && m) {
+    const body = safeParse(config.data);
+    if (!body?.childAge) {
+      return fail(400, 'childAge is required', config);
+    }
+    console.warn(
+      '[mockApi] OFFLINE MODE (VITE_USE_MOCK=true) — diagnostic attempt NOT stored, only graded ' +
+        'client-side against a placeholder answer key. Run the real API and set ' +
+        'VITE_USE_MOCK=false for real grading.',
+      body,
+    );
+    return ok(
+      { ok: true, success: true, message: "Here's how it went!", data: gradeDiagnostic(body.answers, body) },
       config,
       201,
     );

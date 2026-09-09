@@ -54,12 +54,15 @@ contract (its `/api/public/*` matches this API's shapes exactly).
 
 ### Prerendering
 
-`npm run build` fetches `VITE_API_URL/api/public/*` to discover the detail-page
-URLs and prerender them — so **the API (`npm run api`) should be running during
-a production build**. If it's unreachable the build still succeeds, leaving the
-data-driven pages (`/bootcamps`, `/projects`, `/pathways` and their detail
-routes) as client-rendered SPA routes. With `VITE_USE_MOCK=true` it prerenders
-all 19 routes from `src/mocks/fixtures/` instead — same as `npm run verify:pipeline`.
+`npm run build` runs **prerender then sitemap** (`postbuild`). Prerender fetches
+`VITE_API_URL/api/public/pathways` (with retries) to discover the `/pathways/:slug`
+detail URLs and render them — so the curriculum backend should be reachable during
+a production build. If it's unreachable the build still succeeds, leaving the
+pathway detail pages as client-rendered SPA routes; the sitemap then lists exactly
+the pages prerender actually wrote (from `dist/pathways/*`), so the two never
+disagree. `/projects/:slug` and `/store/:slug` come from `src/content/` and always
+prerender. With `VITE_USE_MOCK=true` everything prerenders from `src/mocks/fixtures/`
+— same as `npm run verify:pipeline`.
 
 ## Environment variables
 
@@ -89,13 +92,17 @@ src/
   components/
     layout/      Header, Footer, MobileMenu
     home/        Hero, ValueProps, SectionSummaries, Testimonials, CTABanner
-    cards/       BootcampCard, ProjectCard, PathwayCard
+    cards/       PathwayCard
+    catalog/     CatalogItemCard, CatalogItemDetail, PriceTag — shared by
+                 Projects (/projects) and the Store (/store)
     forms/       EnrollForm, ContactForm, Zod schemas, Honeypot, FormStatus
-    seo/         SeoHead (helmet wrapper), JsonLd (Organization/Course/Event/Product/FAQPage/ItemList)
+    seo/         SeoHead (helmet wrapper), JsonLd (Organization/Course/Product/FAQPage/ItemList)
     common/      Logo, Section, PageHeader, SmartImage, StateViews,
-                 ColorModeToggle, ThemeColorMeta
-  content/       hand-authored copy: home, about, competitions, quarky
-  hooks/         useBootcamps, useProjects, usePathways, useLeadSubmission (React Query)
+                 ColorModeToggle, ThemeColorMeta, catalogVisuals
+  content/       hand-authored copy: home, about, competitions;
+                 catalog.js (shared shape + PRICING_IS_PLACEHOLDER),
+                 projects.js (guided projects you buy), store.js (physical goods)
+  hooks/         usePathways, useDiagnostic, useLeadSubmission (React Query)
   services/      api.js — single axios instance + mock adapter wiring
   mocks/         mockApi.js + fixtures/ (offline fallback, VITE_USE_MOCK=true)
   utils/         slugify, dates, format, media, prerenderSignal
@@ -146,8 +153,16 @@ Short version: the curriculum system's `/api/public/*` endpoints are live; this
 site's client code already matches their shapes; flip `VITE_USE_MOCK=false` and
 have the backend set `PUBLIC_SITE_URL` for CORS.
 
-Competitions and Quarky are **static content** (`src/content/`) by design — no
-API involved, in standalone mode or connected.
+Competitions, **Projects** (`/projects` — guided builds you buy once and keep) and
+the **Store** (`/store` — the Quarky robot, bundles, accessories) are **static
+content** (`src/content/`) by design — no API involved. Both catalogues share one
+item shape and the `catalog/` components; "Enquire to buy" posts a lead via
+`/api/public/leads`. `/quarky` redirects to `/store/quarky`.
+
+**Pathways** (`/pathways`) come from the curriculum system's `/api/public/pathways`
+— since 9 Sep 2026 that serves the designated admin's **operational** pathways
+(Curriculum → Competency Framework), scoped by `PUBLIC_CONTENT_ADMIN_ID`. See
+[`PATHWAYS.md`](./PATHWAYS.md).
 
 ## Deployment
 

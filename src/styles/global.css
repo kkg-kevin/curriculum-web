@@ -104,6 +104,36 @@ html[data-color-mode='dark'] :focus-visible {
   outline-color: #5e9de1;
 }
 
+/* ---------------------------------------------------------------------------
+   Print / "Save as PDF" — used by the shareable diagnostic report page
+   (/pathways/:slug/diagnostic/report/:attemptId → window.print()). Hide the
+   site chrome (header/footer/nav), the breadcrumb band, and the on-page action
+   bar so only the report card lands on the page. The report itself uses plain
+   inline styles, so it already renders the same in a print context.
+   --------------------------------------------------------------------------- */
+@media print {
+  .no-print,
+  header,
+  footer,
+  nav,
+  .skip-link {
+    display: none !important;
+  }
+  html,
+  body {
+    background: #fff !important;
+  }
+  main,
+  .printable-report {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .printable-report {
+    /* keep question/breakdown cards from splitting awkwardly across pages */
+    break-inside: avoid;
+  }
+}
+
 /* Skip link (rendered in MainLayout). */
 .skip-link {
   position: absolute;
