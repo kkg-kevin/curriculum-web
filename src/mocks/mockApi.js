@@ -8,7 +8,6 @@
  *
  * Wired into the axios instance as an adapter in src/services/api.js.
  */
-import { bootcamps, bootcampDetail } from './fixtures/bootcamps.js';
 import { projects, projectDetail } from './fixtures/projects.js';
 import { pathways, pathwayDetail } from './fixtures/pathways.js';
 import { HONEYPOT_FIELD } from '../components/forms/Honeypot.jsx';
@@ -70,25 +69,13 @@ export async function mockAdapter(config) {
     if (val != null) url.searchParams.set(key, val);
   }
 
-  // ---- GET /api/public/bootcamps ----
-  if (method === 'get' && path === '/api/public/bootcamps') {
-    return ok(bootcamps, config);
-  }
-
-  // ---- GET /api/public/bootcamps/:idOrSlug ----
-  let m = path.match(/^\/api\/public\/bootcamps\/([^/]+)$/);
-  if (method === 'get' && m) {
-    const detail = bootcampDetail(decodeURIComponent(m[1]));
-    return detail ? ok(detail, config) : fail(404, 'Bootcamp not found', config);
-  }
-
-  // ---- GET /api/public/projects ----
+  // ---- GET /api/public/projects (for-sale project assessments) ----
   if (method === 'get' && path === '/api/public/projects') {
     return ok(projects, config);
   }
 
   // ---- GET /api/public/projects/:idOrSlug ----
-  m = path.match(/^\/api\/public\/projects\/([^/]+)$/);
+  let m = path.match(/^\/api\/public\/projects\/([^/]+)$/);
   if (method === 'get' && m) {
     const detail = projectDetail(decodeURIComponent(m[1]));
     return detail ? ok(detail, config) : fail(404, 'Project not found', config);

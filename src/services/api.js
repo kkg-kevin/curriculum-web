@@ -45,12 +45,14 @@ export default api;
 // ---- Public API surface (spec §4) --------------------------------------------
 
 export const publicApi = {
-  // Bootcamps/Projects endpoints were removed from the curriculum backend on 4 Sep
-  // 2026 (see Guide/WEBSITE_INTEGRATION_CONTRACT.md in the curriculum repo) — no
-  // replacement content API exists yet, so there's nothing for this site to call.
-
   listPathways: () => api.get('/api/public/pathways').then((r) => r.data),
   getPathway: (slug) => api.get(`/api/public/pathways/${encodeURIComponent(slug)}`).then((r) => r.data),
+
+  // Projects = the designated admin's `type: "project"` assessments marked "For sale" in the
+  // Assessment Builder (WEBSITE_INTEGRATION_CONTRACT.md §3.3/§3.4). Not the old bootcamp/project
+  // catalog (removed 4 Sep 2026) — a different, deliberate feature.
+  listProjects: () => api.get('/api/public/projects').then((r) => r.data),
+  getProject: (slug) => api.get(`/api/public/projects/${encodeURIComponent(slug)}`).then((r) => r.data),
 
   /** Enroll + Contact share this endpoint, differentiated by `interestedIn` (spec §4.5). */
   submitLead: (payload) => api.post('/api/public/leads', payload).then((r) => r.data),

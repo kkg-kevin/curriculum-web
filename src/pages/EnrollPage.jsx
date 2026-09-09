@@ -28,11 +28,15 @@ export default function EnrollPage() {
   const suggestedCourse = params.get('course') || null;
 
   // A project or store-item reference (or an explicit ?enquiry=1) switches to the
-  // lighter enquiry variant — buying isn't always about one named child.
+  // lighter enquiry variant — buying isn't always about one named child. `getProject` only
+  // knows the hardcoded catalog; a project from the API (interestedIn=project + a referenceId)
+  // is treated as an enquiry too, even without a local match — the Enquiries card resolves the
+  // slug to a name server-side.
   const catalogItem = referenceId
     ? getProject(referenceId) || getStoreItem(referenceId)
     : null;
-  const isEnquiry = params.get('enquiry') === '1' || Boolean(catalogItem);
+  const isApiProjectEnquiry = defaultInterest === 'project' && Boolean(referenceId) && !catalogItem;
+  const isEnquiry = params.get('enquiry') === '1' || Boolean(catalogItem) || isApiProjectEnquiry;
 
   const referenceLabel = catalogItem
     ? catalogItem.name
