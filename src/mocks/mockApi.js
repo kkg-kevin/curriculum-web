@@ -9,6 +9,7 @@
  * Wired into the axios instance as an adapter in src/services/api.js.
  */
 import { projects, projectDetail } from './fixtures/projects.js';
+import { storeList, storeItemDetail } from './fixtures/store.js';
 import { pathways, pathwayDetail } from './fixtures/pathways.js';
 import { HONEYPOT_FIELD } from '../components/forms/Honeypot.jsx';
 import {
@@ -79,6 +80,18 @@ export async function mockAdapter(config) {
   if (method === 'get' && m) {
     const detail = projectDetail(decodeURIComponent(m[1]));
     return detail ? ok(detail, config) : fail(404, 'Project not found', config);
+  }
+
+  // ---- GET /api/public/store (for-sale inventory items) ----
+  if (method === 'get' && path === '/api/public/store') {
+    return ok(storeList, config);
+  }
+
+  // ---- GET /api/public/store/:idOrSlug ----
+  m = path.match(/^\/api\/public\/store\/([^/]+)$/);
+  if (method === 'get' && m) {
+    const detail = storeItemDetail(decodeURIComponent(m[1]));
+    return detail ? ok(detail, config) : fail(404, 'Store item not found', config);
   }
 
   // ---- GET /api/public/pathways ----

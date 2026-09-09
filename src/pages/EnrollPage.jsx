@@ -6,7 +6,6 @@ import JsonLd, { organizationSchema } from '../components/seo/JsonLd.jsx';
 import PageHeader from '../components/common/PageHeader.jsx';
 import Section from '../components/common/Section.jsx';
 import EnrollForm from '../components/forms/EnrollForm.jsx';
-import { getStoreItem } from '../content/store.js';
 import { getProject } from '../content/projects.js';
 
 const VALID_INTEREST = ['bootcamp', 'project', 'quarky', 'general'];
@@ -15,7 +14,7 @@ const VALID_INTEREST = ['bootcamp', 'project', 'quarky', 'general'];
  * Standalone enroll / purchase-enquiry page. Accepts optional query params so
  * buttons elsewhere can pre-fill context:
  *   - interest / interestedIn — which programme type
- *   - ref / referenceId       — slug of the bootcamp / pathway / project / store item
+ *   - ref / referenceId       — slug of the pathway / project / store item
  *   - enquiry=1               — render the lighter enquiry form variant
  *                               (learner name/age optional) — set by Projects & Store pages
  *   - course                  — an age-based starting-course suggestion (pathway page)
@@ -27,16 +26,17 @@ export default function EnrollPage() {
   const referenceId = params.get('referenceId') || params.get('ref') || null;
   const suggestedCourse = params.get('course') || null;
 
-  // A project or store-item reference (or an explicit ?enquiry=1) switches to the
-  // lighter enquiry variant — buying isn't always about one named child. `getProject` only
-  // knows the hardcoded catalog; a project from the API (interestedIn=project + a referenceId)
-  // is treated as an enquiry too, even without a local match — the Enquiries card resolves the
-  // slug to a name server-side.
-  const catalogItem = referenceId
-    ? getProject(referenceId) || getStoreItem(referenceId)
-    : null;
-  const isApiProjectEnquiry = defaultInterest === 'project' && Boolean(referenceId) && !catalogItem;
-  const isEnquiry = params.get('enquiry') === '1' || Boolean(catalogItem) || isApiProjectEnquiry;
+  // A project / store / pathway reference (or an explicit ?enquiry=1) switches to the lighter
+  // enquiry variant — buying isn't always about one named child. `getProject` only knows the
+  // hardcoded projects catalog; a project or store item that came from the API (a referenceId
+  // with interestedIn=project|quarky|general, no local match) is treated as an enquiry too —
+  // the Enquiries card resolves the slug to a name server-side.
+  const catalogItem = referenceId ? getProject(referenceId) : null;
+  const isApiEnquiry =
+    Boolean(referenceId) &&
+    !catalogItem &&
+    ['project', 'quarky', 'general'].includes(defaultInterest);
+  const isEnquiry = params.get('enquiry') === '1' || Boolean(catalogItem) || isApiEnquiry;
 
   const referenceLabel = catalogItem
     ? catalogItem.name
