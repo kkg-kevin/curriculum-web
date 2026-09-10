@@ -7,8 +7,9 @@ import { publicApi } from '../services/api.js';
  * their operational schedule.
  *
  *   useHubTypes()      -> [{ type, label, hubCount }]
- *   useHubsByType(type) -> [{ id, name, hubType, hubTypeLabel, town,
- *                            schedule: { opensAt, closesAt, days[] } }]
+ *   useHubsByType(type) -> [{ id, name, hubType, hubTypeLabel, deliveryMode, deliveryLabel,
+ *                            isVirtual, town, schedule: { opensAt, closesAt, days[] } }]
+ *                          (town is "Online" for a virtual hub)
  */
 
 // Mirrors the backend's TYPE_LABELS (public-hub.service.js) — used for the lead note when the

@@ -6,6 +6,7 @@ import Skeleton from '@mui/material/Skeleton';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import EventAvailableIcon from '@mui/icons-material/EventAvailable';
 import PlaceIcon from '@mui/icons-material/Place';
+import LanguageIcon from '@mui/icons-material/Language';
 import { useHubTypes, useHubsByType } from '../../hooks/usePublicHubs.js';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -26,6 +27,8 @@ function ScheduleCard({ hub }) {
   const open = formatTime(s.opensAt);
   const close = formatTime(s.closesAt);
   const openDays = new Set(s.days || []);
+  const isVirtual = hub.isVirtual || hub.deliveryMode === 'virtual';
+  const isHybrid = hub.deliveryMode === 'hybrid';
 
   return (
     <Box
@@ -37,19 +40,29 @@ function ScheduleCard({ hub }) {
         bgcolor: 'background.paper',
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, flexWrap: 'wrap' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
         <Typography sx={{ fontWeight: 700 }}>{hub.name}</Typography>
         <Typography variant="body2" color="text.secondary">
           {hub.hubTypeLabel}
         </Typography>
+        {(isVirtual || isHybrid) && (
+          <Chip
+            size="small"
+            label={isVirtual ? 'Online' : 'Hybrid'}
+            color={isVirtual ? 'success' : 'primary'}
+            sx={{ fontWeight: 700, height: 20 }}
+          />
+        )}
       </Box>
 
-      {hub.town && (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mt: 0.5, color: 'text.secondary' }}>
-          <PlaceIcon sx={{ fontSize: 16 }} />
-          <Typography variant="body2">{hub.town}</Typography>
-        </Box>
-      )}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mt: 0.5, color: 'text.secondary' }}>
+        {isVirtual ? <LanguageIcon sx={{ fontSize: 16 }} /> : <PlaceIcon sx={{ fontSize: 16 }} />}
+        <Typography variant="body2">
+          {isVirtual
+            ? 'Online — join from anywhere'
+            : hub.town || (isHybrid ? 'In person, plus an online option' : 'Location to be confirmed')}
+        </Typography>
+      </Box>
 
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mt: 1.5 }}>
         <AccessTimeIcon sx={{ fontSize: 18, color: 'primary.main' }} />

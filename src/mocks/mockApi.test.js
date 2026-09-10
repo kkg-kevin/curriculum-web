@@ -112,19 +112,28 @@ describe('mockApi adapter — GET', () => {
     expect(data[0]).toMatchObject({ type: expect.any(String), label: expect.any(String), hubCount: expect.any(Number) });
   });
 
-  it('lists hubs with a schedule, filterable by type', async () => {
+  it('lists hubs with a schedule + delivery mode, filterable by type', async () => {
     const all = await api.get('/api/public/hubs');
     expect(all.data.length).toBeGreaterThan(0);
     expect(all.data[0]).toMatchObject({
       name: expect.any(String),
       hubType: expect.any(String),
       hubTypeLabel: expect.any(String),
+      deliveryMode: expect.stringMatching(/^(in_person|virtual|hybrid)$/),
+      isVirtual: expect.any(Boolean),
       schedule: { opensAt: expect.any(String), closesAt: expect.any(String), days: expect.any(Array) },
     });
+    // a virtual hub reports town "Online"
+    const virtual = all.data.find((h) => h.isVirtual);
+    expect(virtual?.town).toBe('Online');
+    // a virtual hub still has session times
+    expect(virtual?.schedule.days.length).toBeGreaterThan(0);
+
     const filtered = await api.get('/api/public/hubs', { params: { type: 'tech_club' } });
     expect(filtered.data.every((h) => h.hubType === 'tech_club')).toBe(true);
-    // never leak operational detail
+    // never leak operational detail — email or the meeting link
     expect(all.data[0]).not.toHaveProperty('email');
+    expect(all.data[0]).not.toHaveProperty('meetingLink');
   });
 
   it('resolves the path whether the URL is relative or absolute', async () => {
