@@ -104,6 +104,42 @@ describe('mockApi adapter — GET', () => {
     });
   });
 
+  it('lists public competitions with the contract shape (no detail-only fields)', async () => {
+    const { data: list } = await api.get('/api/public/competitions');
+    expect(Array.isArray(list)).toBe(true);
+    expect(list.length).toBeGreaterThan(0);
+    expect(list[0]).toMatchObject({
+      id: expect.any(String),
+      slug: expect.any(String),
+      name: expect.any(String),
+      status: expect.stringMatching(/^(open|closed)$/),
+      trackCount: expect.any(Number),
+    });
+    expect(list[0]).not.toHaveProperty('tracks');
+    expect(list[0]).not.toHaveProperty('description');
+  });
+
+  it('fetches a competition by slug with its track cards', async () => {
+    const { data } = await api.get('/api/public/competitions/codeavour-8-0');
+    expect(data.slug).toBe('codeavour-8-0');
+    expect(typeof data.description).toBe('string');
+    expect(Array.isArray(data.tracks)).toBe(true);
+    expect(data.tracks.length).toBe(data.trackCount);
+    expect(data.tracks[0]).toMatchObject({
+      id: expect.any(String),
+      name: expect.any(String),
+      subtitle: expect.any(String),
+      description: expect.any(String),
+      highlights: expect.any(Array),
+    });
+  });
+
+  it('404s an unknown competition', async () => {
+    await expect(api.get('/api/public/competitions/does-not-exist')).rejects.toMatchObject({
+      response: { status: 404 },
+    });
+  });
+
   it('lists non-school hub types with a count each', async () => {
     const { data } = await api.get('/api/public/hubs/types');
     expect(Array.isArray(data)).toBe(true);
@@ -112,19 +148,28 @@ describe('mockApi adapter — GET', () => {
     expect(data[0]).toMatchObject({ type: expect.any(String), label: expect.any(String), hubCount: expect.any(Number) });
   });
 
-  it('lists hubs with a schedule, filterable by type', async () => {
+  it('lists hubs with a schedule + delivery mode, filterable by type', async () => {
     const all = await api.get('/api/public/hubs');
     expect(all.data.length).toBeGreaterThan(0);
     expect(all.data[0]).toMatchObject({
       name: expect.any(String),
       hubType: expect.any(String),
       hubTypeLabel: expect.any(String),
+      deliveryMode: expect.stringMatching(/^(in_person|virtual|hybrid)$/),
+      isVirtual: expect.any(Boolean),
       schedule: { opensAt: expect.any(String), closesAt: expect.any(String), days: expect.any(Array) },
     });
+    // a virtual hub reports town "Online"
+    const virtual = all.data.find((h) => h.isVirtual);
+    expect(virtual?.town).toBe('Online');
+    // a virtual hub still has session times
+    expect(virtual?.schedule.days.length).toBeGreaterThan(0);
+
     const filtered = await api.get('/api/public/hubs', { params: { type: 'tech_club' } });
     expect(filtered.data.every((h) => h.hubType === 'tech_club')).toBe(true);
-    // never leak operational detail
+    // never leak operational detail — email or the meeting link
     expect(all.data[0]).not.toHaveProperty('email');
+    expect(all.data[0]).not.toHaveProperty('meetingLink');
   });
 
   it('resolves the path whether the URL is relative or absolute', async () => {

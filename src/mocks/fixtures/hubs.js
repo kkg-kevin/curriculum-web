@@ -2,12 +2,17 @@
  * Offline mock for GET /api/public/hubs[/types] — the designated admin's ACTIVE, NON-SCHOOL
  * learning hubs and their operational schedule, for the enrolment flow's "Type" picker.
  */
+const D = { in_person: 'In person', virtual: 'Online', hybrid: 'In person or online' };
+
 const raw = [
   {
     id: 'hub-0000-0001',
     name: 'Nairobi Makerspace',
     hubType: 'makerspace',
     hubTypeLabel: 'Makerspace',
+    deliveryMode: 'in_person',
+    deliveryLabel: D.in_person,
+    isVirtual: false,
     town: 'Nairobi, Nairobi',
     schedule: {
       opensAt: '09:00',
@@ -20,14 +25,31 @@ const raw = [
     name: 'Westlands Tech Club',
     hubType: 'tech_club',
     hubTypeLabel: 'Tech club',
+    deliveryMode: 'hybrid',
+    deliveryLabel: D.hybrid,
+    isVirtual: false,
     town: 'Nairobi, Nairobi',
     schedule: { opensAt: '15:00', closesAt: '18:00', days: ['Tuesday', 'Thursday', 'Saturday'] },
   },
   {
     id: 'hub-0000-0003',
+    name: 'Digifunzi Online Club',
+    hubType: 'tech_club',
+    hubTypeLabel: 'Tech club',
+    deliveryMode: 'virtual',
+    deliveryLabel: D.virtual,
+    isVirtual: true,
+    town: 'Online',
+    schedule: { opensAt: '16:00', closesAt: '17:30', days: ['Monday', 'Wednesday', 'Friday'] },
+  },
+  {
+    id: 'hub-0000-0004',
     name: 'Thika Co-working Hub',
     hubType: 'co_working_space',
     hubTypeLabel: 'Co-working space',
+    deliveryMode: 'in_person',
+    deliveryLabel: D.in_person,
+    isVirtual: false,
     town: 'Thika, Kiambu',
     schedule: {
       opensAt: '08:00',

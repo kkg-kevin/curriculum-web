@@ -12,9 +12,9 @@
  * interactive experience changes — crawlers and slow connections just get real
  * content immediately.
  *
- * Dynamic routes — /pathways/:slug, /projects/:slug, /store/:slug and
- * /bootcamps/:slug — are all discovered from the public API
- * (/api/public/{pathways,projects,store,bootcamps}), or from local fixtures when
+ * Dynamic routes — /pathways/:slug, /projects/:slug, /store/:slug,
+ * /bootcamps/:slug and /competitions/:slug — are all discovered from the public API
+ * (/api/public/{pathways,projects,store,bootcamps,competitions}), or from local fixtures when
  * VITE_USE_MOCK=true. In a real build, if the API is unreachable, those list +
  * detail pages ship as SPA-only HTML (they'd otherwise snapshot an empty/error
  * state).
@@ -37,7 +37,7 @@ const SETTLE_WAIT_MS = 400; // small extra buffer after ready, for Helmet flush
 // reachable, otherwise we'd bake a "couldn't load" / empty page into static HTML.
 // Skipped routes still work as a normal client-rendered SPA via the index.html
 // fallback.
-const DATA_DRIVEN_STATIC = new Set(['/pathways', '/projects', '/store', '/bootcamps']);
+const DATA_DRIVEN_STATIC = new Set(['/pathways', '/projects', '/store', '/bootcamps', '/competitions']);
 
 let apiReachable = useMock; // mock adapter always "reachable"
 
@@ -123,11 +123,12 @@ async function main() {
     return;
   }
 
-  const [pathwaySlugs, projectSlugs, storeSlugs, bootcampSlugs] = await Promise.all([
+  const [pathwaySlugs, projectSlugs, storeSlugs, bootcampSlugs, competitionSlugs] = await Promise.all([
     getApiSlugs('/api/public/pathways', '../src/mocks/fixtures/pathways.js', 'pathways'),
     getApiSlugs('/api/public/projects', '../src/mocks/fixtures/projects.js', 'projects'),
     getApiSlugs('/api/public/store', '../src/mocks/fixtures/store.js', 'storeList'),
     getApiSlugs('/api/public/bootcamps', '../src/mocks/fixtures/bootcamps.js', 'bootcampList'),
+    getApiSlugs('/api/public/competitions', '../src/mocks/fixtures/competitions.js', 'competitionList'),
   ]);
 
   // Static routes: prerender all, except the data-driven ones when the API is
@@ -144,12 +145,13 @@ async function main() {
     ...projectSlugs.map((s) => `/projects/${s}`),
     ...storeSlugs.map((s) => `/store/${s}`),
     ...bootcampSlugs.map((s) => `/bootcamps/${s}`),
+    ...competitionSlugs.map((s) => `/competitions/${s}`),
   ];
 
   if (!useMock && !apiReachable) {
     console.warn(
       `[prerender] NOTE: ${apiUrl} was unreachable. Static pages are prerendered; the Pathways, ` +
-        `Projects, Store and Bootcamps sections (list + detail) ship as SPA-only HTML. ` +
+        `Projects, Store, Bootcamps and Competitions sections (list + detail) ship as SPA-only HTML. ` +
         `Re-run the build once the API is live.`,
     );
   }

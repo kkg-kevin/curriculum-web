@@ -76,11 +76,12 @@ async function main() {
     );
   }
 
-  const [pathwaySlugs, projectSlugs, storeSlugs, bootcampSlugs] = await Promise.all([
+  const [pathwaySlugs, projectSlugs, storeSlugs, bootcampSlugs, competitionSlugs] = await Promise.all([
     getSectionSlugs('pathways', '../src/mocks/fixtures/pathways.js', 'pathways'),
     getSectionSlugs('projects', '../src/mocks/fixtures/projects.js', 'projects'),
     getSectionSlugs('store', '../src/mocks/fixtures/store.js', 'storeList'),
     getSectionSlugs('bootcamps', '../src/mocks/fixtures/bootcamps.js', 'bootcampList'),
+    getSectionSlugs('competitions', '../src/mocks/fixtures/competitions.js', 'competitionList'),
   ]);
 
   for (const slug of pathwaySlugs) {
@@ -94,6 +95,9 @@ async function main() {
   }
   for (const slug of bootcampSlugs) {
     entries.push(urlEntry({ loc: `${siteUrl}/bootcamps/${slug}`, changefreq: 'monthly', priority: 0.7, lastmod: today }));
+  }
+  for (const slug of competitionSlugs) {
+    entries.push(urlEntry({ loc: `${siteUrl}/competitions/${slug}`, changefreq: 'monthly', priority: 0.7, lastmod: today }));
   }
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -113,7 +117,8 @@ Sitemap: ${siteUrl}/sitemap.xml
 
   console.log(
     `[sitemap] wrote ${entries.length} URLs (${STATIC_ROUTES.length} static, ${pathwaySlugs.length} pathways, ` +
-      `${projectSlugs.length} projects, ${storeSlugs.length} store items, ${bootcampSlugs.length} bootcamps) + robots.txt`,
+      `${projectSlugs.length} projects, ${storeSlugs.length} store items, ${bootcampSlugs.length} bootcamps, ` +
+      `${competitionSlugs.length} competitions) + robots.txt`,
   );
 }
 
