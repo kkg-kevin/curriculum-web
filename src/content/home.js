@@ -8,7 +8,7 @@ export const hero = {
   heading: 'Where Kenya’s young makers learn to build',
   sub: 'Digifunzi teaches children to design, code and build real things — through structured pathways, competitions, guided projects you buy and keep, and the Quarky robot.',
   primaryCta: { label: 'Enroll a learner', to: '/enroll' },
-  secondaryCta: { label: 'Browse projects', to: '/projects' },
+  secondaryCta: { label: 'Browse pathways', to: '/pathways' },
 };
 
 export const valueProps = [
