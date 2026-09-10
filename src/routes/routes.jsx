@@ -18,6 +18,7 @@ const DiagnosticReportPage = lazy(() => import('../pages/DiagnosticReportPage.js
 const BootcampsPage = lazy(() => import('../pages/BootcampsPage.jsx'));
 const BootcampDetailPage = lazy(() => import('../pages/BootcampDetailPage.jsx'));
 const CompetitionsPage = lazy(() => import('../pages/CompetitionsPage.jsx'));
+const CompetitionDetailPage = lazy(() => import('../pages/CompetitionDetailPage.jsx'));
 const ProjectsListPage = lazy(() => import('../pages/ProjectsListPage.jsx'));
 const ProjectDetailPage = lazy(() => import('../pages/ProjectDetailPage.jsx'));
 const StoreListPage = lazy(() => import('../pages/StoreListPage.jsx'));
@@ -42,6 +43,7 @@ export const routes = [
       { path: 'bootcamps', element: <BootcampsPage /> },
       { path: 'bootcamps/:slug', element: <BootcampDetailPage /> },
       { path: 'competitions', element: <CompetitionsPage /> },
+      { path: 'competitions/:slug', element: <CompetitionDetailPage /> },
       { path: 'store', element: <StoreListPage /> },
       { path: 'store/:slug', element: <StoreItemPage /> },
       // /quarky was the single-product page before the Store existed.

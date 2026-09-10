@@ -11,6 +11,7 @@
 import { projects, projectDetail } from './fixtures/projects.js';
 import { storeList, storeItemDetail } from './fixtures/store.js';
 import { bootcampList, bootcampDetail } from './fixtures/bootcamps.js';
+import { competitionList, competitionDetail } from './fixtures/competitions.js';
 import { hubList, hubTypeList } from './fixtures/hubs.js';
 import { pathways, pathwayDetail } from './fixtures/pathways.js';
 import { HONEYPOT_FIELD } from '../components/forms/Honeypot.jsx';
@@ -106,6 +107,18 @@ export async function mockAdapter(config) {
   if (method === 'get' && m) {
     const detail = bootcampDetail(decodeURIComponent(m[1]));
     return detail ? ok(detail, config) : fail(404, 'Bootcamp not found', config);
+  }
+
+  // ---- GET /api/public/competitions (public competitions + track cards) ----
+  if (method === 'get' && path === '/api/public/competitions') {
+    return ok(competitionList, config);
+  }
+
+  // ---- GET /api/public/competitions/:idOrSlug ----
+  m = path.match(/^\/api\/public\/competitions\/([^/]+)$/);
+  if (method === 'get' && m) {
+    const detail = competitionDetail(decodeURIComponent(m[1]));
+    return detail ? ok(detail, config) : fail(404, 'Competition not found', config);
   }
 
   // ---- GET /api/public/hubs/types (non-school hub types + counts) ----

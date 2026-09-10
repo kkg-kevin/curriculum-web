@@ -104,6 +104,42 @@ describe('mockApi adapter — GET', () => {
     });
   });
 
+  it('lists public competitions with the contract shape (no detail-only fields)', async () => {
+    const { data: list } = await api.get('/api/public/competitions');
+    expect(Array.isArray(list)).toBe(true);
+    expect(list.length).toBeGreaterThan(0);
+    expect(list[0]).toMatchObject({
+      id: expect.any(String),
+      slug: expect.any(String),
+      name: expect.any(String),
+      status: expect.stringMatching(/^(open|closed)$/),
+      trackCount: expect.any(Number),
+    });
+    expect(list[0]).not.toHaveProperty('tracks');
+    expect(list[0]).not.toHaveProperty('description');
+  });
+
+  it('fetches a competition by slug with its track cards', async () => {
+    const { data } = await api.get('/api/public/competitions/codeavour-8-0');
+    expect(data.slug).toBe('codeavour-8-0');
+    expect(typeof data.description).toBe('string');
+    expect(Array.isArray(data.tracks)).toBe(true);
+    expect(data.tracks.length).toBe(data.trackCount);
+    expect(data.tracks[0]).toMatchObject({
+      id: expect.any(String),
+      name: expect.any(String),
+      subtitle: expect.any(String),
+      description: expect.any(String),
+      highlights: expect.any(Array),
+    });
+  });
+
+  it('404s an unknown competition', async () => {
+    await expect(api.get('/api/public/competitions/does-not-exist')).rejects.toMatchObject({
+      response: { status: 404 },
+    });
+  });
+
   it('lists non-school hub types with a count each', async () => {
     const { data } = await api.get('/api/public/hubs/types');
     expect(Array.isArray(data)).toBe(true);

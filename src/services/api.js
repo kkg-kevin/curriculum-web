@@ -67,6 +67,12 @@ export const publicApi = {
   listBootcamps: () => api.get('/api/public/bootcamps').then((r) => r.data),
   getBootcamp: (slug) => api.get(`/api/public/bootcamps/${encodeURIComponent(slug)}`).then((r) => r.data),
 
+  // Competitions = the designated admin's `competitions` records flipped "Show on the website"
+  // in the portal's Competitions module, status Open/Closed (WEBSITE_INTEGRATION_CONTRACT.md
+  // §3.13). Each has tracks[] — the Codeavour-style track cards. Added 10 Sep 2026.
+  listCompetitions: () => api.get('/api/public/competitions').then((r) => r.data),
+  getCompetition: (idOrSlug) => api.get(`/api/public/competitions/${encodeURIComponent(idOrSlug)}`).then((r) => r.data),
+
   // Hubs = the designated admin's ACTIVE, NON-SCHOOL learning hubs with their operational
   // schedule — for the enrolment flow's "Type" picker. `/types` lists the choosable hub types.
   listHubTypes: () => api.get('/api/public/hubs/types').then((r) => r.data),
