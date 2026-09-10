@@ -12,19 +12,18 @@
  * interactive experience changes — crawlers and slow connections just get real
  * content immediately.
  *
- * Dynamic routes:
- *   - /pathways/:slug — discovered from the public API, or from local fixtures
- *     when VITE_USE_MOCK=true.
- *   - /projects/:slug and /store/:slug — read from src/content/{projects,store}.js
- *     (hand-authored catalogues).
+ * Dynamic routes — /pathways/:slug, /projects/:slug, /store/:slug and
+ * /bootcamps/:slug — are all discovered from the public API
+ * (/api/public/{pathways,projects,store,bootcamps}), or from local fixtures when
+ * VITE_USE_MOCK=true. In a real build, if the API is unreachable, those list +
+ * detail pages ship as SPA-only HTML (they'd otherwise snapshot an empty/error
+ * state).
  */
 import fs from 'node:fs';
 import path from 'node:path';
 import http from 'node:http';
 import { DIST, ensureDist, getConfig } from './_shared.js';
 import { STATIC_ROUTES } from '../src/config/site.js';
-import { projects } from '../src/content/projects.js';
-import { storeItems } from '../src/content/store.js';
 
 const { apiUrl, useMock } = getConfig();
 const PORT = 4199;
@@ -33,26 +32,29 @@ const SETTLE_WAIT_MS = 400; // small extra buffer after ready, for Helmet flush
 
 // ---- 1. discover routes -----------------------------------------------------
 
-// Routes whose content comes from /api/public/*. In a real (non-mock) build we
-// only prerender these if the API is actually reachable — otherwise we'd bake a
-// "couldn't load" error page into static HTML. Skipped routes still work as a
-// normal client-rendered SPA via the index.html fallback.
-const DATA_DRIVEN_STATIC = new Set(['/pathways']);
+// List routes whose content comes from /api/public/*. In a real (non-mock) build
+// we only prerender these — and their detail pages — if the API is actually
+// reachable, otherwise we'd bake a "couldn't load" / empty page into static HTML.
+// Skipped routes still work as a normal client-rendered SPA via the index.html
+// fallback.
+const DATA_DRIVEN_STATIC = new Set(['/pathways', '/projects', '/store', '/bootcamps']);
 
 let apiReachable = useMock; // mock adapter always "reachable"
 
-async function getPathwaySlugs() {
+// Generic "list the slugs for an API-backed section" — used for pathways,
+// projects and the store, all of which return a bare array of { slug }.
+async function getApiSlugs(endpoint, mockFixture, mockExport) {
   if (useMock) {
-    const mod = await import('../src/mocks/fixtures/pathways.js');
-    return (mod.pathways || []).map((x) => x.slug).filter(Boolean);
+    const mod = await import(mockFixture);
+    return (mod[mockExport] || []).map((x) => x.slug).filter(Boolean);
   }
   // Node's global fetch can flake on the first cold connection to some hosts (undici/TLS
   // race) — a plain retry with a short backoff clears it. Three tries before giving up and
-  // shipping the pathway pages as SPA-only.
+  // shipping that section's pages as SPA-only.
   let lastErr;
   for (let attempt = 1; attempt <= 3; attempt += 1) {
     try {
-      const res = await fetch(`${apiUrl}/api/public/pathways`, { signal: AbortSignal.timeout(10000) });
+      const res = await fetch(`${apiUrl}${endpoint}`, { signal: AbortSignal.timeout(10000) });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const list = await res.json();
       apiReachable = true;
@@ -60,12 +62,12 @@ async function getPathwaySlugs() {
     } catch (err) {
       lastErr = err;
       if (attempt < 3) {
-        console.warn(`[prerender] pathway list fetch attempt ${attempt} failed (${err.message}) — retrying…`);
+        console.warn(`[prerender] ${endpoint} fetch attempt ${attempt} failed (${err.message}) — retrying…`);
         await new Promise((r) => setTimeout(r, 1500 * attempt));
       }
     }
   }
-  console.warn(`[prerender] could not list pathways from ${apiUrl} after 3 tries: ${lastErr?.message}.`);
+  console.warn(`[prerender] could not list ${endpoint} from ${apiUrl} after 3 tries: ${lastErr?.message}.`);
   return [];
 }
 
@@ -121,12 +123,15 @@ async function main() {
     return;
   }
 
-  const pathwaySlugs = await getPathwaySlugs();
-  const projectSlugs = projects.map((x) => x.slug).filter(Boolean);
-  const storeSlugs = storeItems.map((x) => x.slug).filter(Boolean);
+  const [pathwaySlugs, projectSlugs, storeSlugs, bootcampSlugs] = await Promise.all([
+    getApiSlugs('/api/public/pathways', '../src/mocks/fixtures/pathways.js', 'pathways'),
+    getApiSlugs('/api/public/projects', '../src/mocks/fixtures/projects.js', 'projects'),
+    getApiSlugs('/api/public/store', '../src/mocks/fixtures/store.js', 'storeList'),
+    getApiSlugs('/api/public/bootcamps', '../src/mocks/fixtures/bootcamps.js', 'bootcampList'),
+  ]);
 
   // Static routes: prerender all, except the data-driven ones when the API is
-  // unreachable in a real build (they'd snapshot an error state).
+  // unreachable in a real build (they'd snapshot an empty/error state).
   const staticRoutes = STATIC_ROUTES.map((r) => r.path).filter((p) => {
     if (apiReachable || !DATA_DRIVEN_STATIC.has(p)) return true;
     console.warn(`[prerender] skipping ${p} — API unreachable, leaving it as a client-rendered SPA route.`);
@@ -138,12 +143,13 @@ async function main() {
     ...pathwaySlugs.map((s) => `/pathways/${s}`),
     ...projectSlugs.map((s) => `/projects/${s}`),
     ...storeSlugs.map((s) => `/store/${s}`),
+    ...bootcampSlugs.map((s) => `/bootcamps/${s}`),
   ];
 
   if (!useMock && !apiReachable) {
     console.warn(
-      `[prerender] NOTE: ${apiUrl}/api/public/pathways was unreachable. Static/content pages ` +
-        `(incl. Projects and the Store) are prerendered; Pathways pages ship as SPA-only HTML. ` +
+      `[prerender] NOTE: ${apiUrl} was unreachable. Static pages are prerendered; the Pathways, ` +
+        `Projects, Store and Bootcamps sections (list + detail) ship as SPA-only HTML. ` +
         `Re-run the build once the API is live.`,
     );
   }

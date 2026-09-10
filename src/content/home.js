@@ -42,6 +42,11 @@ export const sectionSummaries = [
     blurb: 'Guided build projects you buy once and keep for life — lessons, checkpoints and a finished thing to show.',
   },
   {
+    title: 'Bootcamps',
+    to: '/bootcamps',
+    blurb: 'Short, intensive holiday programmes — a full robotics or coding build packed into a week or two, with a showcase at the end.',
+  },
+  {
     title: 'Competitions',
     to: '/competitions',
     blurb: 'Friendly, team-based challenges that give learners a real goal to build towards and a stage to present on.',

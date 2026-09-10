@@ -10,6 +10,7 @@
  */
 import { projects, projectDetail } from './fixtures/projects.js';
 import { storeList, storeItemDetail } from './fixtures/store.js';
+import { bootcampList, bootcampDetail } from './fixtures/bootcamps.js';
 import { pathways, pathwayDetail } from './fixtures/pathways.js';
 import { HONEYPOT_FIELD } from '../components/forms/Honeypot.jsx';
 import {
@@ -92,6 +93,18 @@ export async function mockAdapter(config) {
   if (method === 'get' && m) {
     const detail = storeItemDetail(decodeURIComponent(m[1]));
     return detail ? ok(detail, config) : fail(404, 'Store item not found', config);
+  }
+
+  // ---- GET /api/public/bootcamps (for-sale program curricula) ----
+  if (method === 'get' && path === '/api/public/bootcamps') {
+    return ok(bootcampList, config);
+  }
+
+  // ---- GET /api/public/bootcamps/:idOrSlug ----
+  m = path.match(/^\/api\/public\/bootcamps\/([^/]+)$/);
+  if (method === 'get' && m) {
+    const detail = bootcampDetail(decodeURIComponent(m[1]));
+    return detail ? ok(detail, config) : fail(404, 'Bootcamp not found', config);
   }
 
   // ---- GET /api/public/pathways ----

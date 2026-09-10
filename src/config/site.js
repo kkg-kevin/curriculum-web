@@ -45,8 +45,8 @@ export const ORG = {
 /**
  * Static routes that always exist. Dynamic detail routes (/pathways/:slug,
  * /projects/:slug, /store/:slug) are appended by the sitemap / prerender
- * scripts — pathways from live API data, projects & store items from
- * src/content/{projects,store}.js — at build time.
+ * scripts — all three discovered from live API data (/api/public/*) at build
+ * time, or from src/mocks/fixtures/* under VITE_USE_MOCK.
  *
  * changefreq / priority are advisory hints for sitemap.xml.
  */
@@ -54,8 +54,9 @@ export const STATIC_ROUTES = [
   { path: '/', changefreq: 'weekly', priority: 1.0 },
   { path: '/pathways', changefreq: 'weekly', priority: 0.9 },
   { path: '/projects', changefreq: 'weekly', priority: 0.9 },
-  { path: '/store', changefreq: 'weekly', priority: 0.9 },
+  { path: '/bootcamps', changefreq: 'monthly', priority: 0.6 },
   { path: '/competitions', changefreq: 'monthly', priority: 0.7 },
+  { path: '/store', changefreq: 'weekly', priority: 0.9 },
   { path: '/about', changefreq: 'monthly', priority: 0.6 },
   { path: '/enroll', changefreq: 'monthly', priority: 0.8 },
   { path: '/contact', changefreq: 'yearly', priority: 0.5 },
