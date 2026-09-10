@@ -60,6 +60,13 @@ export const publicApi = {
   listStoreItems: () => api.get('/api/public/store').then((r) => r.data),
   getStoreItem: (slug) => api.get(`/api/public/store/${encodeURIComponent(slug)}`).then((r) => r.data),
 
+  // Bootcamps = the designated admin's Program curricula (short-run cohorts) flipped "List on
+  // the website" in the portal's Program view (WEBSITE_INTEGRATION_CONTRACT.md §3.1/§3.2).
+  // Reintroduced 10 Sep 2026 as a for-sale flag on the existing Program concept — not the old
+  // `public_bootcamps` marketing table removed 4 Sep 2026.
+  listBootcamps: () => api.get('/api/public/bootcamps').then((r) => r.data),
+  getBootcamp: (slug) => api.get(`/api/public/bootcamps/${encodeURIComponent(slug)}`).then((r) => r.data),
+
   /** Enroll + Contact share this endpoint, differentiated by `interestedIn` (spec §4.5). */
   submitLead: (payload) => api.post('/api/public/leads', payload).then((r) => r.data),
 

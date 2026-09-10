@@ -13,9 +13,10 @@ import ColorModeToggle from '../common/ColorModeToggle.jsx';
 import MobileMenu from './MobileMenu.jsx';
 
 export const NAV_LINKS = [
-  { label: 'Competitions', to: '/competitions' },
   { label: 'Pathways', to: '/pathways' },
   { label: 'Projects', to: '/projects' },
+  { label: 'Bootcamps', to: '/bootcamps' },
+  { label: 'Competitions', to: '/competitions' },
   { label: 'Store', to: '/store' },
   { label: 'About', to: '/about' },
 ];

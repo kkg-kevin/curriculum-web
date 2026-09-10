@@ -40,6 +40,18 @@ const ACCENTS = {
       </>
     ),
   },
+  '/bootcamps': {
+    color: 'secondary.main',
+    tint: (t) => t.palette.secondary.main,
+    // rocket launch
+    motif: (
+      <>
+        <path d="M32 10c8 6 12 16 12 26l-8 6h-8l-8-6c0-10 4-20 12-26Z" />
+        <circle cx="32" cy="26" r="4" />
+        <path d="M24 42l-6 8M40 42l6 8M32 44v8" />
+      </>
+    ),
+  },
   '/store': {
     color: 'warning.main',
     tint: (t) => t.palette.warning.main,
@@ -70,7 +82,7 @@ export default function SectionSummaries() {
       <SectionHeading
         eyebrow="Programmes"
         title="Ways to learn with us"
-        lead="Structured pathways, guided projects you buy and keep, team competitions, and the robots to build with — designed to fit together into one path."
+        lead="Structured pathways, guided projects you buy and keep, holiday bootcamps, team competitions, and the robots to build with — designed to fit together into one path."
         sx={{ mb: { xs: 5, md: 7 } }}
       />
 

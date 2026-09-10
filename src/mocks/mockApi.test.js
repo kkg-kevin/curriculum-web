@@ -145,9 +145,11 @@ describe('mockApi adapter — public diagnostics (§3.8, §4.3)', () => {
     ).rejects.toMatchObject({ response: { status: 404 } });
   });
 
-  it('grades a submitted diagnostic with NO contact info (201 + report + attemptId, no lead)', async () => {
+  it('grades a submitted diagnostic (201 + report + attemptId) — name + phone required', async () => {
     const res = await api.post('/api/public/diagnostics/robotics/submit', {
       answers: [{ itemId: 'q1', response: 'Move forward' }],
+      parentName: 'Sam Parent',
+      parentPhone: '0700000000',
       childName: 'Kid',
       childAge: 10,
     });
@@ -160,13 +162,24 @@ describe('mockApi adapter — public diagnostics (§3.8, §4.3)', () => {
       itemResults: expect.any(Array),
       indicatorBreakdown: expect.any(Array),
     });
-    // no lead is created by the diagnostic any more
+    // the report response never carries the lead id (it's on the attempt server-side only)
     expect(res.data.data.leadId).toBeUndefined();
+  });
+
+  it('400s a diagnostic submission with no name / phone', async () => {
+    await expect(
+      api.post('/api/public/diagnostics/robotics/submit', {
+        answers: [{ itemId: 'q1', response: 'Move forward' }],
+        childAge: 10,
+      }),
+    ).rejects.toMatchObject({ response: { status: 400 } });
   });
 
   it('serves the permanent shareable report for a completed attempt', async () => {
     const submit = await api.post('/api/public/diagnostics/robotics/submit', {
       answers: [{ itemId: 'q1', response: 'Move forward' }],
+      parentName: 'Sam Parent',
+      parentPhone: '0700000000',
       childName: 'Amara',
       childAge: 9,
     });

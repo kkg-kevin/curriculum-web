@@ -15,6 +15,8 @@ const PathwaysListPage = lazy(() => import('../pages/PathwaysListPage.jsx'));
 const PathwayDetailPage = lazy(() => import('../pages/PathwayDetailPage.jsx'));
 const DiagnosticPage = lazy(() => import('../pages/DiagnosticPage.jsx'));
 const DiagnosticReportPage = lazy(() => import('../pages/DiagnosticReportPage.jsx'));
+const BootcampsPage = lazy(() => import('../pages/BootcampsPage.jsx'));
+const BootcampDetailPage = lazy(() => import('../pages/BootcampDetailPage.jsx'));
 const CompetitionsPage = lazy(() => import('../pages/CompetitionsPage.jsx'));
 const ProjectsListPage = lazy(() => import('../pages/ProjectsListPage.jsx'));
 const ProjectDetailPage = lazy(() => import('../pages/ProjectDetailPage.jsx'));
@@ -35,9 +37,11 @@ export const routes = [
       { path: 'pathways/:slug', element: <PathwayDetailPage /> },
       { path: 'pathways/:slug/diagnostic', element: <DiagnosticPage /> },
       { path: 'pathways/:slug/diagnostic/report/:attemptId', element: <DiagnosticReportPage /> },
-      { path: 'competitions', element: <CompetitionsPage /> },
       { path: 'projects', element: <ProjectsListPage /> },
       { path: 'projects/:slug', element: <ProjectDetailPage /> },
+      { path: 'bootcamps', element: <BootcampsPage /> },
+      { path: 'bootcamps/:slug', element: <BootcampDetailPage /> },
+      { path: 'competitions', element: <CompetitionsPage /> },
       { path: 'store', element: <StoreListPage /> },
       { path: 'store/:slug', element: <StoreItemPage /> },
       // /quarky was the single-product page before the Store existed.

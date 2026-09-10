@@ -10,9 +10,10 @@ const COLUMNS = [
   {
     heading: 'Explore',
     links: [
-      { label: 'Competitions', to: '/competitions' },
       { label: 'Pathways', to: '/pathways' },
       { label: 'Projects', to: '/projects' },
+      { label: 'Bootcamps', to: '/bootcamps' },
+      { label: 'Competitions', to: '/competitions' },
       { label: 'Store', to: '/store' },
     ],
   },

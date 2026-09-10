@@ -8,7 +8,7 @@ export const hero = {
   heading: 'Where Kenya’s young makers learn to build',
   sub: 'Digifunzi teaches children to design, code and build real things — through structured pathways, competitions, guided projects you buy and keep, and the Quarky robot.',
   primaryCta: { label: 'Enroll a learner', to: '/enroll' },
-  secondaryCta: { label: 'Browse projects', to: '/projects' },
+  secondaryCta: { label: 'Browse pathways', to: '/pathways' },
 };
 
 export const valueProps = [
@@ -40,6 +40,11 @@ export const sectionSummaries = [
     title: 'Projects',
     to: '/projects',
     blurb: 'Guided build projects you buy once and keep for life — lessons, checkpoints and a finished thing to show.',
+  },
+  {
+    title: 'Bootcamps',
+    to: '/bootcamps',
+    blurb: 'Short, intensive holiday programmes — a full robotics or coding build packed into a week or two, with a showcase at the end.',
   },
   {
     title: 'Competitions',
