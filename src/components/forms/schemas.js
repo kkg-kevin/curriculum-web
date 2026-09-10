@@ -79,9 +79,7 @@ export const contactSchema = z.object({
 
 /**
  * Public diagnostic — age gate step. Mirrors the age range every diagnostic
- * question set is offered within (WEBSITE_INTEGRATION_CONTRACT.md §3.8). This is
- * the ONLY form the diagnostic asks — after answering the questions the visitor
- * submits and sees the report; no name/email is collected anywhere in the flow.
+ * question set is offered within (WEBSITE_INTEGRATION_CONTRACT.md §3.8).
  */
 export const diagnosticAgeSchema = z.object({
   age: z.coerce
@@ -89,4 +87,16 @@ export const diagnosticAgeSchema = z.object({
     .int('Enter a whole number')
     .min(3, 'Age looks too low')
     .max(19, 'This diagnostic is for under-19s'),
+});
+
+/**
+ * Public diagnostic — contact details, collected on the questions step before
+ * the visitor can submit. Name + phone are required (they become a
+ * `source: "diagnostic"` lead — WEBSITE_INTEGRATION_CONTRACT.md §4.3); the
+ * learner's first name is optional context for how the report reads.
+ */
+export const diagnosticContactSchema = z.object({
+  parentName: z.string().trim().min(2, 'Please enter your name').max(120),
+  parentPhone: phone,
+  childName: z.string().trim().max(120).optional().or(z.literal('')),
 });

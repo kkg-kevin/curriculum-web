@@ -196,18 +196,21 @@ export async function mockAdapter(config) {
   }
 
   // ---- POST /api/public/diagnostics/:pathwayIdOrSlug/submit ----
-  // No contact info — just { answers, childName?, childAge }. Grades and returns the report;
-  // creates no lead. Enrolment happens separately via POST /api/public/leads.
+  // { answers, parentName, parentPhone, childName?, childAge }. Grades and returns the report,
+  // and (on the real API) creates a source:"diagnostic" lead. Name + phone are required.
   m = path.match(/^\/api\/public\/diagnostics\/([^/]+)\/submit$/);
   if (method === 'post' && m) {
     const body = safeParse(config.data);
     if (!body?.childAge) {
       return fail(400, 'childAge is required', config);
     }
+    if (!body?.parentName || !body?.parentPhone) {
+      return fail(400, 'parentName and parentPhone are required', config);
+    }
     console.warn(
-      '[mockApi] OFFLINE MODE (VITE_USE_MOCK=true) — diagnostic attempt NOT stored, only graded ' +
-        'client-side against a placeholder answer key. Run the real API and set ' +
-        'VITE_USE_MOCK=false for real grading.',
+      '[mockApi] OFFLINE MODE (VITE_USE_MOCK=true) — diagnostic attempt + lead NOT stored, only ' +
+        'graded client-side against a placeholder answer key. Run the real API and set ' +
+        'VITE_USE_MOCK=false for real grading and lead capture.',
       body,
     );
     return ok(

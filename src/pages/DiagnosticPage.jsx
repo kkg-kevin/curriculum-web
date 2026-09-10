@@ -18,15 +18,15 @@ import Section from '../components/common/Section.jsx';
 import { ErrorBlock, LoadingBlock } from '../components/common/StateViews.jsx';
 import { usePathway } from '../hooks/usePathways.js';
 import { useDiagnostic, useSubmitDiagnostic } from '../hooks/useDiagnostic.js';
-import { diagnosticAgeSchema } from '../components/forms/schemas.js';
+import { diagnosticAgeSchema, diagnosticContactSchema } from '../components/forms/schemas.js';
 import FormStatus from '../components/forms/FormStatus.jsx';
 import DiagnosticQuestions from '../components/diagnostic/DiagnosticQuestions.jsx';
 import DiagnosticReport from '../components/diagnostic/DiagnosticReport.jsx';
 
-// Flow: pick a pathway -> age (only to fetch the right question set) -> answer the questions ->
-// submit -> SEE THE REPORT. No name/email is asked at any point — the visitor submits their
-// answers and gets their graded report straight away, plus a permanent link to it. Enrolment
-// (which does collect contact details) happens afterwards via the normal /enroll form.
+// Flow: pick a pathway -> age (only to fetch the right question set) -> answer the questions,
+// giving a name + phone -> submit -> SEE THE REPORT. The name + phone are required before
+// submitting; they become a `source: "diagnostic"` lead so the team can follow up. The report
+// itself never exposes them.
 const STEP = { AGE: 'age', QUESTIONS: 'questions', REPORT: 'report' };
 
 function AgeStep({ onSubmit, minAge, maxAge }) {
@@ -120,12 +120,20 @@ export default function DiagnosticPage() {
 
   const [step, setStep] = useState(STEP.AGE);
   const [age, setAge] = useState(null);
-  const [childName, setChildName] = useState('');
   const [answers, setAnswers] = useState([]);
   const [report, setReport] = useState(null);
   const [reportItems, setReportItems] = useState([]);
   const [reportAnswers, setReportAnswers] = useState([]);
   const [attemptId, setAttemptId] = useState(null);
+
+  // Contact details (name + phone required, learner name optional) — collected on the questions
+  // step; submit is blocked until this validates.
+  const contactForm = useForm({
+    resolver: zodResolver(diagnosticContactSchema),
+    defaultValues: { parentName: '', parentPhone: '', childName: '' },
+    mode: 'onTouched',
+  });
+  const childName = contactForm.watch('childName');
 
   const diagnosticQuery = useDiagnostic(slug, step === STEP.QUESTIONS ? age : null);
   const submitMutation = useSubmitDiagnostic(slug);
@@ -135,12 +143,15 @@ export default function DiagnosticPage() {
     setStep(STEP.QUESTIONS);
   };
 
-  // Submit the answers -> grade -> show the report. Nothing else is collected. `childName` is
-  // optional context that just makes the report read nicely ("… for Amara, age 10").
-  const handleSubmit = async () => {
+  // Submit the answers -> create the lead + grade -> show the report. `parentName`/`parentPhone`
+  // are required and feed the lead; `childName` is optional context that makes the report read
+  // nicely ("… for Amara, age 10"). Only fires once the contact form validates (handleSubmit).
+  const handleSubmit = contactForm.handleSubmit(async ({ parentName, parentPhone, childName: cn }) => {
     const result = await submitMutation.mutateAsync({
       answers,
-      childName: childName || undefined,
+      parentName,
+      parentPhone,
+      childName: cn || undefined,
       childAge: age,
     });
     setReport(result.data);
@@ -150,7 +161,7 @@ export default function DiagnosticPage() {
     setReportAnswers(answers);
     setAttemptId(result.data?.attemptId ?? null);
     setStep(STEP.REPORT);
-  };
+  });
 
   // The stored report page lives at this stable path (DiagnosticReportPage / the backend's
   // GET /api/public/diagnostics/attempts/:attemptId). Absolute so it's copy-paste shareable.
@@ -225,7 +236,7 @@ export default function DiagnosticPage() {
             )}
 
             {diagnosticQuery.data && (
-              <>
+              <Box component="form" onSubmit={handleSubmit} noValidate sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                 <Typography color="text.secondary" sx={{ '& p': { m: 0 } }}>
                   {diagnosticQuery.data.instructions ? (
                     <span dangerouslySetInnerHTML={{ __html: diagnosticQuery.data.instructions }} />
@@ -234,14 +245,51 @@ export default function DiagnosticPage() {
                   )}
                 </Typography>
 
-                <TextField
-                  label="Learner's first name (optional)"
-                  value={childName}
-                  onChange={(e) => setChildName(e.target.value)}
-                  helperText="Just so the report reads nicely — you can leave this blank"
-                  sx={{ maxWidth: 420 }}
-                  inputProps={{ maxLength: 120 }}
-                />
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 2,
+                    maxWidth: 480,
+                    p: 2.5,
+                    borderRadius: 2,
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    backgroundColor: 'surface.subtle',
+                  }}
+                >
+                  <Typography variant="subtitle2">Your details</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    We&apos;ll send your report to the screen straight away. Your name and phone let
+                    our team follow up with next steps.
+                  </Typography>
+                  <TextField
+                    label="Your name"
+                    required
+                    {...contactForm.register('parentName')}
+                    error={!!contactForm.formState.errors.parentName}
+                    helperText={contactForm.formState.errors.parentName?.message}
+                    inputProps={{ maxLength: 120 }}
+                  />
+                  <TextField
+                    label="Phone number"
+                    required
+                    {...contactForm.register('parentPhone')}
+                    error={!!contactForm.formState.errors.parentPhone}
+                    helperText={contactForm.formState.errors.parentPhone?.message}
+                    inputProps={{ maxLength: 20 }}
+                  />
+                  <TextField
+                    label="Learner's first name (optional)"
+                    {...contactForm.register('childName')}
+                    error={!!contactForm.formState.errors.childName}
+                    helperText={
+                      contactForm.formState.errors.childName?.message ||
+                      'Just so the report reads nicely — you can leave this blank'
+                    }
+                    inputProps={{ maxLength: 120 }}
+                  />
+                </Box>
 
                 <DiagnosticQuestions items={diagnosticQuery.data.items} onChange={setAnswers} />
 
@@ -249,15 +297,15 @@ export default function DiagnosticPage() {
 
                 <Box>
                   <Button
+                    type="submit"
                     variant="contained"
                     size="large"
-                    onClick={handleSubmit}
                     disabled={submitMutation.isPending}
                   >
                     {submitMutation.isPending ? 'Grading…' : 'Submit & see my report'}
                   </Button>
                 </Box>
-              </>
+              </Box>
             )}
           </Box>
         )}
