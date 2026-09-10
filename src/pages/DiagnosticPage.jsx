@@ -7,21 +7,20 @@ import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Link from '@mui/material/Link';
 import Skeleton from '@mui/material/Skeleton';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import CheckIcon from '@mui/icons-material/Check';
 import SeoHead from '../components/seo/SeoHead.jsx';
 import Section from '../components/common/Section.jsx';
 import { ErrorBlock, LoadingBlock } from '../components/common/StateViews.jsx';
 import { usePathway } from '../hooks/usePathways.js';
 import { useDiagnostic, useSubmitDiagnostic } from '../hooks/useDiagnostic.js';
 import { diagnosticAgeSchema, diagnosticContactSchema } from '../components/forms/schemas.js';
+import { whatsAppUrl } from '../config/site.js';
 import FormStatus from '../components/forms/FormStatus.jsx';
 import DiagnosticQuestions from '../components/diagnostic/DiagnosticQuestions.jsx';
 import DiagnosticReport from '../components/diagnostic/DiagnosticReport.jsx';
+import NextStepsPanel from '../components/diagnostic/NextStepsPanel.jsx';
 
 // Flow: pick a pathway -> age (only to fetch the right question set) -> answer the questions,
 // giving a name + phone -> submit -> SEE THE REPORT. The name + phone are required before
@@ -66,54 +65,6 @@ function AgeStep({ onSubmit, minAge, maxAge }) {
   );
 }
 
-// Shown on the REPORT step — the permanent, shareable URL for this graded report. The report is
-// never emailed; this link (plus "Download PDF" on the report page) is how the visitor keeps it.
-function ReportLinkCard({ url }) {
-  const [copied, setCopied] = useState(false);
-
-  const copy = async () => {
-    try {
-      await window.navigator.clipboard.writeText(url);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      /* clipboard blocked (insecure context / permissions) — the link is still selectable manually */
-    }
-  };
-
-  return (
-    <Box
-      sx={{
-        p: 2.5,
-        border: '1px solid',
-        borderColor: 'divider',
-        borderRadius: 2,
-        backgroundColor: 'surface.subtle',
-      }}
-    >
-      <Typography variant="subtitle2" gutterBottom>
-        Keep this report
-      </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-        Bookmark or share this link — it opens the full report any time, and there’s a
-        “Download PDF” button on it.
-      </Typography>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <TextField
-          value={url}
-          size="small"
-          fullWidth
-          InputProps={{ readOnly: true, sx: { fontSize: 13 } }}
-          onFocus={(e) => e.target.select()}
-        />
-        <IconButton onClick={copy} aria-label="Copy report link" color={copied ? 'success' : 'default'}>
-          {copied ? <CheckIcon /> : <ContentCopyIcon />}
-        </IconButton>
-      </Box>
-    </Box>
-  );
-}
-
 export default function DiagnosticPage() {
   const { slug } = useParams();
   const { data: pathway, isLoading: pathwayLoading } = usePathway(slug);
@@ -122,9 +73,6 @@ export default function DiagnosticPage() {
   const [age, setAge] = useState(null);
   const [answers, setAnswers] = useState([]);
   const [report, setReport] = useState(null);
-  const [reportItems, setReportItems] = useState([]);
-  const [reportAnswers, setReportAnswers] = useState([]);
-  const [attemptId, setAttemptId] = useState(null);
 
   // Contact details (name + phone required, learner name optional) — collected on the questions
   // step; submit is blocked until this validates.
@@ -155,19 +103,8 @@ export default function DiagnosticPage() {
       childAge: age,
     });
     setReport(result.data);
-    // Snapshotted now — itemResults alone carries no question text / the visitor's own answers,
-    // both needed to render each feedback row (see DiagnosticReport.jsx).
-    setReportItems(diagnosticQuery.data?.items || []);
-    setReportAnswers(answers);
-    setAttemptId(result.data?.attemptId ?? null);
     setStep(STEP.REPORT);
   });
-
-  // The stored report page lives at this stable path (DiagnosticReportPage / the backend's
-  // GET /api/public/diagnostics/attempts/:attemptId). Absolute so it's copy-paste shareable.
-  const reportUrl = attemptId
-    ? `${window.location.origin}/pathways/${slug}/diagnostic/report/${attemptId}`
-    : null;
 
   if (pathwayLoading) {
     return (
@@ -183,6 +120,18 @@ export default function DiagnosticPage() {
   const diagMinAge = pathway?.diagnostic?.minAge ?? null;
   const diagMaxAge = pathway?.diagnostic?.maxAge ?? null;
 
+  // "Speak to a mentor" → WhatsApp, pre-filled with the pathway + the learner's name if given.
+  // whatsAppUrl returns null until a real number is set in src/config/site.js — until then the
+  // button falls back to the contact page so it's never a dead end.
+  const mentorWhatsApp = whatsAppUrl(
+    `Hi Digifunzi — my child ${childName ? `(${childName}) ` : ''}just did the ${pathwayName} diagnostic and I'd like to talk through next steps.`,
+  );
+  const mentorHref = mentorWhatsApp || '/contact?subject=Diagnostic%20follow-up';
+  const mentorIsExternal = Boolean(mentorWhatsApp);
+
+  const isReport = step === STEP.REPORT;
+  const learnerLabel = childName || 'your learner';
+
   return (
     <>
       <SeoHead title={`${pathwayName} Diagnostic`} noindex />
@@ -192,10 +141,10 @@ export default function DiagnosticPage() {
           backgroundColor: 'surface.subtle',
           borderBottom: '1px solid',
           borderColor: 'divider',
-          py: { xs: 4, md: 5 },
+          py: { xs: 4, md: isReport ? 6 : 5 },
         }}
       >
-        <Container maxWidth="md">
+        <Container maxWidth={isReport ? 'xl' : 'md'}>
           <Breadcrumbs sx={{ mb: 2 }}>
             <Link component={RouterLink} to="/" underline="hover" color="inherit">
               Home
@@ -209,12 +158,22 @@ export default function DiagnosticPage() {
             <Typography color="text.primary">Diagnostic</Typography>
           </Breadcrumbs>
           <Typography variant="h1" component="h1" sx={{ fontSize: { xs: 28, md: 36 } }}>
-            {pathwayName} Diagnostic
+            {isReport ? `How ${learnerLabel} did` : `${pathwayName} Diagnostic`}
           </Typography>
+          {isReport && (
+            <Typography
+              variant="h4"
+              component="p"
+              sx={{ fontWeight: 400, color: 'text.secondary', maxWidth: 640, mt: 1.5 }}
+            >
+              Here’s the graded report, and the ways you can pick up from here in the {pathwayName}{' '}
+              pathway.
+            </Typography>
+          )}
         </Container>
       </Box>
 
-      <Section maxWidth="md">
+      <Section maxWidth={isReport ? 'xl' : 'md'}>
         {step === STEP.AGE && (
           <AgeStep onSubmit={handleAgeSubmit} minAge={diagMinAge} maxAge={diagMaxAge} />
         )}
@@ -311,37 +270,27 @@ export default function DiagnosticPage() {
         )}
 
         {step === STEP.REPORT && report && (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-            <DiagnosticReport
-              report={{ ...report, childName: childName || undefined, childAge: age }}
-              items={reportItems}
-              answers={reportAnswers}
-            />
+          <Box
+            sx={{
+              display: 'grid',
+              gap: { xs: 3, lg: 4 },
+              // Report card on the left, next-steps + roadmap on the right on wide screens;
+              // stacked below ~1000px.
+              gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 760px) minmax(0, 1fr)' },
+              alignItems: 'start',
+            }}
+          >
+            <DiagnosticReport report={{ ...report, childName: childName || undefined, childAge: age }} />
 
-            {reportUrl && <ReportLinkCard url={reportUrl} />}
-
-            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-              {reportUrl && (
-                <Button
-                  component={RouterLink}
-                  to={`/pathways/${slug}/diagnostic/report/${attemptId}`}
-                  variant="outlined"
-                  size="large"
-                >
-                  Open &amp; download the report
-                </Button>
-              )}
-              <Button
-                component={RouterLink}
-                to={`/enroll?interestedIn=project&referenceId=${encodeURIComponent(slug)}`}
-                variant="contained"
-                size="large"
-              >
-                Enroll in this pathway
-              </Button>
-              <Button component={RouterLink} to={`/pathways/${slug}`} variant="text" size="large">
-                Back to {pathwayName}
-              </Button>
+            <Box sx={{ position: { lg: 'sticky' }, top: { lg: 24 } }}>
+              <NextStepsPanel
+                enrollTo={`/enroll?flow=pathway&referenceId=${encodeURIComponent(slug)}`}
+                pathwayName={pathwayName}
+                courses={pathway?.courses || []}
+                accent={pathway?.color}
+                mentorHref={mentorHref}
+                mentorIsExternal={mentorIsExternal}
+              />
             </Box>
           </Box>
         )}

@@ -67,6 +67,14 @@ export const publicApi = {
   listBootcamps: () => api.get('/api/public/bootcamps').then((r) => r.data),
   getBootcamp: (slug) => api.get(`/api/public/bootcamps/${encodeURIComponent(slug)}`).then((r) => r.data),
 
+  // Hubs = the designated admin's ACTIVE, NON-SCHOOL learning hubs with their operational
+  // schedule — for the enrolment flow's "Type" picker. `/types` lists the choosable hub types.
+  listHubTypes: () => api.get('/api/public/hubs/types').then((r) => r.data),
+  listHubs: (type) =>
+    api
+      .get('/api/public/hubs', { params: type ? { type } : {} })
+      .then((r) => r.data),
+
   /** Enroll + Contact share this endpoint, differentiated by `interestedIn` (spec §4.5). */
   submitLead: (payload) => api.post('/api/public/leads', payload).then((r) => r.data),
 

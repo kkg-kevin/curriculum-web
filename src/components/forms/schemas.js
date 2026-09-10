@@ -40,6 +40,16 @@ export const enrollSchema = z.object({
 });
 
 /**
+ * Enrol via a pathway / the diagnostic — the enrol form plus the "Type of learning hub"
+ * picker (required), the chosen hub (optional), and its name (carried for the lead note).
+ */
+export const pathwayEnrollSchema = enrollSchema.extend({
+  hubType: z.string().trim().min(1, 'Choose a type of learning hub'),
+  hubId: z.string().trim().optional().or(z.literal('')),
+  hubName: z.string().trim().max(200).optional().or(z.literal('')),
+});
+
+/**
  * Store enquiry variant of the Enroll form → same POST /api/public/leads.
  * A product/project enquiry ("I'd like to buy a Quarky for my class") isn't
  * always about one named child, so learner name is optional and learner age is

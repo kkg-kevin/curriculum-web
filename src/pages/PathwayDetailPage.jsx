@@ -132,7 +132,7 @@ export default function PathwayDetailPage() {
 
   const { name, description, color, courses = [] } = data;
   const accent = color || FALLBACK_ACCENT;
-  const enrollTo = `/enroll?interestedIn=project&referenceId=${encodeURIComponent(slug)}`;
+  const enrollTo = `/enroll?flow=pathway&referenceId=${encodeURIComponent(slug)}`;
 
   return (
     <>
