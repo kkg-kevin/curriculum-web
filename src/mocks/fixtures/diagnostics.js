@@ -113,9 +113,29 @@ export function gradeDiagnostic(answers = [], body = {}) {
   const totalScore = itemResults.reduce((sum, r) => sum + r.marksAwarded, 0);
   const maxScore = ITEMS.reduce((sum, i) => sum + i.points, 0);
   const attemptId = `mock-attempt-${Math.random().toString(36).slice(2, 10)}`;
+
+  // Per-indicator (kept for back-compat) plus the competency roll-up the report now renders —
+  // each competency expandable to the indicators that fed it.
   const indicatorBreakdown = [
-    { indicatorId: 'mock-ind-1', name: 'Sequencing & Loops', marksEarned: Math.min(totalScore, 3), marksPossible: 3 },
-    { indicatorId: 'mock-ind-2', name: 'Sensors & Reactions', marksEarned: Math.max(totalScore - 3, 0), marksPossible: 4 },
+    { indicatorId: 'mock-ind-1', name: 'Sequencing', marksEarned: Math.min(totalScore, 2), marksPossible: 2 },
+    { indicatorId: 'mock-ind-2', name: 'Decomposition', marksEarned: Math.min(Math.max(totalScore - 2, 0), 3), marksPossible: 3 },
+    { indicatorId: 'mock-ind-3', name: 'Sensors & Reactions', marksEarned: Math.max(totalScore - 5, 0), marksPossible: 4 },
+  ];
+  const competencyBreakdown = [
+    {
+      competencyId: 'mock-comp-1',
+      name: 'Computational Thinking',
+      marksEarned: indicatorBreakdown[0].marksEarned + indicatorBreakdown[1].marksEarned,
+      marksPossible: 5,
+      indicators: [indicatorBreakdown[0], indicatorBreakdown[1]],
+    },
+    {
+      competencyId: 'mock-comp-2',
+      name: 'Physical Computing',
+      marksEarned: indicatorBreakdown[2].marksEarned,
+      marksPossible: 4,
+      indicators: [indicatorBreakdown[2]],
+    },
   ];
 
   mockAttempts.set(attemptId, {
@@ -127,10 +147,8 @@ export function gradeDiagnostic(answers = [], body = {}) {
     completedAt: new Date().toISOString(),
     totalScore,
     maxScore,
-    items: ITEMS,
-    answers,
-    itemResults,
     indicatorBreakdown,
+    competencyBreakdown,
   });
 
   return {
@@ -141,6 +159,7 @@ export function gradeDiagnostic(answers = [], body = {}) {
     maxScore,
     itemResults,
     indicatorBreakdown,
+    competencyBreakdown,
   };
 }
 

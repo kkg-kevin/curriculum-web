@@ -104,6 +104,29 @@ describe('mockApi adapter — GET', () => {
     });
   });
 
+  it('lists non-school hub types with a count each', async () => {
+    const { data } = await api.get('/api/public/hubs/types');
+    expect(Array.isArray(data)).toBe(true);
+    expect(data.some((t) => t.type === 'tech_club')).toBe(true);
+    expect(data.every((t) => t.type !== 'school')).toBe(true);
+    expect(data[0]).toMatchObject({ type: expect.any(String), label: expect.any(String), hubCount: expect.any(Number) });
+  });
+
+  it('lists hubs with a schedule, filterable by type', async () => {
+    const all = await api.get('/api/public/hubs');
+    expect(all.data.length).toBeGreaterThan(0);
+    expect(all.data[0]).toMatchObject({
+      name: expect.any(String),
+      hubType: expect.any(String),
+      hubTypeLabel: expect.any(String),
+      schedule: { opensAt: expect.any(String), closesAt: expect.any(String), days: expect.any(Array) },
+    });
+    const filtered = await api.get('/api/public/hubs', { params: { type: 'tech_club' } });
+    expect(filtered.data.every((h) => h.hubType === 'tech_club')).toBe(true);
+    // never leak operational detail
+    expect(all.data[0]).not.toHaveProperty('email');
+  });
+
   it('resolves the path whether the URL is relative or absolute', async () => {
     const abs = await api.request({ method: 'get', url: 'http://localhost:5000/api/public/projects' });
     expect(abs.data.length).toBeGreaterThan(0);
@@ -194,12 +217,17 @@ describe('mockApi adapter — public diagnostics (§3.8, §4.3)', () => {
       completedAt: expect.any(String),
       totalScore: expect.any(Number),
       maxScore: expect.any(Number),
-      items: expect.any(Array),
-      answers: expect.any(Array),
-      itemResults: expect.any(Array),
+      indicatorBreakdown: expect.any(Array),
+      competencyBreakdown: expect.any(Array),
     });
-    // never leak the answer key through the shareable link
-    expect(data.items.every((i) => !('correctAnswer' in i))).toBe(true);
+    // the report is competency-grouped and carries no per-question section / answer key
+    expect(data.items).toBeUndefined();
+    expect(data.competencyBreakdown[0]).toMatchObject({
+      name: expect.any(String),
+      marksEarned: expect.any(Number),
+      marksPossible: expect.any(Number),
+      indicators: expect.any(Array),
+    });
   });
 
   it('404s an unknown report id', async () => {

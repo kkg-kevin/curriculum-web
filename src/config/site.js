@@ -23,6 +23,9 @@ export const ORG = {
     'Digifunzi teaches robotics, coding and STEM to children across Kenya through structured learning pathways, competitions, buildable projects and the Quarky robot.',
   email: 'hello@digifunzi.com', // TODO confirm
   telephone: '+254-000-000000', // TODO confirm
+  // Digits only, full international format, no "+" or spaces — used to build wa.me links
+  // ("Speak to a mentor" on the diagnostic report). TODO: confirm the real WhatsApp line.
+  whatsappNumber: '254000000000',
   address: {
     // TODO: real registered address for structured data (spec §9 item 2).
     streetAddress: 'TODO Street',
@@ -64,3 +67,15 @@ export const STATIC_ROUTES = [
 
 /** Fallback base URL if none is provided by env (e.g. a script run without .env). */
 export const FALLBACK_SITE_URL = 'https://africa.digifunzi.com';
+
+/**
+ * A "click to chat" WhatsApp URL for ORG.whatsappNumber, with an optional pre-filled message.
+ * Returns null when the number is still the placeholder, so callers can hide the CTA rather
+ * than link somewhere broken.
+ */
+export function whatsAppUrl(message) {
+  const n = (ORG.whatsappNumber || '').replace(/\D/g, '');
+  if (!n || /^2540{6,}$/.test(n) || /^0+$/.test(n)) return null;
+  const q = message ? `?text=${encodeURIComponent(message)}` : '';
+  return `https://wa.me/${n}${q}`;
+}

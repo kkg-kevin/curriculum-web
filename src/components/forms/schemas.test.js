@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { enrollSchema, contactSchema, storeEnquirySchema } from './schemas.js';
+import { enrollSchema, pathwayEnrollSchema, contactSchema, storeEnquirySchema } from './schemas.js';
 import { HONEYPOT_FIELD } from './Honeypot.jsx';
 
 const validEnroll = {
@@ -46,6 +46,26 @@ describe('enrollSchema', () => {
     const r = enrollSchema.safeParse({ ...validEnroll, [HONEYPOT_FIELD]: 'http://spam' });
     expect(r.success).toBe(true);
     expect(r.data[HONEYPOT_FIELD]).toBe('http://spam');
+  });
+});
+
+describe('pathwayEnrollSchema', () => {
+  it('requires a hubType and keeps the optional hubId/hubName', () => {
+    expect(pathwayEnrollSchema.safeParse(validEnroll).success).toBe(false); // no hubType
+    const ok = pathwayEnrollSchema.safeParse({
+      ...validEnroll,
+      hubType: 'tech_club',
+      hubId: 'abc',
+      hubName: 'Westlands Tech Club',
+    });
+    expect(ok.success).toBe(true);
+    expect(ok.data.hubType).toBe('tech_club');
+    expect(ok.data.hubName).toBe('Westlands Tech Club');
+  });
+
+  it('accepts a hubType with no chosen hub', () => {
+    const r = pathwayEnrollSchema.safeParse({ ...validEnroll, hubType: 'makerspace' });
+    expect(r.success).toBe(true);
   });
 });
 

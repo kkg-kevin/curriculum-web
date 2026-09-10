@@ -17,6 +17,9 @@ const VALID_INTEREST = ['bootcamp', 'project', 'quarky', 'general'];
  *   - ref / referenceId       — slug of the pathway / project / store item
  *   - enquiry=1               — render the lighter enquiry form variant
  *                               (learner name/age optional) — set by Projects & Store pages
+ *   - flow=pathway            — enrolling into a pathway (from a pathway page / the
+ *                               diagnostic): the FULL enrol form + the "Type of learning hub"
+ *                               picker with that hub's schedule
  *   - course                  — an age-based starting-course suggestion (pathway page)
  */
 export default function EnrollPage() {
@@ -25,18 +28,20 @@ export default function EnrollPage() {
   const defaultInterest = VALID_INTEREST.includes(interestParam) ? interestParam : 'general';
   const referenceId = params.get('referenceId') || params.get('ref') || null;
   const suggestedCourse = params.get('course') || null;
+  const isPathwayFlow = params.get('flow') === 'pathway';
 
-  // A project / store / pathway reference (or an explicit ?enquiry=1) switches to the lighter
-  // enquiry variant — buying isn't always about one named child. `getProject` only knows the
-  // hardcoded projects catalog; a project or store item that came from the API (a referenceId
-  // with interestedIn=project|quarky|general, no local match) is treated as an enquiry too —
-  // the Enquiries card resolves the slug to a name server-side.
+  // A project / store reference (or an explicit ?enquiry=1) switches to the lighter enquiry
+  // variant — buying isn't always about one named child. A pathway enrol (`flow=pathway`) is
+  // never an enquiry: it's a real "enrol my child" with the hub-type picker.
   const catalogItem = referenceId ? getProject(referenceId) : null;
   const isApiEnquiry =
+    !isPathwayFlow &&
     Boolean(referenceId) &&
     !catalogItem &&
     ['project', 'quarky', 'general'].includes(defaultInterest);
-  const isEnquiry = params.get('enquiry') === '1' || Boolean(catalogItem) || isApiEnquiry;
+  const isEnquiry =
+    !isPathwayFlow &&
+    (params.get('enquiry') === '1' || Boolean(catalogItem) || isApiEnquiry);
 
   const referenceLabel = catalogItem
     ? catalogItem.name
@@ -62,14 +67,17 @@ export default function EnrollPage() {
         lead={
           isEnquiry
             ? 'Tell us what you’re interested in and we’ll confirm the price, arrange payment and get you set up. No account or commitment needed to ask.'
-            : 'Tell us about your child and what you’re interested in. This isn’t a payment or a binding sign-up — our team will get in touch to talk through options and next steps.'
+            : isPathwayFlow
+              ? 'First pick where the learner would attend and check its schedule, then add your details. This isn’t a payment or a binding sign-up — our team will get in touch to arrange a place.'
+              : 'Tell us about your child and what you’re interested in. This isn’t a payment or a binding sign-up — our team will get in touch to talk through options and next steps.'
         }
       />
 
       <Section>
-        <Box sx={{ maxWidth: 640 }}>
+        <Box sx={{ maxWidth: isPathwayFlow ? 720 : 640 }}>
           <EnrollForm
             variant={isEnquiry ? 'enquiry' : 'enroll'}
+            withHub={isPathwayFlow}
             defaultInterest={defaultInterest}
             referenceId={referenceId}
             referenceLabel={referenceLabel}
