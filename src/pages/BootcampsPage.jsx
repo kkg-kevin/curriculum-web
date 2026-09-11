@@ -101,7 +101,7 @@ function ComingSoon() {
 }
 
 /**
- * Bootcamps section (`/bootcamps`). A bootcamp is a Program the curriculum team flipped "List on
+ * Bootcamps section (`/bootcamps`). A bootcamp is an Event the curriculum team flipped "List on
  * the website" — a short, intensive holiday/weekend build with a showcase at the end. See
  * GET /api/public/bootcamps. Booking is an "Enquire to book" lead (no checkout yet).
  *

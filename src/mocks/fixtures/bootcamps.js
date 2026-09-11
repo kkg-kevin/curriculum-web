@@ -1,8 +1,8 @@
 import { slugify } from '../../utils/slugify.js';
 
 /**
- * Offline mock for GET /api/public/bootcamps[/:idOrSlug] — the designated admin's Program
- * curricula flipped "List on the website" in the portal's Program view
+ * Offline mock for GET /api/public/bootcamps[/:idOrSlug] — the designated admin's Event
+ * curricula flipped "List on the website" in the portal's Event view
  * (WEBSITE_INTEGRATION_CONTRACT.md §3.1/§3.2). Shape mirrors the real projection.
  */
 const raw = [
