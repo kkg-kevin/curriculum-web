@@ -16,7 +16,7 @@ export const FORMAT_LABEL = {
 };
 
 /**
- * One card in the Bootcamps grid (`/bootcamps`). A bootcamp is a short, intensive Program the
+ * One card in the Bootcamps grid (`/bootcamps`). A bootcamp is a short, intensive Event the
  * curriculum team flipped "List on the website" — a full build packed into a week or two, with
  * a showcase at the end. Same visual language as ProjectCard — a brand-blue band with a
  * "BOOTCAMP · HOLIDAY" kicker and the name as the hero — closing on the PRICE. Links to

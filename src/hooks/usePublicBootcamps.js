@@ -3,8 +3,8 @@ import { publicApi } from '../services/api.js';
 
 /**
  * The Bootcamps section (`/bootcamps`) reads `GET /api/public/bootcamps` — the designated
- * curriculum admin's Program curricula (short-run cohorts) flipped "List on the website" in the
- * portal's Program view. Shape per item:
+ * curriculum admin's Event curricula (short-run cohorts) flipped "List on the website" in the
+ * portal's Event view. Shape per item:
  *   { id, slug, name, tagline, format, duration, ageMin, ageMax, coverImage, price,
  *     highlightCount }
  * The detail endpoint adds description (plain text), highlights[], and upcomingRuns[]
