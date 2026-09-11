@@ -6,13 +6,11 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 
-// The curriculum system's own brand blues (client/.../profile/theme.jsx). The
-// pathways API returns this same `#25476a` as every pathway's `color`, so the
-// whole grid is one calm brand family — pathways are told apart by their name
-// and their course journey, not by decoration.
-const ACCENT = '#25476a';
-const ACCENT_MID = '#2e7db5';
-const ACCENT_LIGHT = '#38aae1';
+// theme.palette.primary IS the curriculum system's own brand blue (see
+// theme/palette.js) — the pathways API returns that same navy as every
+// pathway's `color`, so the whole grid is one calm brand family already;
+// pathways are told apart by their name and their course journey, not by
+// per-card decoration.
 
 /**
  * One card in the Learning Pathways grid. A pathway is an ordered set of courses
@@ -36,11 +34,11 @@ function JourneyRail({ count }) {
               width: i === 0 ? 11 : 8,
               height: i === 0 ? 11 : 8,
               borderRadius: '50%',
-              bgcolor: i === 0 ? ACCENT_MID : 'divider',
+              bgcolor: i === 0 ? 'primary.main' : 'divider',
               flexShrink: 0,
               ...(i === 0 && {
                 boxShadow: (t) =>
-                  `0 0 0 4px ${t.palette.mode === 'dark' ? 'rgba(255,255,255,0.07)' : 'rgba(46,125,181,0.16)'}`,
+                  `0 0 0 4px ${t.palette.mode === 'dark' ? 'rgba(255,255,255,0.07)' : 'rgba(45,117,170,0.16)'}`,
               }),
             }}
           />
@@ -73,7 +71,7 @@ export default function PathwayCard({ pathway }) {
         '&:hover': {
           transform: 'translateY(-4px)',
           boxShadow: 'shadow.lg',
-          borderColor: ACCENT_MID,
+          borderColor: 'primary.main',
         },
         '&:hover .pw-arrow': { transform: 'translateX(4px)' },
       }}
@@ -101,7 +99,8 @@ export default function PathwayCard({ pathway }) {
             p: 2.5,
             overflow: 'hidden',
             color: '#fff',
-            background: `linear-gradient(150deg, ${ACCENT} 0%, ${ACCENT_MID} 100%)`,
+            background: (t) =>
+              `linear-gradient(150deg, ${t.palette.primary.dark} 0%, ${t.palette.primary.main} 100%)`,
           }}
         >
           {/* soft light bloom, top-right — subtle depth, not an icon */}
@@ -195,7 +194,7 @@ export default function PathwayCard({ pathway }) {
                 gap: 0.75,
                 fontWeight: 700,
                 fontSize: '0.9rem',
-                color: (t) => (t.palette.mode === 'dark' ? ACCENT_LIGHT : ACCENT_MID),
+                color: (t) => (t.palette.mode === 'dark' ? t.palette.primary.light : t.palette.primary.main),
               }}
             >
               Explore this pathway

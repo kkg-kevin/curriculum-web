@@ -8,12 +8,6 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import SmartImage from '../common/SmartImage.jsx';
 import { formatPrice, ageLabel } from '../../utils/format.js';
 
-// The curriculum system's brand blues — Pathways, Projects, the Store and Bootcamps all share
-// this one family so the structured-learning surfaces read as one system.
-const ACCENT = '#25476a';
-const ACCENT_MID = '#2e7db5';
-const ACCENT_LIGHT = '#38aae1';
-
 export const FORMAT_LABEL = {
   holiday: 'Holiday',
   weekend: 'Weekend',
@@ -51,7 +45,7 @@ export default function BootcampCard({ bootcamp }) {
         '&:hover': {
           transform: 'translateY(-4px)',
           boxShadow: 'shadow.lg',
-          borderColor: ACCENT_MID,
+          borderColor: 'primary.main',
         },
         '&:hover .bc-arrow': { transform: 'translateX(4px)' },
       }}
@@ -109,7 +103,8 @@ export default function BootcampCard({ bootcamp }) {
               p: 2.5,
               overflow: 'hidden',
               color: '#fff',
-              background: `linear-gradient(150deg, ${ACCENT} 0%, ${ACCENT_MID} 100%)`,
+              background: (t) =>
+                `linear-gradient(150deg, ${t.palette.primary.dark} 0%, ${t.palette.primary.main} 100%)`,
             }}
           >
             <Box
@@ -196,7 +191,7 @@ export default function BootcampCard({ bootcamp }) {
                 sx={{
                   fontSize: price ? '1.05rem' : '0.9rem',
                   fontWeight: 800,
-                  color: (t) => (t.palette.mode === 'dark' ? ACCENT_LIGHT : ACCENT),
+                  color: (t) => (t.palette.mode === 'dark' ? t.palette.primary.light : t.palette.primary.dark),
                   lineHeight: 1.2,
                 }}
               >
@@ -215,7 +210,7 @@ export default function BootcampCard({ bootcamp }) {
                 gap: 0.5,
                 fontWeight: 700,
                 fontSize: '0.875rem',
-                color: (t) => (t.palette.mode === 'dark' ? ACCENT_LIGHT : ACCENT_MID),
+                color: (t) => (t.palette.mode === 'dark' ? t.palette.primary.light : t.palette.primary.main),
                 flexShrink: 0,
               }}
             >

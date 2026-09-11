@@ -1,4 +1,5 @@
 import { useParams, Link as RouterLink } from 'react-router-dom';
+import { alpha } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
@@ -19,8 +20,6 @@ import { ErrorBlock } from '../components/common/StateViews.jsx';
 import { usePublicProject } from '../hooks/usePublicProjects.js';
 import { formatPrice, ageLabel } from '../utils/format.js';
 
-const ACCENT = '#25476a';
-const ACCENT_MID = '#2e7db5';
 const LEVEL_LABEL = { beginner: 'Beginner', intermediate: 'Intermediate', advanced: 'Advanced' };
 
 // One numbered step in the project's build journey (a milestone).
@@ -38,7 +37,7 @@ function BuildStep({ index, total, step }) {
             placeItems: 'center',
             fontWeight: 700,
             color: '#fff',
-            bgcolor: ACCENT_MID,
+            bgcolor: 'primary.main',
             zIndex: 1,
           }}
         >
@@ -137,7 +136,7 @@ export default function ProjectDetailPage() {
           borderBottom: '1px solid',
           borderColor: 'divider',
           borderTop: '4px solid',
-          borderTopColor: ACCENT,
+          borderTopColor: 'primary.dark',
           py: { xs: 4, md: 6 },
         }}
       >
@@ -165,7 +164,7 @@ export default function ProjectDetailPage() {
                 {level && (
                   <Chip
                     label={LEVEL_LABEL[level]}
-                    sx={{ bgcolor: `${ACCENT}1A`, color: 'text.primary', fontWeight: 600 }}
+                    sx={{ bgcolor: (t) => alpha(t.palette.primary.dark, 0.102), color: 'text.primary', fontWeight: 600 }}
                   />
                 )}
                 {age && (
@@ -205,7 +204,7 @@ export default function ProjectDetailPage() {
                   maxWidth: 420,
                 }}
               >
-                <Typography sx={{ fontSize: '1.4rem', fontWeight: 800, color: ACCENT }}>
+                <Typography sx={{ fontSize: '1.4rem', fontWeight: 800, color: 'primary.dark' }}>
                   {priceLabel}
                 </Typography>
                 {price?.note && (
@@ -286,7 +285,7 @@ export default function ProjectDetailPage() {
           {deliverables.length > 0 && (
             <Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                <BuildCircleIcon sx={{ color: ACCENT_MID }} />
+                <BuildCircleIcon sx={{ color: 'primary.main' }} />
                 <Typography variant="h4" component="h2">
                   What you&apos;ll build
                 </Typography>
@@ -312,7 +311,7 @@ export default function ProjectDetailPage() {
           {requirements.length > 0 && (
             <Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                <Inventory2Icon sx={{ color: ACCENT_MID }} />
+                <Inventory2Icon sx={{ color: 'primary.main' }} />
                 <Typography variant="h4" component="h2">
                   What you&apos;ll need
                 </Typography>

@@ -1,4 +1,5 @@
 import { useParams, Link as RouterLink } from 'react-router-dom';
+import { alpha } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
@@ -17,8 +18,6 @@ import CTABanner from '../components/home/CTABanner.jsx';
 import { ErrorBlock } from '../components/common/StateViews.jsx';
 import PriceTag from '../components/catalog/PriceTag.jsx';
 import { usePublicStoreItem } from '../hooks/usePublicStore.js';
-
-const ACCENT = '#25476a';
 
 const CATEGORY_LABEL = { kit: 'Robots & kits', bundle: 'Bundle', accessory: 'Accessory' };
 const STOCK_LABEL = { available: 'Available now', preorder: 'Pre-order', coming_soon: 'Coming soon' };
@@ -104,7 +103,7 @@ export default function StoreItemPage() {
           borderBottom: '1px solid',
           borderColor: 'divider',
           borderTop: '4px solid',
-          borderTopColor: ACCENT,
+          borderTopColor: 'primary.dark',
           py: { xs: 4, md: 6 },
         }}
       >
@@ -132,7 +131,7 @@ export default function StoreItemPage() {
                 {storeCategory && (
                   <Chip
                     label={CATEGORY_LABEL[storeCategory] || storeCategory}
-                    sx={{ bgcolor: `${ACCENT}1A`, color: 'text.primary', fontWeight: 600 }}
+                    sx={{ bgcolor: (t) => alpha(t.palette.primary.dark, 0.102), color: 'text.primary', fontWeight: 600 }}
                   />
                 )}
                 <Chip

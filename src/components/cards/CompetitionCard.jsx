@@ -8,12 +8,6 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import SmartImage from '../common/SmartImage.jsx';
 import { formatDateRange } from '../../utils/dates.js';
 
-// Same brand-blue family as Pathways / Projects / Bootcamps — the structured-learning surfaces
-// read as one system.
-const ACCENT = '#25476a';
-const ACCENT_MID = '#2e7db5';
-const ACCENT_LIGHT = '#38aae1';
-
 export const FORMAT_LABEL = { individual: 'Individual', pairs: 'Pairs', team: 'Team' };
 export const CADENCE_LABEL = { one_off: 'One-off', annual: 'Annual', termly: 'Termly' };
 const STATUS_LABEL = { open: 'Registration open', closed: 'Registration closed' };
@@ -49,7 +43,7 @@ export default function CompetitionCard({ competition }) {
         overflow: 'hidden',
         transition:
           'transform 220ms cubic-bezier(0.2,0.8,0.2,1), box-shadow 220ms ease, border-color 220ms ease',
-        '&:hover': { transform: 'translateY(-4px)', boxShadow: 'shadow.lg', borderColor: ACCENT_MID },
+        '&:hover': { transform: 'translateY(-4px)', boxShadow: 'shadow.lg', borderColor: 'primary.main' },
         '&:hover .cc-arrow': { transform: 'translateX(4px)' },
       }}
     >
@@ -101,7 +95,8 @@ export default function CompetitionCard({ competition }) {
               p: 2.5,
               overflow: 'hidden',
               color: '#fff',
-              background: `linear-gradient(150deg, ${ACCENT} 0%, ${ACCENT_MID} 100%)`,
+              background: (t) =>
+                `linear-gradient(150deg, ${t.palette.primary.dark} 0%, ${t.palette.primary.main} 100%)`,
             }}
           >
             <Box
@@ -149,7 +144,7 @@ export default function CompetitionCard({ competition }) {
               sx={{
                 fontSize: '0.9rem',
                 fontWeight: 800,
-                color: (t) => (t.palette.mode === 'dark' ? ACCENT_LIGHT : ACCENT),
+                color: (t) => (t.palette.mode === 'dark' ? t.palette.primary.light : t.palette.primary.dark),
                 lineHeight: 1.2,
               }}
             >
@@ -162,7 +157,7 @@ export default function CompetitionCard({ competition }) {
                 gap: 0.5,
                 fontWeight: 700,
                 fontSize: '0.875rem',
-                color: (t) => (t.palette.mode === 'dark' ? ACCENT_LIGHT : ACCENT_MID),
+                color: (t) => (t.palette.mode === 'dark' ? t.palette.primary.light : t.palette.primary.main),
                 flexShrink: 0,
               }}
             >
