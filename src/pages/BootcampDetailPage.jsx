@@ -1,4 +1,5 @@
 import { useParams, Link as RouterLink } from 'react-router-dom';
+import { alpha } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
@@ -19,9 +20,6 @@ import { FORMAT_LABEL } from '../components/cards/BootcampCard.jsx';
 import { usePublicBootcamp } from '../hooks/usePublicBootcamps.js';
 import { formatPrice, ageLabel } from '../utils/format.js';
 import { formatDateRange } from '../utils/dates.js';
-
-const ACCENT = '#25476a';
-const ACCENT_MID = '#2e7db5';
 
 const RUN_STATUS_LABEL = { upcoming: 'Upcoming', active: 'Running now' };
 
@@ -100,7 +98,7 @@ export default function BootcampDetailPage() {
           borderBottom: '1px solid',
           borderColor: 'divider',
           borderTop: '4px solid',
-          borderTopColor: ACCENT,
+          borderTopColor: 'primary.dark',
           py: { xs: 4, md: 6 },
         }}
       >
@@ -128,7 +126,7 @@ export default function BootcampDetailPage() {
                 {format && (
                   <Chip
                     label={FORMAT_LABEL[format]}
-                    sx={{ bgcolor: `${ACCENT}1A`, color: 'text.primary', fontWeight: 600 }}
+                    sx={{ bgcolor: (t) => alpha(t.palette.primary.dark, 0.102), color: 'text.primary', fontWeight: 600 }}
                   />
                 )}
                 {duration && <Chip variant="outlined" label={duration} sx={{ fontWeight: 600 }} />}
@@ -160,7 +158,7 @@ export default function BootcampDetailPage() {
                   maxWidth: 420,
                 }}
               >
-                <Typography sx={{ fontSize: '1.4rem', fontWeight: 800, color: ACCENT }}>
+                <Typography sx={{ fontSize: '1.4rem', fontWeight: 800, color: 'primary.dark' }}>
                   {priceLabel}
                 </Typography>
                 {price?.note && (
@@ -220,7 +218,7 @@ export default function BootcampDetailPage() {
           {highlights.length > 0 && (
             <Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                <CheckCircleIcon sx={{ color: ACCENT_MID }} />
+                <CheckCircleIcon sx={{ color: 'primary.main' }} />
                 <Typography variant="h4" component="h2">
                   What you&apos;ll build
                 </Typography>
@@ -239,7 +237,7 @@ export default function BootcampDetailPage() {
           {upcomingRuns.length > 0 && (
             <Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                <EventIcon sx={{ color: ACCENT_MID }} />
+                <EventIcon sx={{ color: 'primary.main' }} />
                 <Typography variant="h4" component="h2">
                   Upcoming runs
                 </Typography>

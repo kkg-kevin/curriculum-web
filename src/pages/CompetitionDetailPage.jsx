@@ -1,4 +1,5 @@
 import { useParams, Link as RouterLink } from 'react-router-dom';
+import { alpha } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
@@ -20,8 +21,6 @@ import { FORMAT_LABEL, CADENCE_LABEL } from '../components/cards/CompetitionCard
 import { usePublicCompetition } from '../hooks/usePublicCompetitions.js';
 import { formatDateRange } from '../utils/dates.js';
 
-const ACCENT = '#25476a';
-const ACCENT_MID = '#2e7db5';
 const TRACK_GREEN = '#2E7D32';
 
 const STATUS_LABEL = { open: 'Registration open', closed: 'Registration closed' };
@@ -91,7 +90,7 @@ function TrackCard({ track, competitionName }) {
             rel="noopener noreferrer"
             variant="outlined"
             endIcon={<OpenInNewIcon />}
-            sx={{ color: ACCENT, borderColor: ACCENT }}
+            sx={{ color: 'primary.dark', borderColor: 'primary.dark' }}
           >
             Know more
           </Button>
@@ -175,7 +174,7 @@ export default function CompetitionDetailPage() {
           borderBottom: '1px solid',
           borderColor: 'divider',
           borderTop: '4px solid',
-          borderTopColor: ACCENT,
+          borderTopColor: 'primary.dark',
           py: { xs: 4, md: 6 },
         }}
       >
@@ -193,7 +192,12 @@ export default function CompetitionDetailPage() {
           <Box sx={{ display: 'flex', gap: { xs: 3, md: 5 }, flexWrap: { xs: 'wrap', md: 'nowrap' }, alignItems: 'flex-start' }}>
             <Box sx={{ flex: 1, minWidth: 260 }}>
               <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
-                {edition && <Chip label={edition} sx={{ bgcolor: `${ACCENT}1A`, color: 'text.primary', fontWeight: 600 }} />}
+                {edition && (
+                  <Chip
+                    label={edition}
+                    sx={{ bgcolor: (t) => alpha(t.palette.primary.dark, 0.102), color: 'text.primary', fontWeight: 600 }}
+                  />
+                )}
                 {level && <Chip variant="outlined" label={level} sx={{ fontWeight: 600 }} />}
                 {format && <Chip variant="outlined" label={FORMAT_LABEL[format]} sx={{ fontWeight: 600 }} />}
                 {cadence && <Chip variant="outlined" label={CADENCE_LABEL[cadence]} sx={{ fontWeight: 600 }} />}

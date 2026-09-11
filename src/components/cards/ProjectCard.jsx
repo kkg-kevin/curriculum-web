@@ -8,12 +8,6 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import SmartImage from '../common/SmartImage.jsx';
 import { formatPrice, ageLabel } from '../../utils/format.js';
 
-// The curriculum system's brand blues — the whole marketing site's structured-learning
-// surfaces (Pathways, Projects) share this one family so they read as one system.
-const ACCENT = '#25476a';
-const ACCENT_MID = '#2e7db5';
-const ACCENT_LIGHT = '#38aae1';
-
 const LEVEL_LABEL = { beginner: 'Beginner', intermediate: 'Intermediate', advanced: 'Advanced' };
 
 /**
@@ -56,7 +50,7 @@ export default function ProjectCard({ project }) {
         '&:hover': {
           transform: 'translateY(-4px)',
           boxShadow: 'shadow.lg',
-          borderColor: ACCENT_MID,
+          borderColor: 'primary.main',
         },
         '&:hover .pj-arrow': { transform: 'translateX(4px)' },
       }}
@@ -114,7 +108,8 @@ export default function ProjectCard({ project }) {
               p: 2.5,
               overflow: 'hidden',
               color: '#fff',
-              background: `linear-gradient(150deg, ${ACCENT} 0%, ${ACCENT_MID} 100%)`,
+              background: (t) =>
+                `linear-gradient(150deg, ${t.palette.primary.dark} 0%, ${t.palette.primary.main} 100%)`,
             }}
           >
             <Box
@@ -204,7 +199,7 @@ export default function ProjectCard({ project }) {
                 sx={{
                   fontSize: price ? '1.05rem' : '0.9rem',
                   fontWeight: 800,
-                  color: (t) => (t.palette.mode === 'dark' ? ACCENT_LIGHT : ACCENT),
+                  color: (t) => (t.palette.mode === 'dark' ? t.palette.primary.light : t.palette.primary.dark),
                   lineHeight: 1.2,
                 }}
               >
@@ -223,7 +218,7 @@ export default function ProjectCard({ project }) {
                 gap: 0.5,
                 fontWeight: 700,
                 fontSize: '0.875rem',
-                color: (t) => (t.palette.mode === 'dark' ? ACCENT_LIGHT : ACCENT_MID),
+                color: (t) => (t.palette.mode === 'dark' ? t.palette.primary.light : t.palette.primary.main),
                 flexShrink: 0,
               }}
             >

@@ -93,7 +93,7 @@ export default function createAppTheme(mode) {
           },
           '#root': { minHeight: '100vh' },
           '::selection': {
-            backgroundColor: isDark ? 'rgba(94,157,225,0.35)' : 'rgba(21,101,192,0.16)',
+            backgroundColor: isDark ? 'rgba(56,170,225,0.35)' : 'rgba(45,117,170,0.16)',
           },
         },
       },

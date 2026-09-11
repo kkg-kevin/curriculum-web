@@ -8,11 +8,6 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import SmartImage from '../common/SmartImage.jsx';
 import PriceTag from '../catalog/PriceTag.jsx';
 
-// The curriculum system's brand blues — Pathways, Projects and the Store all share this one
-// family so the structured-learning surfaces read as one system.
-const ACCENT = '#25476a';
-const ACCENT_MID = '#2e7db5';
-
 const CATEGORY_LABEL = { kit: 'Robots & kits', bundle: 'Bundle', accessory: 'Accessory' };
 const STOCK_LABEL = { available: 'Available now', preorder: 'Pre-order', coming_soon: 'Coming soon' };
 
@@ -43,7 +38,7 @@ export default function StoreItemCard({ item }) {
         '&:hover': {
           transform: 'translateY(-4px)',
           boxShadow: 'shadow.lg',
-          borderColor: ACCENT_MID,
+          borderColor: 'primary.main',
         },
         '&:hover .st-arrow': { transform: 'translateX(4px)' },
       }}
@@ -92,7 +87,7 @@ export default function StoreItemCard({ item }) {
                 sx={{
                   position: 'absolute', top: 12, right: 12, px: 1, py: 0.4, borderRadius: 1,
                   fontSize: 11, fontWeight: 700, color: '#fff',
-                  bgcolor: notAvailable ? 'rgba(0,0,0,0.6)' : ACCENT_MID,
+                  bgcolor: notAvailable ? 'rgba(0,0,0,0.6)' : 'primary.main',
                 }}
               >
                 {notAvailable ? STOCK_LABEL[stockStatus] : badge}
@@ -111,7 +106,8 @@ export default function StoreItemCard({ item }) {
               p: 2.5,
               overflow: 'hidden',
               color: '#fff',
-              background: `linear-gradient(150deg, ${ACCENT} 0%, ${ACCENT_MID} 100%)`,
+              background: (t) =>
+                `linear-gradient(150deg, ${t.palette.primary.dark} 0%, ${t.palette.primary.main} 100%)`,
             }}
           >
             <Box
@@ -190,7 +186,7 @@ export default function StoreItemCard({ item }) {
                 gap: 0.5,
                 fontWeight: 700,
                 fontSize: '0.875rem',
-                color: ACCENT_MID,
+                color: 'primary.main',
                 flexShrink: 0,
               }}
             >

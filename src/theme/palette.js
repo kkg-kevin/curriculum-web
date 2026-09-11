@@ -7,8 +7,13 @@
  * added here — never a hex literal in a component. That keeps every current and
  * future screen theme-correct for free.
  *
- * Placeholder brand: blue primary, orange secondary, warm neutrals. When the
- * real brand lands, edit the scales below and nothing else changes.
+ * Blue primary = the curriculum system's own brand navy (#25476A / #2E7DB5 /
+ * #38AAE1 — see client/.../learner-portal/components/profile/theme.jsx), so the
+ * marketing site and the portal read as one product. Orange secondary + warm
+ * neutrals are unchanged. `500` is nudged a touch darker than the portal's
+ * literal `#2E7DB5` (to `#2D75AA`) so it clears WCAG AA (4.5:1) as solid-fill
+ * button text on white — the portal never uses that blue as a text-contrast
+ * background, so this one adjustment was free to make there.
  *
  * Design note (premium pass): the light ground is a warm off-white, not pure
  * white — pure #FFF next to warm brand colours reads clinical. Cards, bands and
@@ -18,16 +23,16 @@
  */
 
 const BLUE = {
-  50: '#E7F0FB',
-  100: '#C6DDF6',
-  200: '#93BEEC',
-  300: '#5E9DE1',
-  400: '#3B84D9',
-  500: '#1565C0',
-  600: '#1157A6',
-  700: '#0D47A1',
-  800: '#0A387F',
-  900: '#07285C',
+  50: '#EBF7FC',
+  100: '#CFEBF8',
+  200: '#A5D9F2',
+  300: '#38AAE1',
+  400: '#3390C6',
+  500: '#2D75AA',
+  600: '#295C87',
+  700: '#25476A',
+  800: '#18324D',
+  900: '#0C1F34',
 };
 
 const ORANGE = {
@@ -95,7 +100,7 @@ export function buildPalette(mode) {
         heroFrom: '#0E1B30',
         heroVia: '#0B1220',
         heroTo: '#1A140A',
-        heroGlow: 'rgba(59,132,217,0.28)', // radial accent bloom in the hero
+        heroGlow: 'rgba(51,144,198,0.28)', // radial accent bloom in the hero
         heroGlowWarm: 'rgba(245,124,0,0.20)',
         onColor: 'rgba(255,255,255,0.16)', // translucent chip/border on a brand band
         onColorText: 'rgba(255,255,255,0.86)',
@@ -109,7 +114,7 @@ export function buildPalette(mode) {
         sm: '0 1px 2px rgba(0,0,0,0.40)',
         md: '0 2px 4px rgba(0,0,0,0.32), 0 8px 24px -6px rgba(0,0,0,0.50)',
         lg: '0 8px 16px -4px rgba(0,0,0,0.40), 0 24px 48px -12px rgba(0,0,0,0.60)',
-        glow: '0 0 0 1px rgba(94,157,225,0.30), 0 12px 40px -8px rgba(59,132,217,0.45)',
+        glow: '0 0 0 1px rgba(56,170,225,0.30), 0 12px 40px -8px rgba(51,144,198,0.45)',
       },
       brand: { blue: BLUE, orange: ORANGE, sand: SAND },
     };
@@ -145,11 +150,11 @@ export function buildPalette(mode) {
       heroFrom: '#EEF4FC',
       heroVia: SAND[50],
       heroTo: '#FFF4E6',
-      heroGlow: 'rgba(21,101,192,0.14)', // radial accent bloom in the hero
+      heroGlow: 'rgba(45,117,170,0.14)', // radial accent bloom in the hero
       heroGlowWarm: 'rgba(245,124,0,0.12)',
       onColor: 'rgba(255,255,255,0.20)', // translucent chip/border on a brand band
       onColorText: 'rgba(255,255,255,0.90)',
-      imageFrom: '#E7F0FB',
+      imageFrom: '#EBF7FC',
       imageTo: '#FFF3E4',
       imagePlaceholder: '#EEF1F5',
       dotGrid: 'rgba(33, 30, 26, 0.05)', // decorative dot-grid texture
@@ -159,7 +164,7 @@ export function buildPalette(mode) {
       sm: '0 1px 2px rgba(28, 25, 20, 0.06)',
       md: '0 1px 2px rgba(28, 25, 20, 0.06), 0 12px 28px -8px rgba(28, 25, 20, 0.14)',
       lg: '0 8px 16px -6px rgba(28, 25, 20, 0.12), 0 32px 56px -16px rgba(28, 25, 20, 0.22)',
-      glow: '0 0 0 1px rgba(21,101,192,0.16), 0 16px 44px -10px rgba(21,101,192,0.28)',
+      glow: '0 0 0 1px rgba(45,117,170,0.16), 0 16px 44px -10px rgba(45,117,170,0.28)',
     },
     brand: { blue: BLUE, orange: ORANGE, sand: SAND },
   };
