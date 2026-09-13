@@ -17,6 +17,7 @@ import SmartImage from '../components/common/SmartImage.jsx';
 import CTABanner from '../components/home/CTABanner.jsx';
 import { ErrorBlock } from '../components/common/StateViews.jsx';
 import { FORMAT_LABEL } from '../components/cards/BootcampCard.jsx';
+import CoursePricingRoadmap from '../components/pathway/CoursePricingRoadmap.jsx';
 import { usePublicBootcamp } from '../hooks/usePublicBootcamps.js';
 import { formatPrice, ageLabel } from '../utils/format.js';
 import { formatDateRange } from '../utils/dates.js';
@@ -58,7 +59,7 @@ export default function BootcampDetailPage() {
 
   const {
     name, tagline, description, format, duration, ageMin, ageMax, coverImage, price,
-    highlights = [], upcomingRuns = [],
+    highlights = [], upcomingRuns = [], coursePricing = [],
   } = data;
 
   const age = ageLabel(ageMin, ageMax);
@@ -280,6 +281,32 @@ export default function BootcampDetailPage() {
               Dates for the next run aren&apos;t published yet — send an enquiry and we&apos;ll let
               you know the moment they are.
             </Typography>
+          </Box>
+        )}
+
+        {coursePricing.length > 0 && (
+          <Box sx={{ mt: 6, maxWidth: 900 }}>
+            <Typography variant="h2" component="h2" sx={{ mb: 1 }}>
+              Course pricing
+            </Typography>
+            <Typography sx={{ color: 'text.secondary', mb: 4 }}>
+              Individual course prices within this bootcamp&apos;s curriculum.
+            </Typography>
+            <Box sx={{ display: 'grid', gap: 5 }}>
+              {coursePricing.map((section, i) => (
+                <Box key={section.pathwayId || `ungrouped-${i}`}>
+                  {section.pathwayName && (
+                    <Typography
+                      variant="overline"
+                      sx={{ display: 'block', color: section.pathwayColor || 'primary.dark', fontWeight: 800, letterSpacing: '0.06em', mb: 2 }}
+                    >
+                      {section.pathwayName}
+                    </Typography>
+                  )}
+                  <CoursePricingRoadmap courses={section.courses} accent={section.pathwayColor || undefined} />
+                </Box>
+              ))}
+            </Box>
           </Box>
         )}
 
