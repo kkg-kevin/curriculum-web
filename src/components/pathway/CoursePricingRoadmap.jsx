@@ -75,7 +75,6 @@ export default function CoursePricingRoadmap({ courses = [], accent = FALLBACK_A
                 sx={{
                   border: '1px solid',
                   borderColor: 'divider',
-                  borderLeft: `3px solid ${accent}`,
                   borderRadius: 2,
                   bgcolor: 'background.paper',
                   p: { xs: 1.75, sm: 2 },
