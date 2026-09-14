@@ -3,11 +3,12 @@ import { publicApi } from '../services/api.js';
 
 /**
  * The Bootcamps section (`/bootcamps`) reads `GET /api/public/bootcamps` — the designated
- * curriculum admin's Event curricula (short-run cohorts) flipped "List on the website" in the
- * portal's Event view. Shape per item:
- *   { id, slug, name, tagline, format, duration, ageMin, ageMax, coverImage, price,
+ * admin's Bootcamp module listings flipped `saleStatus: "for_sale"`. Shape per item:
+ *   { id, slug, name, tagline, format, duration, ageMin, ageMax, coverImage, price, priceNotes,
  *     highlightCount }
- * The detail endpoint adds description (plain text), highlights[], and upcomingRuns[]
+ * `price` is null when the bootcamp is priced by course instead of as a whole (see
+ * CreateBootcampPage.jsx's pricing-mode toggle) — priceNotes applies either way. The detail
+ * endpoint adds description (plain text), highlights[], coursePricing[], and upcomingRuns[]
  * ({ hubName, startDate, endDate, status }).
  *
  * Defence-in-depth: a misconfigured backend could in theory return odd rows — drop anything

@@ -58,7 +58,8 @@ export async function downloadReportPdf(node, filename = 'diagnostic-report.pdf'
 
 /** A filesystem-safe filename from the report's names. */
 export function reportFilename(report) {
-  const parts = [report?.childName, report?.pathwayName, 'diagnostic']
+  const subjectName = report?.pathwayName || report?.bootcampName;
+  const parts = [report?.childName, subjectName, 'diagnostic']
     .filter(Boolean)
     .join(' ')
     .replace(/[^a-z0-9]+/gi, '-')

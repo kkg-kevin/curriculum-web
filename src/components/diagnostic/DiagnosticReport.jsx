@@ -14,8 +14,11 @@
  * dependency here) and every colour is literal hex — so html2canvas can capture it for
  * the "Download PDF" button, which lives inside the card's hero.
  *
+ * Also reused as-is for the Bootcamp diagnostic (public-bootcamp-diagnostic.service.js) — a
+ * bootcamp attempt's report carries `bootcampName` instead of `pathwayName`; never both.
+ *
  * Props:
- *   report — { pathwayName, assessmentName, totalScore, maxScore,
+ *   report — { pathwayName | bootcampName, assessmentName, totalScore, maxScore,
  *              competencyBreakdown[] (each { competencyId, name, marksEarned, marksPossible,
  *                indicators: [{ indicatorId, name, marksEarned, marksPossible }] }),
  *              indicatorBreakdown[] (flat fallback for older attempts / backends),
@@ -323,6 +326,7 @@ function CompetencyGroup({ name, earned, possible, indicators = [] }) {
 export default function DiagnosticReport({ report }) {
   const {
     pathwayName,
+    bootcampName,
     assessmentName,
     totalScore = 0,
     maxScore = 0,
@@ -332,6 +336,11 @@ export default function DiagnosticReport({ report }) {
     childAge,
     completedAt,
   } = report || {};
+
+  // A pathway diagnostic attempt carries pathwayName, a bootcamp one carries bootcampName —
+  // never both. Resolved once here so the rest of the component stays domain-agnostic.
+  const subjectName = pathwayName || bootcampName;
+  const subjectLabel = pathwayName ? 'Pathway' : 'Bootcamp';
 
   const percent = pct(totalScore, maxScore);
 
@@ -350,7 +359,7 @@ export default function DiagnosticReport({ report }) {
         }));
 
   const displayName = childName || 'Diagnostic result';
-  const metaLine = [pathwayName, childAge != null ? `Age ${childAge}` : null].filter(Boolean).join('  ·  ');
+  const metaLine = [subjectName, childAge != null ? `Age ${childAge}` : null].filter(Boolean).join('  ·  ');
   const completedLabel = completedAt
     ? new Date(completedAt).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })
     : null;
@@ -470,7 +479,7 @@ export default function DiagnosticReport({ report }) {
             </p>
             <p style={{ margin: '5px 0 0', fontSize: 13, color: INK_MUTED, lineHeight: 1.55 }}>
               A starting-point check, not a formal assessment — it helps place {childName || 'the learner'}{' '}
-              at the right course in the {pathwayName} pathway.
+              {pathwayName ? `at the right course in the ${pathwayName} pathway.` : `for ${subjectName}.`}
             </p>
           </div>
         </div>
@@ -480,7 +489,7 @@ export default function DiagnosticReport({ report }) {
       <div style={sectionStyle}>
         <SectionHeading icon={Icon.award}>Details</SectionHeading>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '14px 16px' }}>
-          <IdentityRow label="Pathway" value={pathwayName} />
+          <IdentityRow label={subjectLabel} value={subjectName} />
           <IdentityRow label="Diagnostic" value={assessmentName} />
           {childName && <IdentityRow label="Learner" value={childName} />}
           {childAge != null && <IdentityRow label="Age" value={String(childAge)} />}
