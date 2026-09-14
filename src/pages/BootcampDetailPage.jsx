@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useParams, Link as RouterLink } from 'react-router-dom';
 import { alpha } from '@mui/material/styles';
 import Box from '@mui/material/Box';
@@ -9,6 +10,8 @@ import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Link from '@mui/material/Link';
 import Skeleton from '@mui/material/Skeleton';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
+import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
 import EventIcon from '@mui/icons-material/Event';
 import SeoHead from '../components/seo/SeoHead.jsx';
 import JsonLd, { organizationSchema, productSchema } from '../components/seo/JsonLd.jsx';
@@ -27,6 +30,11 @@ const RUN_STATUS_LABEL = { upcoming: 'Upcoming', active: 'Running now' };
 export default function BootcampDetailPage() {
   const { slug } = useParams();
   const { data, isLoading, isError, error, refetch } = usePublicBootcamp(slug);
+  // The description itself is capped at 150 words in the admin builder (bootcamp.schema.js), so
+  // this clamp is a display-side safety net rather than the primary control — a normal
+  // ~150-word description shows in full at this line count; only a genuine outlier (or content
+  // saved before the cap existed) ever needs the "Read more" toggle.
+  const [descriptionExpanded, setDescriptionExpanded] = useState(false);
 
   if (isLoading) {
     return (
@@ -59,7 +67,7 @@ export default function BootcampDetailPage() {
 
   const {
     name, tagline, description, format, duration, ageMin, ageMax, coverImage, price,
-    highlights = [], upcomingRuns = [], coursePricing = [],
+    highlights = [], upcomingRuns = [], coursePricing = [], priceNotes = [], curriculum, diagnostic,
   } = data;
 
   const age = ageLabel(ageMin, ageMax);
@@ -92,7 +100,9 @@ export default function BootcampDetailPage() {
         ]}
       />
 
-      {/* header band */}
+      {/* header band — identity only (name/tagline/chips/photo). Price, what's included, and the
+          booking CTA all live once in the sticky sidebar below, instead of being duplicated in
+          both the header and a "Book" card at the very bottom of the page. */}
       <Box
         sx={{
           backgroundColor: 'surface.subtle',
@@ -119,7 +129,7 @@ export default function BootcampDetailPage() {
               display: 'flex',
               gap: { xs: 3, md: 5 },
               flexWrap: { xs: 'wrap', md: 'nowrap' },
-              alignItems: 'flex-start',
+              alignItems: 'center',
             }}
           >
             <Box sx={{ flex: 1, minWidth: 260 }}>
@@ -146,46 +156,10 @@ export default function BootcampDetailPage() {
                   {tagline}
                 </Typography>
               )}
-
-              {/* price + enquire */}
-              <Box
-                sx={{
-                  mt: 3,
-                  p: 2.5,
-                  borderRadius: 2,
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  bgcolor: 'background.paper',
-                  maxWidth: 420,
-                }}
-              >
-                <Typography sx={{ fontSize: '1.4rem', fontWeight: 800, color: 'primary.dark' }}>
-                  {priceLabel}
-                </Typography>
-                {price?.note && (
-                  <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                    {price.note}
-                  </Typography>
-                )}
-                <Button
-                  component={RouterLink}
-                  to={enquireTo}
-                  variant="contained"
-                  size="large"
-                  fullWidth
-                  sx={{ mt: 2 }}
-                >
-                  Enquire to book
-                </Button>
-                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-                  No online checkout yet — we&apos;ll confirm the next run&apos;s dates, the price and
-                  how to secure a place.
-                </Typography>
-              </Box>
             </Box>
 
             {coverImage && (
-              <Box sx={{ width: { xs: '100%', md: 380 }, flexShrink: 0 }}>
+              <Box sx={{ width: { xs: '100%', md: 340 }, flexShrink: 0 }}>
                 <SmartImage src={coverImage} alt={name} ratio="4 / 3" />
               </Box>
             )}
@@ -194,149 +168,347 @@ export default function BootcampDetailPage() {
       </Box>
 
       <Section>
-        {description && (
-          <Box sx={{ maxWidth: 760, mb: 6 }}>
-            <Typography variant="h2" component="h2" sx={{ mb: 2 }}>
-              About this bootcamp
-            </Typography>
-            <Typography sx={{ color: 'text.secondary', whiteSpace: 'pre-line', lineHeight: 1.7 }}>
-              {description}
-            </Typography>
-          </Box>
-        )}
+        <Box sx={{ display: 'flex', gap: { xs: 0, md: 6 }, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+          {/* main column */}
+          <Box sx={{ flex: '1 1 480px', minWidth: 0, maxWidth: 760 }}>
+            {description && (
+              <Box sx={{ mb: 6 }}>
+                <Typography variant="h2" component="h2" sx={{ mb: 2 }}>
+                  About this bootcamp
+                </Typography>
+                <Typography
+                  sx={{
+                    color: 'text.secondary',
+                    whiteSpace: 'pre-line',
+                    lineHeight: 1.7,
+                    ...(descriptionExpanded
+                      ? {}
+                      : {
+                          display: '-webkit-box',
+                          WebkitBoxOrient: 'vertical',
+                          WebkitLineClamp: 8,
+                          overflow: 'hidden',
+                        }),
+                  }}
+                >
+                  {description}
+                </Typography>
+                {!descriptionExpanded && description.length > 600 && (
+                  <Link
+                    component="button"
+                    type="button"
+                    onClick={() => setDescriptionExpanded(true)}
+                    sx={{ display: 'inline-block', mt: 1, fontWeight: 700 }}
+                  >
+                    Read more
+                  </Link>
+                )}
+              </Box>
+            )}
 
-        <Box
-          sx={{
-            display: 'grid',
-            gap: 4,
-            gridTemplateColumns: {
-              xs: '1fr',
-              md: highlights.length && upcomingRuns.length ? '1fr 1fr' : '1fr',
-            },
-            maxWidth: 900,
-          }}
-        >
-          {highlights.length > 0 && (
-            <Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                <CheckCircleIcon sx={{ color: 'primary.main' }} />
-                <Typography variant="h4" component="h2">
-                  What you&apos;ll build
+            {highlights.length > 0 && (
+              <Box sx={{ mb: 6 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                  <CheckCircleIcon sx={{ color: 'primary.main' }} />
+                  <Typography variant="h4" component="h2">
+                    What you&apos;ll build
+                  </Typography>
+                </Box>
+                <Box component="ul" sx={{ m: 0, p: 0, listStyle: 'none', display: 'grid', gap: 1.5 }}>
+                  {highlights.map((h, i) => (
+                    <Box component="li" key={`${h}-${i}`} sx={{ display: 'flex', gap: 1.25 }}>
+                      <CheckCircleIcon sx={{ fontSize: 20, color: 'success.main', flexShrink: 0, mt: 0.25 }} />
+                      <Typography>{h}</Typography>
+                    </Box>
+                  ))}
+                </Box>
+              </Box>
+            )}
+
+            {/* Running at — every hub this bootcamp currently runs at, resolved server-side into
+                a richer projection (photo/address/contact) than the old "Upcoming runs" list
+                carried — see public-bootcamp.service.js's projectHub(). */}
+            {upcomingRuns.length > 0 && (
+              <Box sx={{ mb: 6 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                  <EventIcon sx={{ color: 'primary.main' }} />
+                  <Typography variant="h4" component="h2">
+                    Running at
+                  </Typography>
+                </Box>
+
+                <Box sx={{ display: 'grid', gap: 1.5 }}>
+                  {upcomingRuns.map((run, i) => (
+                    <Box
+                      key={`${run.hub.id}-${i}`}
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1.75,
+                        p: 1.75,
+                        borderRadius: 2,
+                        border: '1px solid',
+                        borderColor: 'divider',
+                        bgcolor: 'background.paper',
+                        transition: 'border-color 180ms ease, box-shadow 180ms ease',
+                        '&:hover': {
+                          borderColor: 'primary.main',
+                          boxShadow: (t) => `0 4px 14px ${alpha(t.palette.primary.main, 0.1)}`,
+                        },
+                      }}
+                    >
+                      {run.hub.photo ? (
+                        <Box sx={{ width: 64, height: 64, borderRadius: 1.5, overflow: 'hidden', flexShrink: 0 }}>
+                          <SmartImage src={run.hub.photo} alt={run.hub.name} ratio="1 / 1" rounded={false} />
+                        </Box>
+                      ) : (
+                        <Box
+                          sx={{
+                            width: 64,
+                            height: 64,
+                            borderRadius: 1.5,
+                            flexShrink: 0,
+                            display: 'grid',
+                            placeItems: 'center',
+                            background: (t) => `linear-gradient(150deg, ${t.palette.primary.dark}, ${t.palette.primary.main})`,
+                          }}
+                        >
+                          <EventIcon sx={{ color: '#fff', opacity: 0.85 }} />
+                        </Box>
+                      )}
+
+                      <Box sx={{ minWidth: 0, flex: 1 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                          <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', lineHeight: 1.3 }}>
+                            {run.hub.name}
+                          </Typography>
+                          {run.status && RUN_STATUS_LABEL[run.status] && (
+                            <Chip
+                              size="small"
+                              label={RUN_STATUS_LABEL[run.status]}
+                              sx={{
+                                height: 20,
+                                fontSize: '0.7rem',
+                                fontWeight: 700,
+                                bgcolor: (t) => alpha(run.status === 'active' ? t.palette.success.main : t.palette.info.main, 0.12),
+                                color: run.status === 'active' ? 'success.dark' : 'info.dark',
+                              }}
+                            />
+                          )}
+                        </Box>
+                        <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.82rem' }}>
+                          {formatDateRange(run.startDate, run.endDate) || 'Dates to be confirmed'}
+                          {run.hub.address ? ` · ${run.hub.address}` : ''}
+                        </Typography>
+                        {(run.hub.contactPerson || run.hub.phone) && (
+                          <Typography variant="body2" color="text.disabled" sx={{ fontSize: '0.78rem', mt: 0.25 }}>
+                            {[run.hub.contactPerson, run.hub.phone].filter(Boolean).join(' · ')}
+                          </Typography>
+                        )}
+                      </Box>
+                    </Box>
+                  ))}
+                </Box>
+              </Box>
+            )}
+
+            {upcomingRuns.length === 0 && (
+              <Box sx={{ mb: 6 }}>
+                <Typography variant="body2" color="text.secondary">
+                  Dates for the next run aren&apos;t published yet — send an enquiry and we&apos;ll let
+                  you know the moment they are.
                 </Typography>
               </Box>
-              <Box component="ul" sx={{ m: 0, p: 0, listStyle: 'none', display: 'grid', gap: 1.5 }}>
-                {highlights.map((h, i) => (
-                  <Box component="li" key={`${h}-${i}`} sx={{ display: 'flex', gap: 1.25 }}>
-                    <CheckCircleIcon sx={{ fontSize: 20, color: 'success.main', flexShrink: 0, mt: 0.25 }} />
-                    <Typography>{h}</Typography>
-                  </Box>
-                ))}
-              </Box>
-            </Box>
-          )}
+            )}
 
-          {upcomingRuns.length > 0 && (
-            <Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                <EventIcon sx={{ color: 'primary.main' }} />
-                <Typography variant="h4" component="h2">
-                  Upcoming runs
+            {coursePricing.length > 0 && (
+              <Box sx={{ mb: 6 }}>
+                <Typography variant="h2" component="h2" sx={{ mb: 1 }}>
+                  Course pricing
                 </Typography>
+                <Typography sx={{ color: 'text.secondary', mb: 4 }}>
+                  Individual course prices within this bootcamp&apos;s curriculum.
+                </Typography>
+                <Box sx={{ display: 'grid', gap: 5 }}>
+                  {coursePricing.map((section, i) => (
+                    <Box key={section.pathwayId || `ungrouped-${i}`}>
+                      {section.pathwayName && (
+                        <Typography
+                          variant="overline"
+                          sx={{ display: 'block', color: section.pathwayColor || 'primary.dark', fontWeight: 800, letterSpacing: '0.06em', mb: 2 }}
+                        >
+                          {section.pathwayName}
+                        </Typography>
+                      )}
+                      <CoursePricingRoadmap courses={section.courses} accent={section.pathwayColor || undefined} />
+                    </Box>
+                  ))}
+                </Box>
               </Box>
-              <Box component="ul" sx={{ m: 0, p: 0, listStyle: 'none', display: 'grid', gap: 1.5 }}>
-                {upcomingRuns.map((run, i) => (
-                  <Box
-                    component="li"
-                    key={`${run.hubName}-${run.startDate}-${i}`}
+            )}
+
+            {/* Curriculum & Competencies — shown once for the whole bootcamp (every hub run
+                shares the same curriculum), not per run. `curriculum` is null when the bootcamp
+                has no linked curriculum. Leads with the curriculum's own NAME as the heading
+                (no generic "Curriculum" label above it — that was the same name shown twice with
+                filler text in between). Competencies are compact cards with their description
+                always visible (clamped, not hidden behind hover) so the info shows on touch
+                devices too. */}
+            {curriculum && (
+              <Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, mb: 1.5, flexWrap: 'wrap' }}>
+                  <MenuBookIcon sx={{ color: 'primary.main' }} />
+                  <Typography variant="h2" component="h2">
+                    {curriculum.name}
+                  </Typography>
+                </Box>
+                {curriculum.description && (
+                  <Typography
+                    color="text.secondary"
                     sx={{
-                      p: 1.5,
-                      borderRadius: 2,
-                      border: '1px solid',
-                      borderColor: 'divider',
-                      bgcolor: 'background.paper',
+                      lineHeight: 1.7,
+                      mb: 3,
+                      maxWidth: 680,
+                      display: '-webkit-box',
+                      WebkitLineClamp: 3,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
                     }}
                   >
-                    <Typography sx={{ fontWeight: 700 }}>
-                      {run.hubName || 'Location to be confirmed'}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {formatDateRange(run.startDate, run.endDate) || 'Dates to be confirmed'}
-                      {run.status && RUN_STATUS_LABEL[run.status]
-                        ? ` · ${RUN_STATUS_LABEL[run.status]}`
-                        : ''}
-                    </Typography>
+                    {curriculum.description}
+                  </Typography>
+                )}
+
+                {curriculum.competencies.length > 0 && (
+                  <Box
+                    sx={{
+                      display: 'grid',
+                      gap: 1.5,
+                      gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
+                    }}
+                  >
+                    {curriculum.competencies.map((c) => (
+                      <Box
+                        key={c.id}
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'flex-start',
+                          gap: 1.25,
+                          p: 1.5,
+                          borderRadius: 2,
+                          border: '1px solid',
+                          borderColor: 'divider',
+                          bgcolor: 'background.paper',
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            width: 30,
+                            height: 30,
+                            borderRadius: '50%',
+                            display: 'grid',
+                            placeItems: 'center',
+                            flexShrink: 0,
+                            bgcolor: (t) => alpha(t.palette.primary.main, 0.12),
+                          }}
+                        >
+                          <WorkspacePremiumIcon sx={{ fontSize: 16, color: 'primary.main' }} />
+                        </Box>
+                        <Box sx={{ minWidth: 0 }}>
+                          <Typography sx={{ fontWeight: 700, fontSize: '0.85rem', lineHeight: 1.3 }}>
+                            {c.name}
+                          </Typography>
+                          {c.description && (
+                            <Typography
+                              variant="body2"
+                              color="text.secondary"
+                              sx={{
+                                fontSize: '0.78rem',
+                                lineHeight: 1.5,
+                                mt: 0.25,
+                                display: '-webkit-box',
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: 'vertical',
+                                overflow: 'hidden',
+                              }}
+                            >
+                              {c.description}
+                            </Typography>
+                          )}
+                        </Box>
+                      </Box>
+                    ))}
                   </Box>
-                ))}
+                )}
               </Box>
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 1.5 }}>
-                Send an enquiry and we&apos;ll hold a place on the run that suits you.
-              </Typography>
-            </Box>
-          )}
-        </Box>
-
-        {upcomingRuns.length === 0 && (
-          <Box sx={{ maxWidth: 900, mt: highlights.length ? 4 : 0 }}>
-            <Typography variant="body2" color="text.secondary">
-              Dates for the next run aren&apos;t published yet — send an enquiry and we&apos;ll let
-              you know the moment they are.
-            </Typography>
+            )}
           </Box>
-        )}
 
-        {coursePricing.length > 0 && (
-          <Box sx={{ mt: 6, maxWidth: 900 }}>
-            <Typography variant="h2" component="h2" sx={{ mb: 1 }}>
-              Course pricing
-            </Typography>
-            <Typography sx={{ color: 'text.secondary', mb: 4 }}>
-              Individual course prices within this bootcamp&apos;s curriculum.
-            </Typography>
-            <Box sx={{ display: 'grid', gap: 5 }}>
-              {coursePricing.map((section, i) => (
-                <Box key={section.pathwayId || `ungrouped-${i}`}>
-                  {section.pathwayName && (
-                    <Typography
-                      variant="overline"
-                      sx={{ display: 'block', color: section.pathwayColor || 'primary.dark', fontWeight: 800, letterSpacing: '0.06em', mb: 2 }}
-                    >
-                      {section.pathwayName}
-                    </Typography>
-                  )}
-                  <CoursePricingRoadmap courses={section.courses} accent={section.pathwayColor || undefined} />
-                </Box>
-              ))}
-            </Box>
-          </Box>
-        )}
-
-        <Box sx={{ mt: 6, maxWidth: 900 }}>
-          <Box
-            sx={{
-              p: 3,
-              borderRadius: 2,
-              border: '1px solid',
-              borderColor: 'divider',
-              bgcolor: 'background.paper',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: 2,
-              flexWrap: 'wrap',
-            }}
-          >
-            <Box>
-              <Typography variant="h4" component="p" gutterBottom>
-                Book {name} for your learner
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
+          {/* sticky booking sidebar — price, what's included, and the ONE "Enquire to book" CTA
+              on the page, always in view instead of requiring a scroll back up or down to find
+              it (previously duplicated in the header AND a "Book" card at the very bottom). */}
+          <Box sx={{ flex: '1 1 300px', minWidth: 280, maxWidth: { xs: '100%', md: 340 }, position: { md: 'sticky' }, top: { md: 24 } }}>
+            <Box
+              sx={{
+                p: 2.5,
+                borderRadius: 3,
+                border: '1px solid',
+                borderColor: 'divider',
+                bgcolor: 'background.paper',
+                boxShadow: (t) => `0 12px 32px ${alpha(t.palette.primary.dark, 0.08)}`,
+              }}
+            >
+              <Typography sx={{ fontSize: '1.6rem', fontWeight: 800, color: 'primary.dark', lineHeight: 1.15 }}>
                 {priceLabel}
-                {price?.note ? ` · ${price.note}` : ''}
+              </Typography>
+
+              {priceNotes.length > 0 && (
+                <Box sx={{ mt: 2 }}>
+                  <Typography
+                    variant="overline"
+                    sx={{ display: 'block', fontSize: 10.5, fontWeight: 700, letterSpacing: '0.06em', color: 'text.disabled', mb: 0.75 }}
+                  >
+                    Included in the package
+                  </Typography>
+                  <Box component="ul" sx={{ m: 0, p: 0, listStyle: 'none', display: 'grid', gap: 0.75 }}>
+                    {priceNotes.map((note, i) => (
+                      <Box component="li" key={i} sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.75 }}>
+                        <CheckCircleIcon sx={{ fontSize: 16, color: 'success.main', flexShrink: 0, mt: '2px' }} />
+                        <Typography variant="body2" color="text.secondary">
+                          {note}
+                        </Typography>
+                      </Box>
+                    ))}
+                  </Box>
+                </Box>
+              )}
+
+              <Button
+                component={RouterLink}
+                to={enquireTo}
+                variant="contained"
+                size="large"
+                fullWidth
+                sx={{ mt: 2.5 }}
+              >
+                Enquire to book
+              </Button>
+              {diagnostic?.available && (
+                <Button
+                  component={RouterLink}
+                  to={`/bootcamps/${slug}/diagnostic`}
+                  variant="outlined"
+                  size="large"
+                  fullWidth
+                  sx={{ mt: 1.25 }}
+                >
+                  Take the diagnostic
+                </Button>
+              )}
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1, textAlign: 'center' }}>
+                No online checkout yet — we&apos;ll confirm dates and how to secure a place.
               </Typography>
             </Box>
-            <Button component={RouterLink} to={enquireTo} variant="contained" size="large">
-              Enquire to book
-            </Button>
           </Box>
         </Box>
       </Section>

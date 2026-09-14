@@ -13,7 +13,11 @@ const FALLBACK_ACCENT = '#25476a';
  * price chip added per step. Used on the Bootcamp/Competition detail pages' "Course pricing"
  * section, one instance per pathway section from the `coursePricing` API shape (see
  * server's resolveCoursePricing): [{ pathwayId, pathwayName, pathwayColor, courses: [{ courseId,
- * name, description, coverImage, ageMin, ageMax, priceAmount, priceCurrency }] }].
+ * name, description, coverImage, ageMin, ageMax, priceAmount, priceCurrency, modules }] }].
+ *
+ * A course priced by module instead of as a whole (`modules.length > 0`) has `priceAmount: null`
+ * — its own header price chip is skipped in favour of a small per-module price list underneath
+ * (modules only carry a name, no description/age range of their own — see course_modules table).
  */
 export default function CoursePricingRoadmap({ courses = [], accent = FALLBACK_ACCENT }) {
   return (
@@ -22,6 +26,8 @@ export default function CoursePricingRoadmap({ courses = [], accent = FALLBACK_A
         const isFirst = i === 0;
         const isLast = i === courses.length - 1;
         const age = ageLabel(course.ageMin, course.ageMax);
+        const modules = course.modules || [];
+        const byModule = modules.length > 0;
         const priceLabel = course.priceAmount != null
           ? formatPrice({ amount: course.priceAmount, currency: course.priceCurrency })
           : 'Enquire for pricing';
@@ -97,9 +103,11 @@ export default function CoursePricingRoadmap({ courses = [], accent = FALLBACK_A
                     <Typography variant="subtitle1" sx={{ fontWeight: 700, lineHeight: 1.3 }}>
                       {course.name}
                     </Typography>
-                    <Typography sx={{ fontWeight: 800, color: accent, whiteSpace: 'nowrap' }}>
-                      {priceLabel}
-                    </Typography>
+                    {!byModule && (
+                      <Typography sx={{ fontWeight: 800, color: accent, whiteSpace: 'nowrap' }}>
+                        {priceLabel}
+                      </Typography>
+                    )}
                   </Box>
                   {age && (
                     <Chip
@@ -123,6 +131,32 @@ export default function CoursePricingRoadmap({ courses = [], accent = FALLBACK_A
                     >
                       {course.description}
                     </Typography>
+                  )}
+                  {byModule && (
+                    <Box sx={{ mt: 1.25, display: 'grid', gap: 0.5 }}>
+                      {modules.map((mod) => (
+                        <Box
+                          key={mod.id}
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            gap: 1,
+                            px: 1.25,
+                            py: 0.75,
+                            borderRadius: 1.5,
+                            bgcolor: 'surface.subtle',
+                          }}
+                        >
+                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                            {mod.name}
+                          </Typography>
+                          <Typography variant="body2" sx={{ fontWeight: 800, color: accent, whiteSpace: 'nowrap' }}>
+                            {mod.priceAmount != null ? formatPrice({ amount: mod.priceAmount, currency: mod.priceCurrency }) : 'Enquire for pricing'}
+                          </Typography>
+                        </Box>
+                      ))}
+                    </Box>
                   )}
                 </Box>
               </Box>
