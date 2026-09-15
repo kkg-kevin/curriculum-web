@@ -10,8 +10,9 @@ const FALLBACK_ACCENT = '#25476a';
 /**
  * One pathway's priced courses as a numbered vertical roadmap — same visual language as
  * PathwayRoadmap.jsx (numbered rail, accent-striped card, course thumbnail, Ages chip), with a
- * price chip added per step. Used on the Bootcamp/Competition detail pages' "Course pricing"
- * section, one instance per pathway section from the `coursePricing` API shape (see
+ * price chip added per step. Used on the Bootcamp detail page's "Pathway pricing" section and the
+ * Competition detail page's "Course pricing" section, one instance per pathway section from the
+ * `coursePricing` API shape (see
  * server's resolveCoursePricing): [{ pathwayId, pathwayName, pathwayColor, courses: [{ courseId,
  * name, description, coverImage, ageMin, ageMax, priceAmount, priceCurrency, modules }] }].
  *
