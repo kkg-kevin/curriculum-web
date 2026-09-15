@@ -2,7 +2,6 @@ import { useParams, Link as RouterLink } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Link from '@mui/material/Link';
 import SeoHead from '../components/seo/SeoHead.jsx';
@@ -10,6 +9,8 @@ import Section from '../components/common/Section.jsx';
 import { ErrorBlock, LoadingBlock } from '../components/common/StateViews.jsx';
 import { useBootcampDiagnosticReport } from '../hooks/useBootcampDiagnostic.js';
 import DiagnosticReport from '../components/diagnostic/DiagnosticReport.jsx';
+import BootcampNextStepsPanel from '../components/diagnostic/BootcampNextStepsPanel.jsx';
+import { whatsAppUrl } from '../config/site.js';
 
 /**
  * /bootcamps/:slug/diagnostic/report/:attemptId — the permanent, shareable graded report.
@@ -21,6 +22,11 @@ export default function BootcampDiagnosticReportPage() {
   const { data, isLoading, isError, error, refetch } = useBootcampDiagnosticReport(attemptId);
 
   const bootcampName = data?.bootcampName || 'Bootcamp';
+  const mentorWhatsApp = whatsAppUrl(
+    `Hi Digifunzi — my child ${data?.childName ? `(${data.childName}) ` : ''}just did the ${bootcampName} diagnostic and I'd like to talk through next steps.`,
+  );
+  const mentorHref = mentorWhatsApp || '/contact?subject=Diagnostic%20follow-up';
+  const mentorIsExternal = Boolean(mentorWhatsApp);
 
   return (
     <>
@@ -65,15 +71,15 @@ export default function BootcampDiagnosticReportPage() {
             </Box>
 
             {slug && (
-              <Box className="no-print" sx={{ display: 'flex', justifyContent: 'center' }}>
-                <Button
-                  component={RouterLink}
-                  to={`/enroll?interestedIn=bootcamp&referenceId=${encodeURIComponent(slug)}`}
-                  variant="contained"
-                  size="large"
-                >
-                  Enquire to book this bootcamp
-                </Button>
+              <Box className="no-print" sx={{ maxWidth: 640, mx: 'auto', width: '100%' }}>
+                <BootcampNextStepsPanel
+                  bootcampSlug={slug}
+                  bootcampName={bootcampName}
+                  mentorHref={mentorHref}
+                  mentorIsExternal={mentorIsExternal}
+                  defaultLearnerName={data?.childName}
+                  defaultLearnerAge={data?.childAge}
+                />
               </Box>
             )}
           </Box>

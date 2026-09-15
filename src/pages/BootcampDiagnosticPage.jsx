@@ -273,10 +273,14 @@ export default function BootcampDiagnosticPage() {
 
             <Box sx={{ position: { lg: 'sticky' }, top: { lg: 24 } }}>
               <BootcampNextStepsPanel
-                enquireTo={`/enroll?interestedIn=bootcamp&referenceId=${encodeURIComponent(slug)}`}
+                bootcampSlug={slug}
                 bootcampName={bootcampName}
                 mentorHref={mentorHref}
                 mentorIsExternal={mentorIsExternal}
+                defaultParentName={contactForm.getValues('parentName')}
+                defaultParentPhone={contactForm.getValues('parentPhone')}
+                defaultLearnerName={childName}
+                defaultLearnerAge={age}
               />
             </Box>
           </Box>

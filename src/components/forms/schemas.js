@@ -110,3 +110,22 @@ export const diagnosticContactSchema = z.object({
   parentPhone: phone,
   childName: z.string().trim().max(120).optional().or(z.literal('')),
 });
+
+/**
+ * Bootcamp enrollment (auto-provisioned account) → POST /api/public/bootcamp-enrollments.
+ * Shown on the bootcamp diagnostic report's "Enroll now" step. Unlike enrollSchema, phone is
+ * REQUIRED (not just email) — this parent becomes the account's real contact, not an optional
+ * follow-up channel, and there's no hub picker (the bootcamp already knows where it runs).
+ */
+export const bootcampEnrollmentSchema = z.object({
+  parentName: z.string().trim().min(2, 'Please enter your name').max(120),
+  parentEmail: z.string().trim().email('Enter a valid email address').max(160),
+  parentPhone: phone,
+  learnerName: z.string().trim().min(2, 'Please enter the learner’s name').max(120),
+  learnerAge: z.coerce
+    .number({ invalid_type_error: 'Enter an age' })
+    .int('Enter a whole number')
+    .min(3, 'Age looks too low')
+    .max(19, 'This programme is for under-19s'),
+  ...honeypot,
+});
