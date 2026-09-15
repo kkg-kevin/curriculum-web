@@ -188,7 +188,7 @@ export default function BootcampEnrollForm({
             {hasPrice && payment.mode === 'by_course' && (
               <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
                 This total combines this bootcamp's individually priced courses/modules — see the
-                "Pathway pricing" section on the bootcamp page for the breakdown.
+                "Pathway courses" section on the bootcamp page for the breakdown.
               </Typography>
             )}
           </Box>

@@ -338,7 +338,7 @@ export default function BootcampDetailPage() {
             {coursePricing.length > 0 && (
               <Box sx={{ mb: 6 }}>
                 <Typography variant="h2" component="h2" sx={{ mb: 1 }}>
-                  Pathway pricing
+                  Pathway courses
                 </Typography>
                 <Typography sx={{ color: 'text.secondary', mb: 4 }}>
                   Individual course prices within this bootcamp&apos;s pathways.
