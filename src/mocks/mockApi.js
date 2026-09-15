@@ -131,6 +131,16 @@ export async function mockAdapter(config) {
     return ok(hubList(url.searchParams.get('type') || null), config);
   }
 
+  // ---- GET /api/public/hubs/:id (one hub's full profile, from a bootcamp's "Running at" list) ----
+  m = path.match(/^\/api\/public\/hubs\/([^/]+)$/);
+  if (method === 'get' && m) {
+    const hubId = decodeURIComponent(m[1]);
+    const run = bootcampList
+      .flatMap((b) => bootcampDetail(b.slug)?.upcomingRuns || [])
+      .find((r) => r.hub?.id === hubId);
+    return run ? ok(run.hub, config) : fail(404, 'Hub not found', config);
+  }
+
   // ---- GET /api/public/pathways ----
   if (method === 'get' && path === '/api/public/pathways') {
     return ok(pathways, config);

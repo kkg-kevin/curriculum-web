@@ -13,6 +13,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
 import EventIcon from '@mui/icons-material/Event';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import SeoHead from '../components/seo/SeoHead.jsx';
 import JsonLd, { organizationSchema, productSchema } from '../components/seo/JsonLd.jsx';
 import Section from '../components/common/Section.jsx';
@@ -237,23 +238,35 @@ export default function BootcampDetailPage() {
                   </Typography>
                 </Box>
 
-                <Box sx={{ display: 'grid', gap: 1.5 }}>
+                <Box sx={{ display: 'grid', gap: 1.5, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
                   {upcomingRuns.map((run, i) => (
                     <Box
                       key={`${run.hub.id}-${i}`}
+                      component={RouterLink}
+                      to={{
+                        pathname: `/bootcamps/${slug}/hubs/${run.hub.id}`,
+                        search: `?start=${encodeURIComponent(run.startDate || '')}&end=${encodeURIComponent(run.endDate || '')}&status=${encodeURIComponent(run.status || '')}`,
+                      }}
                       sx={{
                         display: 'flex',
                         alignItems: 'center',
                         gap: 1.75,
                         p: 1.75,
+                        minWidth: 0,
                         borderRadius: 2,
                         border: '1px solid',
                         borderColor: 'divider',
                         bgcolor: 'background.paper',
+                        textDecoration: 'none',
+                        color: 'inherit',
                         transition: 'border-color 180ms ease, box-shadow 180ms ease',
                         '&:hover': {
                           borderColor: 'primary.main',
                           boxShadow: (t) => `0 4px 14px ${alpha(t.palette.primary.main, 0.1)}`,
+                        },
+                        '&:focus-visible': {
+                          outline: (t) => `2px solid ${t.palette.primary.main}`,
+                          outlineOffset: 2,
                         },
                       }}
                     >
@@ -306,6 +319,7 @@ export default function BootcampDetailPage() {
                           </Typography>
                         )}
                       </Box>
+                      <ChevronRightIcon sx={{ color: 'text.disabled', flexShrink: 0 }} />
                     </Box>
                   ))}
                 </Box>
@@ -324,10 +338,10 @@ export default function BootcampDetailPage() {
             {coursePricing.length > 0 && (
               <Box sx={{ mb: 6 }}>
                 <Typography variant="h2" component="h2" sx={{ mb: 1 }}>
-                  Course pricing
+                  Pathway pricing
                 </Typography>
                 <Typography sx={{ color: 'text.secondary', mb: 4 }}>
-                  Individual course prices within this bootcamp&apos;s curriculum.
+                  Individual course prices within this bootcamp&apos;s pathways.
                 </Typography>
                 <Box sx={{ display: 'grid', gap: 5 }}>
                   {coursePricing.map((section, i) => (
@@ -349,13 +363,20 @@ export default function BootcampDetailPage() {
 
             {/* Curriculum & Competencies — shown once for the whole bootcamp (every hub run
                 shares the same curriculum), not per run. `curriculum` is null when the bootcamp
-                has no linked curriculum. Leads with the curriculum's own NAME as the heading
-                (no generic "Curriculum" label above it — that was the same name shown twice with
-                filler text in between). Competencies are compact cards with their description
+                has no linked curriculum. Leads with the curriculum's own NAME as the heading, with
+                a small "Curriculum" overline above it (same pattern as the pathway-pricing
+                section's own overline) so it reads as what KIND of thing this is, not just a
+                second section title. Competencies are compact cards with their description
                 always visible (clamped, not hidden behind hover) so the info shows on touch
                 devices too. */}
             {curriculum && (
               <Box>
+                <Typography
+                  variant="overline"
+                  sx={{ display: 'block', color: 'text.secondary', fontWeight: 700, letterSpacing: '0.06em', mb: 0.5 }}
+                >
+                  Curriculum
+                </Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, mb: 1.5, flexWrap: 'wrap' }}>
                   <MenuBookIcon sx={{ color: 'primary.main' }} />
                   <Typography variant="h2" component="h2">
