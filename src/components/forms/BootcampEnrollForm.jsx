@@ -72,10 +72,11 @@ function CopyableField({ label, value }) {
  * contact details can be passed straight in as pre-fill defaults instead of round-tripping
  * through a URL.
  *
- * On success this shows a DISTINCT confirmation state (not FormStatus's generic success alert):
- * the new firstname.lastname@digifunzi.com login + a one-time temporary password, a "save this
- * now" warning (the password is never shown again), a link to the real curriculum system to log
- * in, and a note that access stays view-only until payment is confirmed.
+ * The learner's OWN login (username + password) is chosen right here on the form, not minted by
+ * the system — so there's nothing to reveal-once on success. On success this shows a DISTINCT
+ * confirmation state (not FormStatus's generic success alert): the username they just chose (as
+ * a reminder, not a secret), a link to the real curriculum system to log in, and a note that
+ * access stays view-only until payment is confirmed.
  *
  * Props: bootcampSlug, bootcampName, defaultParentName?, defaultParentPhone?,
  * defaultLearnerName?, defaultLearnerAge?
@@ -105,6 +106,9 @@ export default function BootcampEnrollForm({
       parentPhone: defaultParentPhone,
       learnerName: defaultLearnerName,
       learnerAge: defaultLearnerAge,
+      username: '',
+      password: '',
+      confirmPassword: '',
       ...HONEYPOT_DEFAULT,
     },
   });
@@ -122,12 +126,14 @@ export default function BootcampEnrollForm({
       parentPhone: values.parentPhone,
       learnerName: values.learnerName,
       learnerAge: values.learnerAge,
+      username: values.username,
+      password: values.password,
     });
   };
 
-  // ---- Success: show the new login exactly once ----------------------------
+  // ---- Success: the account is ready with the login they just chose --------
   if (mutation.isSuccess) {
-    const { learnerLoginEmail, learnerTempPassword, payment } = mutation.data?.data || {};
+    const { learnerUsername, payment } = mutation.data?.data || {};
     const hasPrice = payment?.amount != null;
     return (
       <Box
@@ -143,18 +149,12 @@ export default function BootcampEnrollForm({
           You're enrolled in {bootcampName}!
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5 }}>
-          We've created an account so you can get started right away.
+          Your account is ready — log in with the username and password you just chose.
         </Typography>
 
-        <Box sx={{ display: 'grid', gap: 1.5, mb: 2 }}>
-          <CopyableField label="Login email" value={learnerLoginEmail} />
-          <CopyableField label="Temporary password" value={learnerTempPassword} />
+        <Box sx={{ mb: 2.5 }}>
+          <CopyableField label="Username" value={learnerUsername} />
         </Box>
-
-        <Alert severity="warning" sx={{ mb: 2.5 }}>
-          Save these now — this password is shown only once. You can change it any time after
-          logging in.
-        </Alert>
 
         {/* Payment — cash-only for now: there's nothing to click through online, so this is
             instructional (pay at the hub) rather than a "Pay now" action. An admin confirms the
@@ -188,7 +188,7 @@ export default function BootcampEnrollForm({
             {hasPrice && payment.mode === 'by_course' && (
               <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
                 This total combines this bootcamp's individually priced courses/modules — see the
-                "Course pricing" section on the bootcamp page for the breakdown.
+                "Pathway pricing" section on the bootcamp page for the breakdown.
               </Typography>
             )}
           </Box>
@@ -292,6 +292,40 @@ export default function BootcampEnrollForm({
           error={!!errors.learnerAge}
           helperText={errors.learnerAge?.message}
         />
+      </Box>
+
+      <Box>
+        <Typography sx={{ fontWeight: 700, mb: 1.5 }}>Set up the learner&rsquo;s login</Typography>
+        <Box sx={{ display: 'grid', gap: 2 }}>
+          <TextField
+            label="Choose a username"
+            required
+            autoComplete="username"
+            {...register('username')}
+            error={!!errors.username}
+            helperText={errors.username?.message || 'Letters, numbers, dots, underscores and hyphens only'}
+          />
+          <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
+            <TextField
+              label="Create a password"
+              type="password"
+              required
+              autoComplete="new-password"
+              {...register('password')}
+              error={!!errors.password}
+              helperText={errors.password?.message || 'At least 6 characters'}
+            />
+            <TextField
+              label="Confirm password"
+              type="password"
+              required
+              autoComplete="new-password"
+              {...register('confirmPassword')}
+              error={!!errors.confirmPassword}
+              helperText={errors.confirmPassword?.message}
+            />
+          </Box>
+        </Box>
       </Box>
 
       <Button type="submit" variant="contained" size="large" disabled={isSubmitting || mutation.isPending}>
