@@ -18,4 +18,9 @@ export const MEDIA_BASE_URL = (import.meta.env.VITE_MEDIA_BASE_URL || API_URL).r
 
 export const SITE_URL = (import.meta.env.VITE_SITE_URL || FALLBACK_SITE_URL).replace(/\/$/, '');
 
+// The curriculum system's own admin/learner-portal origin (https://curriculum.digifunzi.com in
+// production — see SYSTEM_INTEGRATION.md's "Admin portal" line) — where the bootcamp-enrollment
+// confirmation screen links a freshly-provisioned learner to actually log in.
+export const APP_URL = (import.meta.env.VITE_APP_URL || 'http://localhost:5173').replace(/\/$/, '');
+
 export const IS_DEV = import.meta.env.DEV;

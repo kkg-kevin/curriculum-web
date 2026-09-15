@@ -148,4 +148,13 @@ export const publicApi = {
     api
       .post(`/api/public/bootcamp-diagnostics/${encodeURIComponent(bootcampIdOrSlug)}/submit`, payload)
       .then((r) => r.data),
+
+  // ---- Bootcamp enrollment (auto-provisioned account) ---------------------------
+  // Unlike submitLead above, this doesn't just notify staff — it immediately creates a real
+  // learner login in the curriculum system (a fresh name@digifunzi.com address + a one-time
+  // temporary password returned in this same response), enrolled into the bootcamp's own hub
+  // and class. The account can log in right away but stays read-only until an admin records a
+  // cash payment against it (see server: bootcamp-enrollment.service.js).
+  submitBootcampEnrollment: (payload) =>
+    api.post('/api/public/bootcamp-enrollments', payload).then((r) => r.data),
 };

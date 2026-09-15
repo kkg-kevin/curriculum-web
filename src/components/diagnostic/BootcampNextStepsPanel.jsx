@@ -1,19 +1,26 @@
+import { useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import HowToRegIcon from '@mui/icons-material/HowToReg';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import BootcampEnrollForm from '../forms/BootcampEnrollForm.jsx';
 
 /**
  * "Where to from here" for the Bootcamp diagnostic report — the lean counterpart to
  * NextStepsPanel.jsx (Pathways). A bootcamp has no ordered course roadmap to place a learner
- * into, so this is just two options: enquire to book, or talk it through with a mentor.
+ * into, so this is just two options: enroll now (opens BootcampEnrollForm inline, below this
+ * panel — a real account is auto-provisioned, not just a lead), or talk it through with a
+ * mentor. Opening the form inline (rather than navigating to a separate page/route) lets the
+ * diagnostic's already-collected parentName/parentPhone/childName/childAge pass straight
+ * through as plain props instead of round-tripping through a URL.
  *
- * Props: enquireTo, bootcampName, mentorHref, mentorIsExternal
+ * Props: bootcampSlug, bootcampName, mentorHref, mentorIsExternal,
+ * defaultParentName?, defaultParentPhone?, defaultLearnerName?, defaultLearnerAge?
  */
 
-function OptionCard({ icon, title, body, href, to, external, highlighted }) {
+function OptionCard({ icon, title, body, href, to, onClick, external, highlighted }) {
   const common = {
     display: 'flex',
     alignItems: 'center',
@@ -85,6 +92,13 @@ function OptionCard({ icon, title, body, href, to, external, highlighted }) {
       </Box>
     );
   }
+  if (onClick) {
+    return (
+      <Box component="button" type="button" onClick={onClick} sx={{ ...common, cursor: 'pointer', font: 'inherit' }}>
+        {inner}
+      </Box>
+    );
+  }
   return (
     <Box
       component="a"
@@ -97,7 +111,31 @@ function OptionCard({ icon, title, body, href, to, external, highlighted }) {
   );
 }
 
-export default function BootcampNextStepsPanel({ enquireTo, bootcampName, mentorHref, mentorIsExternal }) {
+export default function BootcampNextStepsPanel({
+  bootcampSlug,
+  bootcampName,
+  mentorHref,
+  mentorIsExternal,
+  defaultParentName,
+  defaultParentPhone,
+  defaultLearnerName,
+  defaultLearnerAge,
+}) {
+  const [showEnroll, setShowEnroll] = useState(false);
+
+  if (showEnroll) {
+    return (
+      <BootcampEnrollForm
+        bootcampSlug={bootcampSlug}
+        bootcampName={bootcampName}
+        defaultParentName={defaultParentName}
+        defaultParentPhone={defaultParentPhone}
+        defaultLearnerName={defaultLearnerName}
+        defaultLearnerAge={defaultLearnerAge}
+      />
+    );
+  }
+
   return (
     <Box
       sx={{
@@ -120,9 +158,9 @@ export default function BootcampNextStepsPanel({ enquireTo, bootcampName, mentor
         <OptionCard
           highlighted
           icon={<HowToRegIcon />}
-          title={`Enquire to book ${bootcampName}`}
-          body="Tell us about the learner and this result, and we'll confirm dates and how to secure a place."
-          to={enquireTo}
+          title={`Enroll now in ${bootcampName}`}
+          body="Set up an account right away — pay by cash and your account unlocks fully as soon as that's confirmed."
+          onClick={() => setShowEnroll(true)}
         />
 
         <OptionCard
