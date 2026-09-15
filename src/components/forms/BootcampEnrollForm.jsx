@@ -182,6 +182,15 @@ export default function BootcampEnrollForm({
                 ? `Pay by cash at ${payment.hubName || 'your hub'} to activate full access.`
                 : `Ask ${payment.hubName || 'your hub'} to confirm the price and pay by cash to activate full access.`}
             </Typography>
+            {/* This bootcamp is priced by course/module rather than as a whole — the total above
+                is the sum of every priced course (or module) rather than one flat number, since
+                enrollment signs you up for the whole bootcamp, not a single course. */}
+            {hasPrice && payment.mode === 'by_course' && (
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                This total combines this bootcamp's individually priced courses/modules — see the
+                "Course pricing" section on the bootcamp page for the breakdown.
+              </Typography>
+            )}
           </Box>
         </Box>
 
