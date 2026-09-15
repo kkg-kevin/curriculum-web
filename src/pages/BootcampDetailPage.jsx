@@ -14,6 +14,7 @@ import MenuBookIcon from '@mui/icons-material/MenuBook';
 import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
 import EventIcon from '@mui/icons-material/Event';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SeoHead from '../components/seo/SeoHead.jsx';
 import JsonLd, { organizationSchema, productSchema } from '../components/seo/JsonLd.jsx';
 import Section from '../components/common/Section.jsx';
@@ -21,6 +22,7 @@ import SmartImage from '../components/common/SmartImage.jsx';
 import CTABanner from '../components/home/CTABanner.jsx';
 import { ErrorBlock } from '../components/common/StateViews.jsx';
 import { FORMAT_LABEL } from '../components/cards/BootcampCard.jsx';
+import BootcampPathwayCard from '../components/cards/BootcampPathwayCard.jsx';
 import CoursePricingRoadmap from '../components/pathway/CoursePricingRoadmap.jsx';
 import { usePublicBootcamp } from '../hooks/usePublicBootcamps.js';
 import { formatPrice, ageLabel } from '../utils/format.js';
@@ -36,6 +38,9 @@ export default function BootcampDetailPage() {
   // ~150-word description shows in full at this line count; only a genuine outlier (or content
   // saved before the cap existed) ever needs the "Read more" toggle.
   const [descriptionExpanded, setDescriptionExpanded] = useState(false);
+  // Which pathway section (by pathwayId, or 'ungrouped' for the pathway-less courses section)
+  // is currently expanded in the "Pathway courses" area — null shows the card grid instead.
+  const [selectedPathwayKey, setSelectedPathwayKey] = useState(null);
 
   if (isLoading) {
     return (
@@ -335,31 +340,52 @@ export default function BootcampDetailPage() {
               </Box>
             )}
 
-            {coursePricing.length > 0 && (
-              <Box sx={{ mb: 6 }}>
-                <Typography variant="h2" component="h2" sx={{ mb: 1 }}>
-                  Pathway courses
-                </Typography>
-                <Typography sx={{ color: 'text.secondary', mb: 4 }}>
-                  Individual course prices within this bootcamp&apos;s pathways.
-                </Typography>
-                <Box sx={{ display: 'grid', gap: 5 }}>
-                  {coursePricing.map((section, i) => (
-                    <Box key={section.pathwayId || `ungrouped-${i}`}>
-                      {section.pathwayName && (
-                        <Typography
-                          variant="overline"
-                          sx={{ display: 'block', color: section.pathwayColor || 'primary.dark', fontWeight: 800, letterSpacing: '0.06em', mb: 2 }}
-                        >
-                          {section.pathwayName}
-                        </Typography>
-                      )}
-                      <CoursePricingRoadmap courses={section.courses} accent={section.pathwayColor || undefined} />
-                    </Box>
-                  ))}
+            {coursePricing.length > 0 && (() => {
+              const keyed = coursePricing.map((section, i) => ({
+                ...section,
+                key: section.pathwayId || `ungrouped-${i}`,
+              }));
+              const selected = keyed.find((s) => s.key === selectedPathwayKey) || null;
+
+              return (
+                <Box sx={{ mb: 6 }}>
+                  {selected ? (
+                    <>
+                      <Button
+                        size="small"
+                        startIcon={<ArrowBackIcon />}
+                        onClick={() => setSelectedPathwayKey(null)}
+                        sx={{ mb: 2, px: 1 }}
+                      >
+                        Back to pathways
+                      </Button>
+                      <Typography variant="h2" component="h2" sx={{ mb: 3 }}>
+                        {selected.pathwayName || 'Other courses'}
+                      </Typography>
+                      <CoursePricingRoadmap courses={selected.courses} accent={selected.pathwayColor || undefined} />
+                    </>
+                  ) : (
+                    <>
+                      <Typography variant="h2" component="h2" sx={{ mb: 1 }}>
+                        Pathway courses
+                      </Typography>
+                      <Typography sx={{ color: 'text.secondary', mb: 4 }}>
+                        Individual course prices within this bootcamp&apos;s pathways.
+                      </Typography>
+                      <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' } }}>
+                        {keyed.map((section) => (
+                          <BootcampPathwayCard
+                            key={section.key}
+                            pathway={section}
+                            onSelect={() => setSelectedPathwayKey(section.key)}
+                          />
+                        ))}
+                      </Box>
+                    </>
+                  )}
                 </Box>
-              </Box>
-            )}
+              );
+            })()}
 
             {/* Curriculum & Competencies — shown once for the whole bootcamp (every hub run
                 shares the same curriculum), not per run. `curriculum` is null when the bootcamp
