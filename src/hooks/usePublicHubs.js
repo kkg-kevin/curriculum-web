@@ -41,3 +41,19 @@ export function useHubsByType(type) {
     select: (list) => (Array.isArray(list) ? list : []),
   });
 }
+
+/**
+ * GET /api/public/hubs/:id — one hub's full profile, for the "Running at" hub detail page
+ * (/bootcamps/:slug/hubs/:hubId). A different, richer projection than the two above (see
+ * public-bootcamp.service.js's projectHub): description, photo gallery, amenities, operating
+ * hours, contact info, and its bookable spaces with capacity/pricing.
+ */
+export function usePublicHub(id) {
+  return useQuery({
+    queryKey: ['public-hub', id],
+    queryFn: () => publicApi.getHub(id),
+    enabled: Boolean(id),
+    staleTime: 5 * 60 * 1000,
+    retry: (count, err) => err?.status !== 404 && count < 2,
+  });
+}

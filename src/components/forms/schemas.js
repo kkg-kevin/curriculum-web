@@ -111,21 +111,42 @@ export const diagnosticContactSchema = z.object({
   childName: z.string().trim().max(120).optional().or(z.literal('')),
 });
 
+// Same username shape as the admin client's learner form (learnerPassword/username fields) and
+// the server's submitBootcampEnrollmentSchema — kept in sync by hand across the two apps since
+// client/ and digifunzi-landing/ don't share code (see CLAUDE.md).
+const username = z
+  .string()
+  .trim()
+  .min(3, 'Username must be at least 3 characters')
+  .max(30, 'Username must be at most 30 characters')
+  .regex(/^[a-zA-Z0-9._-]+$/, 'Only letters, numbers, dots, underscores, and hyphens are allowed');
+
 /**
  * Bootcamp enrollment (auto-provisioned account) → POST /api/public/bootcamp-enrollments.
  * Shown on the bootcamp diagnostic report's "Enroll now" step. Unlike enrollSchema, phone is
  * REQUIRED (not just email) — this parent becomes the account's real contact, not an optional
  * follow-up channel, and there's no hub picker (the bootcamp already knows where it runs).
+ *
+ * username/password are the LEARNER'S OWN login, chosen right here on the form — the account is
+ * ready to use the moment this submits, no separate "here's your password" reveal step needed.
  */
-export const bootcampEnrollmentSchema = z.object({
-  parentName: z.string().trim().min(2, 'Please enter your name').max(120),
-  parentEmail: z.string().trim().email('Enter a valid email address').max(160),
-  parentPhone: phone,
-  learnerName: z.string().trim().min(2, 'Please enter the learner’s name').max(120),
-  learnerAge: z.coerce
-    .number({ invalid_type_error: 'Enter an age' })
-    .int('Enter a whole number')
-    .min(3, 'Age looks too low')
-    .max(19, 'This programme is for under-19s'),
-  ...honeypot,
-});
+export const bootcampEnrollmentSchema = z
+  .object({
+    parentName: z.string().trim().min(2, 'Please enter your name').max(120),
+    parentEmail: z.string().trim().email('Enter a valid email address').max(160),
+    parentPhone: phone,
+    learnerName: z.string().trim().min(2, 'Please enter the learner’s name').max(120),
+    learnerAge: z.coerce
+      .number({ invalid_type_error: 'Enter an age' })
+      .int('Enter a whole number')
+      .min(3, 'Age looks too low')
+      .max(19, 'This programme is for under-19s'),
+    username,
+    password: z.string().min(6, 'Password must be at least 6 characters').max(72),
+    confirmPassword: z.string().min(1, 'Please confirm your password'),
+    ...honeypot,
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Passwords don’t match',
+    path: ['confirmPassword'],
+  });

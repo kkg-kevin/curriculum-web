@@ -14,11 +14,8 @@
  * dependency here) and every colour is literal hex — so html2canvas can capture it for
  * the "Download PDF" button, which lives inside the card's hero.
  *
- * Also reused as-is for the Bootcamp diagnostic (public-bootcamp-diagnostic.service.js) — a
- * bootcamp attempt's report carries `bootcampName` instead of `pathwayName`; never both.
- *
  * Props:
- *   report — { pathwayName | bootcampName, assessmentName, totalScore, maxScore,
+ *   report — { pathwayName, assessmentName, totalScore, maxScore,
  *              competencyBreakdown[] (each { competencyId, name, marksEarned, marksPossible,
  *                indicators: [{ indicatorId, name, marksEarned, marksPossible }] }),
  *              indicatorBreakdown[] (flat fallback for older attempts / backends),
@@ -264,19 +261,36 @@ function IndicatorSubRow({ name, earned, possible }) {
 }
 
 // One competency — name + rolled-up score + a thin fill bar, and (when it has indicator
-// sub-rows) an expandable disclosure showing how each indicator contributed. Uses a native
-// <details>/<summary> so it works with zero JS and prints expanded-if-open.
+// sub-rows) an expandable disclosure showing how each indicator contributed.
+//
+// Deliberately a controlled <div> + React state rather than a native <details>/<summary>: a
+// collapsed <details> relies on the browser's own layout engine to skip its hidden content, and
+// html2canvas (the "Download PDF" capture — see reportPdf.js) doesn't reliably honour that. It
+// was walking and painting every collapsed competency's indicator rows into the captured image
+// regardless, so they all landed stacked on top of one another near the same y-position instead
+// of being absent — exactly the overlapping-text corruption the PDF showed. Explicitly not
+// rendering the indicator rows at all when closed (rather than hiding them with CSS) guarantees
+// html2canvas has nothing there to mis-paint.
 function CompetencyGroup({ name, earned, possible, indicators = [] }) {
   const score = pct(earned, possible);
   const color = scoreColor(score);
   const hasIndicators = indicators.length > 0;
+  const [open, setOpen] = useState(false);
 
   const header = (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1, minWidth: 0 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
         <div style={{ minWidth: 0, flex: 1, display: 'flex', alignItems: 'center', gap: 6 }}>
           {hasIndicators && (
-            <span className="dr-chevron" style={{ color: INK_FAINT, display: 'flex', flexShrink: 0, transition: 'transform 0.15s' }}>
+            <span
+              style={{
+                color: INK_FAINT,
+                display: 'flex',
+                flexShrink: 0,
+                transition: 'transform 0.15s',
+                transform: open ? 'rotate(180deg)' : 'none',
+              }}
+            >
               {Icon.chevron}
             </span>
           )}
@@ -294,32 +308,39 @@ function CompetencyGroup({ name, earned, possible, indicators = [] }) {
   );
 
   if (!hasIndicators) {
-    return <div style={{ display: 'flex' }}>{header}</div>;
+    return <div className="dr-competency" data-pdf-block style={{ display: 'flex' }}>{header}</div>;
   }
 
   return (
-    <details className="dr-group">
-      <summary
+    <div className="dr-competency" data-pdf-block>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
         style={{
-          listStyle: 'none',
+          all: 'unset',
+          boxSizing: 'border-box',
+          width: '100%',
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'flex-start',
         }}
       >
         {header}
-      </summary>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 12 }}>
-        {indicators.map((ind, i) => (
-          <IndicatorSubRow
-            key={ind.indicatorId || i}
-            name={ind.name}
-            earned={ind.marksEarned}
-            possible={ind.marksPossible}
-          />
-        ))}
-      </div>
-    </details>
+      </button>
+      {open && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 12 }}>
+          {indicators.map((ind, i) => (
+            <IndicatorSubRow
+              key={ind.indicatorId || i}
+              name={ind.name}
+              earned={ind.marksEarned}
+              possible={ind.marksPossible}
+            />
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -396,7 +417,7 @@ export default function DiagnosticReport({ report }) {
       }}
     >
       {/* hero */}
-      <div style={{ background: HERO_GRADIENT, padding: '32px 24px 26px', position: 'relative', overflow: 'hidden' }}>
+      <div data-pdf-block style={{ background: HERO_GRADIENT, padding: '32px 24px 26px', position: 'relative', overflow: 'hidden' }}>
         <div
           style={{
             position: 'absolute',
@@ -469,7 +490,7 @@ export default function DiagnosticReport({ report }) {
 
       {/* result — the score ring is the one place the headline number lives (besides the hero
           pill). No separate "Snapshot" section: it only repeated the hero + this. */}
-      <div style={sectionStyle}>
+      <div data-pdf-block style={sectionStyle}>
         <SectionHeading icon={Icon.compass}>Result</SectionHeading>
         <div style={{ display: 'flex', alignItems: 'center', gap: 18, flexWrap: 'wrap' }}>
           <ScoreRing percent={percent} />
@@ -486,7 +507,7 @@ export default function DiagnosticReport({ report }) {
       </div>
 
       {/* the facts, compact — pushed below the result so the score reads first */}
-      <div style={sectionStyle}>
+      <div data-pdf-block style={sectionStyle}>
         <SectionHeading icon={Icon.award}>Details</SectionHeading>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '14px 16px' }}>
           <IdentityRow label={subjectLabel} value={subjectName} />
@@ -497,18 +518,19 @@ export default function DiagnosticReport({ report }) {
         </div>
       </div>
 
-      {/* competency breakdown — each competency expandable to its indicators */}
+      {/* competency breakdown — each competency expandable to its indicators. The section's own
+          heading/intro is one pdf-block (so a page break can't land between "Competency areas"
+          and its first row), and each competency row below is its OWN pdf-block (see
+          reportPdf.js's content-aware page-break math — never cuts a page through the middle of
+          a marked block, only in the gaps between them). */}
       {groups.length > 0 && (
         <div style={sectionStyle}>
-          <SectionHeading icon={Icon.checkCircle}>Competency areas</SectionHeading>
-          <p style={{ margin: '0 0 14px', fontSize: 12, color: INK_FAINT }}>
-            Tap a competency to see how each skill within it contributed.
-          </p>
-          <style>{`
-            .dr-group > summary::-webkit-details-marker { display: none; }
-            .dr-group[open] .dr-chevron { transform: rotate(180deg); }
-            @media print { .dr-group { break-inside: avoid; } }
-          `}</style>
+          <div data-pdf-block>
+            <SectionHeading icon={Icon.checkCircle}>Competency areas</SectionHeading>
+            <p style={{ margin: '0 0 14px', fontSize: 12, color: INK_FAINT }}>
+              Tap a competency to see how each skill within it contributed.
+            </p>
+          </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {groups.map((g, i) => (
               <CompetencyGroup
@@ -524,6 +546,7 @@ export default function DiagnosticReport({ report }) {
       )}
 
       <p
+        data-pdf-block
         style={{
           margin: 0,
           padding: '16px 24px',

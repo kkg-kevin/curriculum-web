@@ -13,6 +13,8 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
 import EventIcon from '@mui/icons-material/Event';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SeoHead from '../components/seo/SeoHead.jsx';
 import JsonLd, { organizationSchema, productSchema } from '../components/seo/JsonLd.jsx';
 import Section from '../components/common/Section.jsx';
@@ -20,12 +22,28 @@ import SmartImage from '../components/common/SmartImage.jsx';
 import CTABanner from '../components/home/CTABanner.jsx';
 import { ErrorBlock } from '../components/common/StateViews.jsx';
 import { FORMAT_LABEL } from '../components/cards/BootcampCard.jsx';
+import BootcampPathwayCard from '../components/cards/BootcampPathwayCard.jsx';
 import CoursePricingRoadmap from '../components/pathway/CoursePricingRoadmap.jsx';
 import { usePublicBootcamp } from '../hooks/usePublicBootcamps.js';
 import { formatPrice, ageLabel } from '../utils/format.js';
 import { formatDateRange } from '../utils/dates.js';
 
 const RUN_STATUS_LABEL = { upcoming: 'Upcoming', active: 'Running now' };
+
+// A lighter section heading than the site's default display-scale h2 (clamp up to 2.7rem/750
+// weight — right for marketing sections, too loud for a detail page's own internal section
+// rhythm). Same "small overline + smaller heading" pattern the Curriculum section already used,
+// applied consistently to every section on this page for a calmer scan.
+function SectionHeading({ icon, children }) {
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+      {icon}
+      <Typography variant="h5" component="h2" sx={{ fontWeight: 700 }}>
+        {children}
+      </Typography>
+    </Box>
+  );
+}
 
 export default function BootcampDetailPage() {
   const { slug } = useParams();
@@ -35,6 +53,9 @@ export default function BootcampDetailPage() {
   // ~150-word description shows in full at this line count; only a genuine outlier (or content
   // saved before the cap existed) ever needs the "Read more" toggle.
   const [descriptionExpanded, setDescriptionExpanded] = useState(false);
+  // Which pathway section (by pathwayId, or 'ungrouped' for the pathway-less courses section)
+  // is currently expanded in the "Pathway courses" area — null shows the card grid instead.
+  const [selectedPathwayKey, setSelectedPathwayKey] = useState(null);
 
   if (isLoading) {
     return (
@@ -67,11 +88,49 @@ export default function BootcampDetailPage() {
 
   const {
     name, tagline, description, format, duration, ageMin, ageMax, coverImage, price,
-    highlights = [], upcomingRuns = [], coursePricing = [], priceNotes = [], curriculum, diagnostic,
+    highlights = [], upcomingRuns = [], coursePricing = [], priceNotes = [], curriculum, pathwayDiagnostics = [],
   } = data;
 
+  // Only the currently expanded pathway's diagnostic (if it has one) — `selectedPathwayKey` is a
+  // pathwayId when a real pathway is expanded (see the "Pathways in this bootcamp" section
+  // below), null otherwise. Used by the sidebar CTA so it only ever offers ONE diagnostic at a
+  // time, matching whichever pathway the visitor is currently looking at, rather than listing
+  // every pathway's diagnostic regardless of what's expanded.
+  const selectedPathwayDiagnostic = pathwayDiagnostics.find((pd) => pd.pathwayId === selectedPathwayKey) || null;
+
+  // Each coursePricing section's stable key (a pathwayId, or `ungrouped-i` for priced courses not
+  // tied to any pathway) — computed once here so both the sidebar price below and the "Pathways in
+  // this bootcamp" section further down key/match sections identically, rather than two separate
+  // key-generation copies risking drift.
+  const keyedCoursePricing = coursePricing.map((section, i) => ({
+    ...section,
+    key: section.pathwayId || `ungrouped-${i}`,
+  }));
+
   const age = ageLabel(ageMin, ageMax);
-  const priceLabel = price ? formatPrice(price) : 'Enquire for pricing';
+  // A bootcamp priced by course/module instead of as a whole has `price: null` — falling straight
+  // to "Enquire for pricing" would hide real numbers that DO exist, just spread across the
+  // "Pathway courses" section below. Surface the cheapest priced item instead, as a "From X"
+  // headline — a course entry priced by module (modules.length > 0) carries no priceAmount of its
+  // own (see CoursePricingRoadmap.jsx), so its modules must be checked instead of the course.
+  //
+  // Scoped to whichever pathway is currently expanded (`selectedPathwayKey`) when one is — so the
+  // sidebar price reflects the pathway a visitor is actually looking at, not always the bootcamp's
+  // overall cheapest item. Falls back to every pathway's courses when none is selected (the
+  // default "browsing" view).
+  const pricingScope = selectedPathwayKey
+    ? keyedCoursePricing.filter((section) => section.key === selectedPathwayKey)
+    : keyedCoursePricing;
+  const cheapestCoursePricingItem = pricingScope
+    .flatMap((section) => section.courses || [])
+    .flatMap((course) => ((course.modules || []).length > 0 ? course.modules : [course]))
+    .filter((item) => typeof item.priceAmount === 'number')
+    .reduce((cheapest, item) => (!cheapest || item.priceAmount < cheapest.priceAmount ? item : cheapest), null);
+  const priceLabel = price
+    ? formatPrice(price)
+    : cheapestCoursePricingItem
+      ? `From ${formatPrice({ amount: cheapestCoursePricingItem.priceAmount, currency: cheapestCoursePricingItem.priceCurrency })}`
+      : 'Enquire for pricing';
   const enquireTo = `/enroll?interestedIn=bootcamp&referenceId=${encodeURIComponent(slug)}`;
 
   return (
@@ -172,10 +231,8 @@ export default function BootcampDetailPage() {
           {/* main column */}
           <Box sx={{ flex: '1 1 480px', minWidth: 0, maxWidth: 760 }}>
             {description && (
-              <Box sx={{ mb: 6 }}>
-                <Typography variant="h2" component="h2" sx={{ mb: 2 }}>
-                  About this bootcamp
-                </Typography>
+              <Box sx={{ mb: 7 }}>
+                <SectionHeading>About this bootcamp</SectionHeading>
                 <Typography
                   sx={{
                     color: 'text.secondary',
@@ -207,13 +264,10 @@ export default function BootcampDetailPage() {
             )}
 
             {highlights.length > 0 && (
-              <Box sx={{ mb: 6 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                  <CheckCircleIcon sx={{ color: 'primary.main' }} />
-                  <Typography variant="h4" component="h2">
-                    What you&apos;ll build
-                  </Typography>
-                </Box>
+              <Box sx={{ mb: 7 }}>
+                <SectionHeading icon={<CheckCircleIcon sx={{ fontSize: 20, color: 'primary.main' }} />}>
+                  What you&apos;ll build
+                </SectionHeading>
                 <Box component="ul" sx={{ m: 0, p: 0, listStyle: 'none', display: 'grid', gap: 1.5 }}>
                   {highlights.map((h, i) => (
                     <Box component="li" key={`${h}-${i}`} sx={{ display: 'flex', gap: 1.25 }}>
@@ -229,31 +283,40 @@ export default function BootcampDetailPage() {
                 a richer projection (photo/address/contact) than the old "Upcoming runs" list
                 carried — see public-bootcamp.service.js's projectHub(). */}
             {upcomingRuns.length > 0 && (
-              <Box sx={{ mb: 6 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                  <EventIcon sx={{ color: 'primary.main' }} />
-                  <Typography variant="h4" component="h2">
-                    Running at
-                  </Typography>
-                </Box>
+              <Box sx={{ mb: 7 }}>
+                <SectionHeading icon={<EventIcon sx={{ fontSize: 20, color: 'primary.main' }} />}>
+                  Running at
+                </SectionHeading>
 
-                <Box sx={{ display: 'grid', gap: 1.5 }}>
+                <Box sx={{ display: 'grid', gap: 1.5, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
                   {upcomingRuns.map((run, i) => (
                     <Box
                       key={`${run.hub.id}-${i}`}
+                      component={RouterLink}
+                      to={{
+                        pathname: `/bootcamps/${slug}/hubs/${run.hub.id}`,
+                        search: `?start=${encodeURIComponent(run.startDate || '')}&end=${encodeURIComponent(run.endDate || '')}&status=${encodeURIComponent(run.status || '')}`,
+                      }}
                       sx={{
                         display: 'flex',
                         alignItems: 'center',
                         gap: 1.75,
                         p: 1.75,
+                        minWidth: 0,
                         borderRadius: 2,
                         border: '1px solid',
                         borderColor: 'divider',
                         bgcolor: 'background.paper',
+                        textDecoration: 'none',
+                        color: 'inherit',
                         transition: 'border-color 180ms ease, box-shadow 180ms ease',
                         '&:hover': {
                           borderColor: 'primary.main',
                           boxShadow: (t) => `0 4px 14px ${alpha(t.palette.primary.main, 0.1)}`,
+                        },
+                        '&:focus-visible': {
+                          outline: (t) => `2px solid ${t.palette.primary.main}`,
+                          outlineOffset: 2,
                         },
                       }}
                     >
@@ -306,6 +369,7 @@ export default function BootcampDetailPage() {
                           </Typography>
                         )}
                       </Box>
+                      <ChevronRightIcon sx={{ color: 'text.disabled', flexShrink: 0 }} />
                     </Box>
                   ))}
                 </Box>
@@ -313,7 +377,7 @@ export default function BootcampDetailPage() {
             )}
 
             {upcomingRuns.length === 0 && (
-              <Box sx={{ mb: 6 }}>
+              <Box sx={{ mb: 7 }}>
                 <Typography variant="body2" color="text.secondary">
                   Dates for the next run aren&apos;t published yet — send an enquiry and we&apos;ll let
                   you know the moment they are.
@@ -321,44 +385,91 @@ export default function BootcampDetailPage() {
               </Box>
             )}
 
-            {coursePricing.length > 0 && (
-              <Box sx={{ mb: 6 }}>
-                <Typography variant="h2" component="h2" sx={{ mb: 1 }}>
-                  Course pricing
-                </Typography>
-                <Typography sx={{ color: 'text.secondary', mb: 4 }}>
-                  Individual course prices within this bootcamp&apos;s curriculum.
-                </Typography>
-                <Box sx={{ display: 'grid', gap: 5 }}>
-                  {coursePricing.map((section, i) => (
-                    <Box key={section.pathwayId || `ungrouped-${i}`}>
-                      {section.pathwayName && (
-                        <Typography
-                          variant="overline"
-                          sx={{ display: 'block', color: section.pathwayColor || 'primary.dark', fontWeight: 800, letterSpacing: '0.06em', mb: 2 }}
-                        >
-                          {section.pathwayName}
+            {(coursePricing.length > 0 || pathwayDiagnostics.length > 0) && (() => {
+              const keyed = keyedCoursePricing;
+              // A pathway can carry a diagnostic with no priced courses at all — e.g. a
+              // whole-bootcamp-priced bootcamp (no per-course breakdown, see the Pricing card's
+              // mode toggle) still assigns per-pathway diagnostics in the builder. Give it a card
+              // too (courses: []) so its diagnostic stays reachable rather than only existing for
+              // pathways that happen to also have course pricing.
+              const knownPathwayIds = new Set(keyed.map((s) => s.pathwayId).filter(Boolean));
+              const diagnosticOnly = pathwayDiagnostics
+                .filter((pd) => !knownPathwayIds.has(pd.pathwayId))
+                .map((pd) => ({
+                  pathwayId: pd.pathwayId,
+                  pathwayName: pd.pathwayName,
+                  pathwayColor: pd.pathwayColor,
+                  courses: [],
+                  key: pd.pathwayId,
+                }));
+              const allSections = [...keyed, ...diagnosticOnly];
+              const selected = allSections.find((s) => s.key === selectedPathwayKey) || null;
+
+              return (
+                <Box sx={{ mb: 7 }}>
+                  {selected ? (
+                    <>
+                      <Button
+                        size="small"
+                        startIcon={<ArrowBackIcon />}
+                        onClick={() => setSelectedPathwayKey(null)}
+                        sx={{ mb: 2, px: 1 }}
+                      >
+                        Back to pathways
+                      </Button>
+                      <Typography variant="h5" component="h2" sx={{ fontWeight: 700, mb: 3 }}>
+                        {selected.pathwayName || 'Other courses'}
+                      </Typography>
+                      {selected.courses.length > 0 ? (
+                        <CoursePricingRoadmap courses={selected.courses} accent={selected.pathwayColor || undefined} />
+                      ) : (
+                        <Typography color="text.secondary">
+                          This pathway&apos;s course prices aren&apos;t broken out individually — see the price above.
                         </Typography>
                       )}
-                      <CoursePricingRoadmap courses={section.courses} accent={section.pathwayColor || undefined} />
-                    </Box>
-                  ))}
+                    </>
+                  ) : (
+                    <>
+                      <SectionHeading>Pathways in this bootcamp</SectionHeading>
+                      <Typography variant="body2" sx={{ color: 'text.secondary', mb: 3, mt: -1 }}>
+                        {coursePricing.length > 0
+                          ? 'Individual course prices, and diagnostics where available, by pathway.'
+                          : "Take a diagnostic for the pathway you're interested in."}
+                      </Typography>
+                      <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' } }}>
+                        {allSections.map((section) => (
+                          <BootcampPathwayCard
+                            key={section.key}
+                            pathway={section}
+                            onSelect={() => setSelectedPathwayKey(section.key)}
+                          />
+                        ))}
+                      </Box>
+                    </>
+                  )}
                 </Box>
-              </Box>
-            )}
+              );
+            })()}
 
             {/* Curriculum & Competencies — shown once for the whole bootcamp (every hub run
                 shares the same curriculum), not per run. `curriculum` is null when the bootcamp
-                has no linked curriculum. Leads with the curriculum's own NAME as the heading
-                (no generic "Curriculum" label above it — that was the same name shown twice with
-                filler text in between). Competencies are compact cards with their description
+                has no linked curriculum. Leads with the curriculum's own NAME as the heading, with
+                a small "Curriculum" overline above it (same pattern as the pathway-pricing
+                section's own overline) so it reads as what KIND of thing this is, not just a
+                second section title. Competencies are compact cards with their description
                 always visible (clamped, not hidden behind hover) so the info shows on touch
                 devices too. */}
             {curriculum && (
               <Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, mb: 1.5, flexWrap: 'wrap' }}>
-                  <MenuBookIcon sx={{ color: 'primary.main' }} />
-                  <Typography variant="h2" component="h2">
+                <Typography
+                  variant="overline"
+                  sx={{ display: 'block', color: 'text.secondary', fontWeight: 700, letterSpacing: '0.06em', mb: 0.5 }}
+                >
+                  Curriculum
+                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5, flexWrap: 'wrap' }}>
+                  <MenuBookIcon sx={{ fontSize: 20, color: 'primary.main' }} />
+                  <Typography variant="h5" component="h2" sx={{ fontWeight: 700 }}>
                     {curriculum.name}
                   </Typography>
                 </Box>
@@ -450,36 +561,27 @@ export default function BootcampDetailPage() {
           <Box sx={{ flex: '1 1 300px', minWidth: 280, maxWidth: { xs: '100%', md: 340 }, position: { md: 'sticky' }, top: { md: 24 } }}>
             <Box
               sx={{
-                p: 2.5,
+                p: 3,
                 borderRadius: 3,
                 border: '1px solid',
                 borderColor: 'divider',
                 bgcolor: 'background.paper',
-                boxShadow: (t) => `0 12px 32px ${alpha(t.palette.primary.dark, 0.08)}`,
               }}
             >
-              <Typography sx={{ fontSize: '1.6rem', fontWeight: 800, color: 'primary.dark', lineHeight: 1.15 }}>
+              <Typography sx={{ fontSize: '1.5rem', fontWeight: 700, color: 'text.primary', lineHeight: 1.15 }}>
                 {priceLabel}
               </Typography>
 
               {priceNotes.length > 0 && (
-                <Box sx={{ mt: 2 }}>
-                  <Typography
-                    variant="overline"
-                    sx={{ display: 'block', fontSize: 10.5, fontWeight: 700, letterSpacing: '0.06em', color: 'text.disabled', mb: 0.75 }}
-                  >
-                    Included in the package
-                  </Typography>
-                  <Box component="ul" sx={{ m: 0, p: 0, listStyle: 'none', display: 'grid', gap: 0.75 }}>
-                    {priceNotes.map((note, i) => (
-                      <Box component="li" key={i} sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.75 }}>
-                        <CheckCircleIcon sx={{ fontSize: 16, color: 'success.main', flexShrink: 0, mt: '2px' }} />
-                        <Typography variant="body2" color="text.secondary">
-                          {note}
-                        </Typography>
-                      </Box>
-                    ))}
-                  </Box>
+                <Box component="ul" sx={{ m: 0, mt: 2, p: 0, listStyle: 'none', display: 'grid', gap: 0.75 }}>
+                  {priceNotes.map((note, i) => (
+                    <Box component="li" key={i} sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.75 }}>
+                      <CheckCircleIcon sx={{ fontSize: 15, color: 'success.main', flexShrink: 0, mt: '3px' }} />
+                      <Typography variant="body2" color="text.secondary">
+                        {note}
+                      </Typography>
+                    </Box>
+                  ))}
                 </Box>
               )}
 
@@ -489,23 +591,32 @@ export default function BootcampDetailPage() {
                 variant="contained"
                 size="large"
                 fullWidth
+                disableElevation
                 sx={{ mt: 2.5 }}
               >
                 Enquire to book
               </Button>
-              {diagnostic?.available && (
+
+              {/* Only the pathway currently expanded below (see selectedPathwayDiagnostic) — not
+                  every pathway's diagnostic at once. Nothing shows here until a visitor picks a
+                  pathway in "Pathways in this bootcamp"; the same button is also right there
+                  next to that pathway's name, this is just a shortcut back up to it. Links to
+                  /pathways/:slug/diagnostic?bootcamp=:slug (see DiagnosticPage.jsx's comment on
+                  that param — it keeps the bootcamp's auto-enroll option on the report). */}
+              {selectedPathwayDiagnostic && (
                 <Button
                   component={RouterLink}
-                  to={`/bootcamps/${slug}/diagnostic`}
-                  variant="outlined"
+                  to={`/pathways/${selectedPathwayDiagnostic.pathwaySlug}/diagnostic?bootcamp=${encodeURIComponent(slug)}`}
+                  variant="text"
                   size="large"
                   fullWidth
-                  sx={{ mt: 1.25 }}
+                  sx={{ mt: 0.5, color: selectedPathwayDiagnostic.pathwayColor || 'primary.main' }}
                 >
                   Take the diagnostic
                 </Button>
               )}
-              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1, textAlign: 'center' }}>
+
+              <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mt: 1.5, textAlign: 'center' }}>
                 No online checkout yet — we&apos;ll confirm dates and how to secure a place.
               </Typography>
             </Box>

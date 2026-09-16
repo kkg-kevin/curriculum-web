@@ -30,7 +30,35 @@ const raw = [
     ],
     upcomingRuns: [
       {
-        hubName: 'Nairobi — Westlands Hub',
+        hub: {
+          id: 'hub-0000-0002',
+          name: 'Westlands Tech Club',
+          description:
+            'A bright, ground-floor tech club in Westlands with dedicated robotics benches and a small maker corner — the base for our Nairobi holiday and weekend bootcamps.',
+          address: 'ABC Place, Waiyaki Way, Nairobi',
+          phone: '+254712345678',
+          email: 'westlands@digifunzi.com',
+          contactPerson: 'Amina Otieno',
+          mapLink: 'https://maps.google.com/?q=ABC+Place+Waiyaki+Way+Nairobi',
+          photo: null,
+          photos: [],
+          amenities: ['wifi', 'charging_ports', 'desks', 'whiteboard', 'washrooms', 'parking'],
+          operatingHours: { opensAt: '15:00', closesAt: '18:00', days: ['Tuesday', 'Thursday', 'Saturday'] },
+          spaces: [
+            {
+              name: 'Robotics Bench A',
+              spaceType: 'table',
+              building: 'Main block',
+              floor: 'Ground floor',
+              room: '',
+              minCapacity: 1,
+              maxCapacity: 6,
+              pricingModel: 'fixed',
+              rate: 0,
+              priceUnit: 'per bootcamp',
+            },
+          ],
+        },
         startDate: '2026-12-08',
         endDate: '2026-12-12',
         status: 'upcoming',

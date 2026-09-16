@@ -8,8 +8,11 @@ import { publicApi } from '../services/api.js';
  *     highlightCount }
  * `price` is null when the bootcamp is priced by course instead of as a whole (see
  * CreateBootcampPage.jsx's pricing-mode toggle) — priceNotes applies either way. The detail
- * endpoint adds description (plain text), highlights[], coursePricing[], and upcomingRuns[]
- * ({ hubName, startDate, endDate, status }).
+ * endpoint adds description (plain text), highlights[], coursePricing[], upcomingRuns[]
+ * ({ hubName, startDate, endDate, status }), curriculum, and pathwayDiagnostics[]
+ * ({ pathwayId, pathwaySlug, pathwayName, pathwayColor }) — the bootcamp's pathways that
+ * currently offer a public diagnostic (see server's resolvePathwayDiagnostics; empty when none
+ * are assigned or offerable right now).
  *
  * Defence-in-depth: a misconfigured backend could in theory return odd rows — drop anything
  * with no slug, de-dupe by slug, stable-sort by name so card order doesn't jump between fetches.

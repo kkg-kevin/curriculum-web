@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams, Link as RouterLink } from 'react-router-dom';
+import { useParams, useSearchParams, Link as RouterLink } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Box from '@mui/material/Box';
@@ -14,6 +14,7 @@ import SeoHead from '../components/seo/SeoHead.jsx';
 import Section from '../components/common/Section.jsx';
 import { ErrorBlock, LoadingBlock } from '../components/common/StateViews.jsx';
 import { usePathway } from '../hooks/usePathways.js';
+import { usePublicBootcamp } from '../hooks/usePublicBootcamps.js';
 import { useDiagnostic, useSubmitDiagnostic } from '../hooks/useDiagnostic.js';
 import { diagnosticAgeSchema, diagnosticContactSchema } from '../components/forms/schemas.js';
 import { whatsAppUrl } from '../config/site.js';
@@ -26,6 +27,13 @@ import NextStepsPanel from '../components/diagnostic/NextStepsPanel.jsx';
 // giving a name + phone -> submit -> SEE THE REPORT. The name + phone are required before
 // submitting; they become a `source: "diagnostic"` lead so the team can follow up. The report
 // itself never exposes them.
+//
+// A visitor can also reach this page from a bootcamp's own "Take the diagnostic" picker (see
+// BootcampDetailPage.jsx / public-bootcamp.service.js's resolvePathwayDiagnostics) — the
+// diagnostic itself is always the PATHWAY's own (no bootcamp-specific assessment override, see
+// that resolver's comment), carried through via `?bootcamp=:bootcampSlug` purely so the report's
+// "Where to from here" step can offer the bootcamp's own auto-provisioned-account enrollment
+// instead of the generic pathway /enroll lead form.
 const STEP = { AGE: 'age', QUESTIONS: 'questions', REPORT: 'report' };
 
 function AgeStep({ onSubmit, minAge, maxAge }) {
@@ -67,7 +75,10 @@ function AgeStep({ onSubmit, minAge, maxAge }) {
 
 export default function DiagnosticPage() {
   const { slug } = useParams();
+  const [searchParams] = useSearchParams();
+  const bootcampSlug = searchParams.get('bootcamp') || null;
   const { data: pathway, isLoading: pathwayLoading } = usePathway(slug);
+  const { data: bootcamp } = usePublicBootcamp(bootcampSlug);
 
   const [step, setStep] = useState(STEP.AGE);
   const [age, setAge] = useState(null);
@@ -166,8 +177,9 @@ export default function DiagnosticPage() {
               component="p"
               sx={{ fontWeight: 400, color: 'text.secondary', maxWidth: 640, mt: 1.5 }}
             >
-              Here’s the graded report, and the ways you can pick up from here in the {pathwayName}{' '}
-              pathway.
+              {bootcamp
+                ? `Here's the graded report, and the ways you can pick up from here with ${bootcamp.name}.`
+                : `Here’s the graded report, and the ways you can pick up from here in the ${pathwayName} pathway.`}
             </Typography>
           )}
         </Container>
@@ -290,6 +302,18 @@ export default function DiagnosticPage() {
                 accent={pathway?.color}
                 mentorHref={mentorHref}
                 mentorIsExternal={mentorIsExternal}
+                bootcamp={
+                  bootcamp
+                    ? {
+                        slug: bootcamp.slug,
+                        name: bootcamp.name,
+                        defaultParentName: contactForm.getValues('parentName'),
+                        defaultParentPhone: contactForm.getValues('parentPhone'),
+                        defaultLearnerName: childName,
+                        defaultLearnerAge: age,
+                      }
+                    : null
+                }
               />
             </Box>
           </Box>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Box from '@mui/material/Box';
@@ -8,14 +8,64 @@ import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
+import Stepper from '@mui/material/Stepper';
+import Step from '@mui/material/Step';
+import StepLabel from '@mui/material/StepLabel';
+import Skeleton from '@mui/material/Skeleton';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import PaymentsIcon from '@mui/icons-material/Payments';
+import PlaceIcon from '@mui/icons-material/Place';
 import { bootcampEnrollmentSchema } from './schemas.js';
 import { useSubmitBootcampEnrollment } from '../../hooks/useBootcampEnrollment.js';
+import { usePublicBootcamp } from '../../hooks/usePublicBootcamps.js';
 import { APP_URL } from '../../config/env.js';
 import FormStatus from './FormStatus.jsx';
 import Honeypot, { HONEYPOT_DEFAULT, isBot } from './Honeypot.jsx';
+
+/** One selectable "Running at" hub card for the hub-choice step. */
+function HubOption({ run, selected, onSelect }) {
+  const { hub, startDate, endDate } = run;
+  return (
+    <Box
+      component="button"
+      type="button"
+      onClick={onSelect}
+      sx={{
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: 1.5,
+        width: '100%',
+        textAlign: 'left',
+        p: 2,
+        borderRadius: 3,
+        border: '2px solid',
+        borderColor: selected ? 'primary.main' : 'divider',
+        bgcolor: selected ? 'primary.main' : 'background.paper',
+        color: selected ? 'primary.contrastText' : 'text.primary',
+        cursor: 'pointer',
+        font: 'inherit',
+        transition: 'border-color 160ms ease',
+      }}
+    >
+      <PlaceIcon sx={{ mt: 0.25 }} />
+      <Box sx={{ minWidth: 0 }}>
+        <Typography sx={{ fontWeight: 700 }}>{hub.name}</Typography>
+        {hub.address && (
+          <Typography variant="body2" sx={{ opacity: selected ? 0.85 : 1, color: selected ? 'inherit' : 'text.secondary' }}>
+            {hub.address}
+          </Typography>
+        )}
+        {startDate && (
+          <Typography variant="caption" sx={{ opacity: selected ? 0.85 : 1, color: selected ? 'inherit' : 'text.secondary' }}>
+            {new Date(startDate).toLocaleDateString()}
+            {endDate ? ` – ${new Date(endDate).toLocaleDateString()}` : ''}
+          </Typography>
+        )}
+      </Box>
+    </Box>
+  );
+}
 
 function formatMoney(amount, currency) {
   return `${currency} ${Number(amount || 0).toLocaleString()}`;
@@ -67,15 +117,22 @@ function CopyableField({ label, value }) {
 
 /**
  * Bootcamp enrollment form (auto-provisioned account) — POST /api/public/bootcamp-enrollments.
- * Rendered inline on the bootcamp diagnostic report (see BootcampNextStepsPanel's "Enroll now"
- * option), not navigated to as a separate page, so the visitor's already-given diagnostic
- * contact details can be passed straight in as pre-fill defaults instead of round-tripping
- * through a URL.
+ * Rendered inline on a pathway diagnostic's report when it was reached from a bootcamp (see
+ * NextStepsPanel.jsx's `bootcamp` prop and its "Enroll now" option), not navigated to as a
+ * separate page, so the visitor's already-given diagnostic contact details can be passed straight
+ * in as pre-fill defaults instead of round-tripping through a URL.
  *
- * On success this shows a DISTINCT confirmation state (not FormStatus's generic success alert):
- * the new firstname.lastname@digifunzi.com login + a one-time temporary password, a "save this
- * now" warning (the password is never shown again), a link to the real curriculum system to log
- * in, and a note that access stays view-only until payment is confirmed.
+ * The learner's OWN login (username + password) is chosen right here on the form, not minted by
+ * the system. On success this shows a DISTINCT confirmation state (not FormStatus's generic
+ * success alert): the username AND password they just chose (as a reminder — the API never
+ * round-trips the password, so it's captured locally at submit time, see submittedPassword), a
+ * link to the real curriculum system to log in, and a note that access stays view-only until
+ * payment is confirmed.
+ *
+ * Which hub the learner attends is chosen here too, as its own step, whenever the bootcamp
+ * runs at more than one hub (bootcamp.upcomingRuns.length > 1) — a bootcamp running at just one
+ * hub (or none published yet) skips straight to the details/login step and that hub (if any) is
+ * submitted automatically.
  *
  * Props: bootcampSlug, bootcampName, defaultParentName?, defaultParentPhone?,
  * defaultLearnerName?, defaultLearnerAge?
@@ -90,6 +147,23 @@ export default function BootcampEnrollForm({
 }) {
   const mutation = useSubmitBootcampEnrollment();
   const [spamBlocked, setSpamBlocked] = useState(false);
+  // The password never comes back from the API (it's never round-tripped once set) — captured
+  // here right before submit so the success screen below can still show it alongside the
+  // username. It's the same value the learner just typed into the form, not a secret being
+  // exposed anywhere it shouldn't be.
+  const [submittedPassword, setSubmittedPassword] = useState('');
+  const { data: bootcamp, isLoading: bootcampLoading } = usePublicBootcamp(bootcampSlug);
+  const runs = bootcamp?.upcomingRuns || [];
+  const needsHubChoice = runs.length > 1;
+
+  // 'hub' only ever appears when there's a real choice to make; single-hub / no-hub bootcamps
+  // go straight to 'details' and submit whichever hub (if any) resolved automatically.
+  const [stage, setStage] = useState('details');
+  const [hubId, setHubId] = useState('');
+
+  useEffect(() => {
+    if (needsHubChoice) setStage('hub');
+  }, [needsHubChoice]);
 
   const {
     register,
@@ -105,6 +179,9 @@ export default function BootcampEnrollForm({
       parentPhone: defaultParentPhone,
       learnerName: defaultLearnerName,
       learnerAge: defaultLearnerAge,
+      username: '',
+      password: '',
+      confirmPassword: '',
       ...HONEYPOT_DEFAULT,
     },
   });
@@ -115,6 +192,7 @@ export default function BootcampEnrollForm({
       reset();
       return;
     }
+    setSubmittedPassword(values.password);
     await mutation.mutateAsync({
       bootcampIdOrSlug: bootcampSlug,
       parentName: values.parentName,
@@ -122,12 +200,17 @@ export default function BootcampEnrollForm({
       parentPhone: values.parentPhone,
       learnerName: values.learnerName,
       learnerAge: values.learnerAge,
+      username: values.username,
+      password: values.password,
+      hubId: hubId || undefined,
     });
   };
 
-  // ---- Success: show the new login exactly once ----------------------------
+  const selectedRun = runs.find((r) => r.hub.id === hubId);
+
+  // ---- Success: the account is ready with the login they just chose --------
   if (mutation.isSuccess) {
-    const { learnerLoginEmail, learnerTempPassword, payment } = mutation.data?.data || {};
+    const { learnerUsername, payment } = mutation.data?.data || {};
     const hasPrice = payment?.amount != null;
     return (
       <Box
@@ -143,18 +226,13 @@ export default function BootcampEnrollForm({
           You're enrolled in {bootcampName}!
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5 }}>
-          We've created an account so you can get started right away.
+          Your account is ready — log in with the username and password you just chose.
         </Typography>
 
-        <Box sx={{ display: 'grid', gap: 1.5, mb: 2 }}>
-          <CopyableField label="Login email" value={learnerLoginEmail} />
-          <CopyableField label="Temporary password" value={learnerTempPassword} />
+        <Box sx={{ mb: 2.5, display: 'grid', gap: 1.5 }}>
+          <CopyableField label="Username" value={learnerUsername} />
+          <CopyableField label="Password" value={submittedPassword} />
         </Box>
-
-        <Alert severity="warning" sx={{ mb: 2.5 }}>
-          Save these now — this password is shown only once. You can change it any time after
-          logging in.
-        </Alert>
 
         {/* Payment — cash-only for now: there's nothing to click through online, so this is
             instructional (pay at the hub) rather than a "Pay now" action. An admin confirms the
@@ -182,6 +260,15 @@ export default function BootcampEnrollForm({
                 ? `Pay by cash at ${payment.hubName || 'your hub'} to activate full access.`
                 : `Ask ${payment.hubName || 'your hub'} to confirm the price and pay by cash to activate full access.`}
             </Typography>
+            {/* This bootcamp is priced by course/module rather than as a whole — the total above
+                is the sum of every priced course (or module) rather than one flat number, since
+                enrollment signs you up for the whole bootcamp, not a single course. */}
+            {hasPrice && payment.mode === 'by_course' && (
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                This total combines this bootcamp's individually priced courses/modules — see the
+                "Pathway courses" section on the bootcamp page for the breakdown.
+              </Typography>
+            )}
           </Box>
         </Box>
 
@@ -212,6 +299,44 @@ export default function BootcampEnrollForm({
     );
   }
 
+  // ---- Step 1 (only when the bootcamp runs at more than one hub): choose a hub ----
+  if (stage === 'hub') {
+    return (
+      <Box sx={{ display: 'grid', gap: 2, p: { xs: 2.5, md: 3.5 }, borderRadius: 4, border: '1px solid', borderColor: 'divider', bgcolor: 'surface.subtle' }}>
+        <Stepper activeStep={0} alternativeLabel sx={{ mb: 1 }}>
+          <Step><StepLabel>Choose a hub</StepLabel></Step>
+          <Step><StepLabel>Your details</StepLabel></Step>
+        </Stepper>
+
+        <Box>
+          <Typography variant="h6" component="h2" gutterBottom>
+            Where should {defaultLearnerName || 'the learner'} attend?
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            {bootcampName} runs at more than one hub — pick the one that works best.
+          </Typography>
+
+          {bootcampLoading && <Skeleton variant="rounded" height={72} sx={{ mb: 1.5 }} />}
+
+          <Box sx={{ display: 'grid', gap: 1.5 }}>
+            {runs.map((run) => (
+              <HubOption
+                key={run.hub.id}
+                run={run}
+                selected={hubId === run.hub.id}
+                onSelect={() => setHubId(run.hub.id)}
+              />
+            ))}
+          </Box>
+        </Box>
+
+        <Button variant="contained" size="large" disabled={!hubId} onClick={() => setStage('details')}>
+          Continue
+        </Button>
+      </Box>
+    );
+  }
+
   // ---- The form --------------------------------------------------------------
   return (
     <Box
@@ -237,6 +362,25 @@ export default function BootcampEnrollForm({
           account unlocks fully as soon as that's confirmed.
         </Typography>
       </Box>
+
+      {needsHubChoice && (
+        <>
+          <Stepper activeStep={1} alternativeLabel sx={{ mb: 1 }}>
+            <Step><StepLabel>Choose a hub</StepLabel></Step>
+            <Step><StepLabel>Your details</StepLabel></Step>
+          </Stepper>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+            <Button size="small" onClick={() => setStage('hub')} sx={{ px: 1 }}>
+              Change hub
+            </Button>
+            {selectedRun && (
+              <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                {selectedRun.hub.name}
+              </Typography>
+            )}
+          </Box>
+        </>
+      )}
 
       <FormStatus status={mutation.isError ? 'error' : 'idle'} error={mutation.error} />
 
@@ -283,6 +427,40 @@ export default function BootcampEnrollForm({
           error={!!errors.learnerAge}
           helperText={errors.learnerAge?.message}
         />
+      </Box>
+
+      <Box>
+        <Typography sx={{ fontWeight: 700, mb: 1.5 }}>Set up the learner&rsquo;s login</Typography>
+        <Box sx={{ display: 'grid', gap: 2 }}>
+          <TextField
+            label="Choose a username"
+            required
+            autoComplete="username"
+            {...register('username')}
+            error={!!errors.username}
+            helperText={errors.username?.message || 'Letters, numbers, dots, underscores and hyphens only'}
+          />
+          <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
+            <TextField
+              label="Create a password"
+              type="password"
+              required
+              autoComplete="new-password"
+              {...register('password')}
+              error={!!errors.password}
+              helperText={errors.password?.message || 'At least 6 characters'}
+            />
+            <TextField
+              label="Confirm password"
+              type="password"
+              required
+              autoComplete="new-password"
+              {...register('confirmPassword')}
+              error={!!errors.confirmPassword}
+              helperText={errors.confirmPassword?.message}
+            />
+          </Box>
+        </Box>
       </Box>
 
       <Button type="submit" variant="contained" size="large" disabled={isSubmitting || mutation.isPending}>

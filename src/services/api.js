@@ -81,6 +81,11 @@ export const publicApi = {
       .get('/api/public/hubs', { params: type ? { type } : {} })
       .then((r) => r.data),
 
+  // One hub's full profile — the "Running at" list's own detail page (BootcampDetailPage links
+  // out here by hub id). Separate from listHubs/listHubTypes above, which serve the enrolment
+  // flow's Type picker with a narrower, schedule-only projection.
+  getHub: (id) => api.get(`/api/public/hubs/${encodeURIComponent(id)}`).then((r) => r.data),
+
   /** Enroll + Contact share this endpoint, differentiated by `interestedIn` (spec §4.5). */
   submitLead: (payload) => api.post('/api/public/leads', payload).then((r) => r.data),
 
@@ -118,35 +123,6 @@ export const publicApi = {
   submitDiagnostic: (pathwayIdOrSlug, payload) =>
     api
       .post(`/api/public/diagnostics/${encodeURIComponent(pathwayIdOrSlug)}/submit`, payload)
-      .then((r) => r.data),
-
-  // ---- Public diagnostics — Bootcamps -------------------------------------------
-  // Same feature as the pathway diagnostics above, scoped to a Bootcamp instead of a Pathway
-  // (server: public-bootcamp-diagnostic.routes.js). Kept as separate methods/endpoints rather
-  // than a shared `kind` param — a bootcamp isn't a pathway (see that route file's own comment).
-
-  /** GET /api/public/bootcamp-diagnostics/:bootcampIdOrSlug/availability — never errors. */
-  getBootcampDiagnosticAvailability: (bootcampIdOrSlug) =>
-    api
-      .get(`/api/public/bootcamp-diagnostics/${encodeURIComponent(bootcampIdOrSlug)}/availability`)
-      .then((r) => r.data),
-
-  /** GET /api/public/bootcamp-diagnostics/:bootcampIdOrSlug?age= — question set for that age. */
-  getBootcampDiagnostic: (bootcampIdOrSlug, age) =>
-    api
-      .get(`/api/public/bootcamp-diagnostics/${encodeURIComponent(bootcampIdOrSlug)}`, { params: { age } })
-      .then((r) => r.data),
-
-  /** GET /api/public/bootcamp-diagnostics/attempts/:attemptId — the permanent shareable report. */
-  getBootcampDiagnosticReport: (attemptId) =>
-    api
-      .get(`/api/public/bootcamp-diagnostics/attempts/${encodeURIComponent(attemptId)}`)
-      .then((r) => r.data),
-
-  /** POST /api/public/bootcamp-diagnostics/:bootcampIdOrSlug/submit — grades and returns the report. */
-  submitBootcampDiagnostic: (bootcampIdOrSlug, payload) =>
-    api
-      .post(`/api/public/bootcamp-diagnostics/${encodeURIComponent(bootcampIdOrSlug)}/submit`, payload)
       .then((r) => r.data),
 
   // ---- Bootcamp enrollment (auto-provisioned account) ---------------------------
