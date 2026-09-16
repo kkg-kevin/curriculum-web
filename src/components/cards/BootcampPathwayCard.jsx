@@ -49,9 +49,12 @@ function JourneyRail({ count, accent }) {
 /**
  * One card in a bootcamp's "Pathway courses" section — a bootcamp-scoped pathway (from
  * coursePricing: { pathwayId, pathwayName, pathwayColor, courses[] }), clicking it selects that
- * pathway so BootcampDetailPage can reveal its CoursePricingRoadmap in place. `pathwayName` can
- * be null (an "ungrouped" section of priced courses not tied to any pathway) — still gets its
- * own card, titled "Other courses", so every priced course is reachable from the grid.
+ * pathway so BootcampDetailPage can reveal its CoursePricingRoadmap (and, when this pathway has
+ * one, its own "Take the diagnostic" button) in place. `pathwayName` can be null (an "ungrouped"
+ * section of priced courses not tied to any pathway) — still gets its own card, titled "Other
+ * courses", so every priced course is reachable from the grid. `courses` can also be an empty
+ * array — a pathway with a diagnostic assigned but no per-course pricing broken out (e.g. a
+ * whole-bootcamp-priced bootcamp) still gets a card, just without the course-count kicker/rail.
  */
 export default function BootcampPathwayCard({ pathway, onSelect }) {
   const { pathwayName, pathwayColor, courses = [] } = pathway;
@@ -125,7 +128,7 @@ export default function BootcampPathwayCard({ pathway, onSelect }) {
               mb: 0.75,
             }}
           >
-            {courseCount}-course pathway
+            {courseCount > 0 ? `${courseCount}-course pathway` : 'Pathway'}
           </Typography>
           <Typography
             component="h3"
@@ -148,12 +151,12 @@ export default function BootcampPathwayCard({ pathway, onSelect }) {
         <CardContent
           sx={{ flexGrow: 1, width: '100%', display: 'flex', flexDirection: 'column', p: 2.5 }}
         >
-          <JourneyRail count={courseCount} accent={accent} />
+          {courseCount > 0 && <JourneyRail count={courseCount} accent={accent} />}
           <Typography
             component="p"
             sx={{ mt: 1, fontSize: 12, fontWeight: 600, color: 'text.disabled', letterSpacing: '0.01em' }}
           >
-            A step-by-step adventure, one course at a time
+            {courseCount > 0 ? 'A step-by-step adventure, one course at a time' : 'Take the diagnostic to see where to start'}
           </Typography>
 
           <Box sx={{ mt: 'auto', pt: 2, display: 'flex', alignItems: 'center' }}>

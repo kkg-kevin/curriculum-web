@@ -18,8 +18,6 @@ const DiagnosticReportPage = lazy(() => import('../pages/DiagnosticReportPage.js
 const BootcampsPage = lazy(() => import('../pages/BootcampsPage.jsx'));
 const BootcampDetailPage = lazy(() => import('../pages/BootcampDetailPage.jsx'));
 const HubDetailPage = lazy(() => import('../pages/HubDetailPage.jsx'));
-const BootcampDiagnosticPage = lazy(() => import('../pages/BootcampDiagnosticPage.jsx'));
-const BootcampDiagnosticReportPage = lazy(() => import('../pages/BootcampDiagnosticReportPage.jsx'));
 const CompetitionsPage = lazy(() => import('../pages/CompetitionsPage.jsx'));
 const CompetitionDetailPage = lazy(() => import('../pages/CompetitionDetailPage.jsx'));
 const ProjectsListPage = lazy(() => import('../pages/ProjectsListPage.jsx'));
@@ -46,8 +44,6 @@ export const routes = [
       { path: 'bootcamps', element: <BootcampsPage /> },
       { path: 'bootcamps/:slug', element: <BootcampDetailPage /> },
       { path: 'bootcamps/:slug/hubs/:hubId', element: <HubDetailPage /> },
-      { path: 'bootcamps/:slug/diagnostic', element: <BootcampDiagnosticPage /> },
-      { path: 'bootcamps/:slug/diagnostic/report/:attemptId', element: <BootcampDiagnosticReportPage /> },
       { path: 'competitions', element: <CompetitionsPage /> },
       { path: 'competitions/:slug', element: <CompetitionDetailPage /> },
       { path: 'store', element: <StoreListPage /> },

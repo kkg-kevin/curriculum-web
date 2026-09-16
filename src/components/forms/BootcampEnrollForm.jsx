@@ -117,16 +117,17 @@ function CopyableField({ label, value }) {
 
 /**
  * Bootcamp enrollment form (auto-provisioned account) — POST /api/public/bootcamp-enrollments.
- * Rendered inline on the bootcamp diagnostic report (see BootcampNextStepsPanel's "Enroll now"
- * option), not navigated to as a separate page, so the visitor's already-given diagnostic
- * contact details can be passed straight in as pre-fill defaults instead of round-tripping
- * through a URL.
+ * Rendered inline on a pathway diagnostic's report when it was reached from a bootcamp (see
+ * NextStepsPanel.jsx's `bootcamp` prop and its "Enroll now" option), not navigated to as a
+ * separate page, so the visitor's already-given diagnostic contact details can be passed straight
+ * in as pre-fill defaults instead of round-tripping through a URL.
  *
  * The learner's OWN login (username + password) is chosen right here on the form, not minted by
- * the system — so there's nothing to reveal-once on success. On success this shows a DISTINCT
- * confirmation state (not FormStatus's generic success alert): the username they just chose (as
- * a reminder, not a secret), a link to the real curriculum system to log in, and a note that
- * access stays view-only until payment is confirmed.
+ * the system. On success this shows a DISTINCT confirmation state (not FormStatus's generic
+ * success alert): the username AND password they just chose (as a reminder — the API never
+ * round-trips the password, so it's captured locally at submit time, see submittedPassword), a
+ * link to the real curriculum system to log in, and a note that access stays view-only until
+ * payment is confirmed.
  *
  * Which hub the learner attends is chosen here too, as its own step, whenever the bootcamp
  * runs at more than one hub (bootcamp.upcomingRuns.length > 1) — a bootcamp running at just one
@@ -146,6 +147,11 @@ export default function BootcampEnrollForm({
 }) {
   const mutation = useSubmitBootcampEnrollment();
   const [spamBlocked, setSpamBlocked] = useState(false);
+  // The password never comes back from the API (it's never round-tripped once set) — captured
+  // here right before submit so the success screen below can still show it alongside the
+  // username. It's the same value the learner just typed into the form, not a secret being
+  // exposed anywhere it shouldn't be.
+  const [submittedPassword, setSubmittedPassword] = useState('');
   const { data: bootcamp, isLoading: bootcampLoading } = usePublicBootcamp(bootcampSlug);
   const runs = bootcamp?.upcomingRuns || [];
   const needsHubChoice = runs.length > 1;
@@ -186,6 +192,7 @@ export default function BootcampEnrollForm({
       reset();
       return;
     }
+    setSubmittedPassword(values.password);
     await mutation.mutateAsync({
       bootcampIdOrSlug: bootcampSlug,
       parentName: values.parentName,
@@ -222,8 +229,9 @@ export default function BootcampEnrollForm({
           Your account is ready — log in with the username and password you just chose.
         </Typography>
 
-        <Box sx={{ mb: 2.5 }}>
+        <Box sx={{ mb: 2.5, display: 'grid', gap: 1.5 }}>
           <CopyableField label="Username" value={learnerUsername} />
+          <CopyableField label="Password" value={submittedPassword} />
         </Box>
 
         {/* Payment — cash-only for now: there's nothing to click through online, so this is

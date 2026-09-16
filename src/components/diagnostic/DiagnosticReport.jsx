@@ -14,11 +14,8 @@
  * dependency here) and every colour is literal hex — so html2canvas can capture it for
  * the "Download PDF" button, which lives inside the card's hero.
  *
- * Also reused as-is for the Bootcamp diagnostic (public-bootcamp-diagnostic.service.js) — a
- * bootcamp attempt's report carries `bootcampName` instead of `pathwayName`; never both.
- *
  * Props:
- *   report — { pathwayName | bootcampName, assessmentName, totalScore, maxScore,
+ *   report — { pathwayName, assessmentName, totalScore, maxScore,
  *              competencyBreakdown[] (each { competencyId, name, marksEarned, marksPossible,
  *                indicators: [{ indicatorId, name, marksEarned, marksPossible }] }),
  *              indicatorBreakdown[] (flat fallback for older attempts / backends),
