@@ -23,6 +23,7 @@ import CTABanner from '../components/home/CTABanner.jsx';
 import { ErrorBlock } from '../components/common/StateViews.jsx';
 import { FORMAT_LABEL } from '../components/cards/BootcampCard.jsx';
 import BootcampPathwayCard from '../components/cards/BootcampPathwayCard.jsx';
+import HubPreviewCard from '../components/hubs/HubPreviewCard.jsx';
 import CoursePricingRoadmap from '../components/pathway/CoursePricingRoadmap.jsx';
 import { usePublicBootcamp } from '../hooks/usePublicBootcamps.js';
 import { formatPrice, ageLabel } from '../utils/format.js';
@@ -56,6 +57,10 @@ export default function BootcampDetailPage() {
   // Which pathway section (by pathwayId, or 'ungrouped' for the pathway-less courses section)
   // is currently expanded in the "Pathway courses" area — null shows the card grid instead.
   const [selectedPathwayKey, setSelectedPathwayKey] = useState(null);
+  // Which "Running at" hub is previewed in the sidebar right now (by hub id) — null hides the
+  // preview. Clicking the same hub's card again clears it, closing the preview in place instead
+  // of navigating to the full /bootcamps/:slug/hubs/:hubId page and back.
+  const [selectedHubRun, setSelectedHubRun] = useState(null);
 
   if (isLoading) {
     return (
@@ -289,14 +294,15 @@ export default function BootcampDetailPage() {
                 </SectionHeading>
 
                 <Box sx={{ display: 'grid', gap: 1.5, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
-                  {upcomingRuns.map((run, i) => (
+                  {upcomingRuns.map((run, i) => {
+                    const isSelected = selectedHubRun?.hub.id === run.hub.id;
+                    return (
                     <Box
                       key={`${run.hub.id}-${i}`}
-                      component={RouterLink}
-                      to={{
-                        pathname: `/bootcamps/${slug}/hubs/${run.hub.id}`,
-                        search: `?start=${encodeURIComponent(run.startDate || '')}&end=${encodeURIComponent(run.endDate || '')}&status=${encodeURIComponent(run.status || '')}`,
-                      }}
+                      component="button"
+                      type="button"
+                      onClick={() => setSelectedHubRun(isSelected ? null : run)}
+                      aria-pressed={isSelected}
                       sx={{
                         display: 'flex',
                         alignItems: 'center',
@@ -305,11 +311,15 @@ export default function BootcampDetailPage() {
                         minWidth: 0,
                         borderRadius: 2,
                         border: '1px solid',
-                        borderColor: 'divider',
+                        borderColor: isSelected ? 'primary.main' : 'divider',
                         bgcolor: 'background.paper',
                         textDecoration: 'none',
                         color: 'inherit',
+                        font: 'inherit',
+                        textAlign: 'left',
+                        cursor: 'pointer',
                         transition: 'border-color 180ms ease, box-shadow 180ms ease',
+                        boxShadow: isSelected ? (t) => `0 4px 14px ${alpha(t.palette.primary.main, 0.1)}` : 'none',
                         '&:hover': {
                           borderColor: 'primary.main',
                           boxShadow: (t) => `0 4px 14px ${alpha(t.palette.primary.main, 0.1)}`,
@@ -369,9 +379,17 @@ export default function BootcampDetailPage() {
                           </Typography>
                         )}
                       </Box>
-                      <ChevronRightIcon sx={{ color: 'text.disabled', flexShrink: 0 }} />
+                      <ChevronRightIcon
+                        sx={{
+                          color: isSelected ? 'primary.main' : 'text.disabled',
+                          flexShrink: 0,
+                          transform: isSelected ? 'rotate(90deg)' : 'none',
+                          transition: 'transform 180ms ease, color 180ms ease',
+                        }}
+                      />
                     </Box>
-                  ))}
+                    );
+                  })}
                 </Box>
               </Box>
             )}
@@ -417,9 +435,21 @@ export default function BootcampDetailPage() {
                       >
                         Back to pathways
                       </Button>
-                      <Typography variant="h5" component="h2" sx={{ fontWeight: 700, mb: 3 }}>
-                        {selected.pathwayName || 'Other courses'}
-                      </Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, flexWrap: 'wrap', mb: 3 }}>
+                        <Typography variant="h5" component="h2" sx={{ fontWeight: 700 }}>
+                          {selected.pathwayName || 'Other courses'}
+                        </Typography>
+                        {selectedPathwayDiagnostic && (
+                          <Button
+                            component={RouterLink}
+                            to={`/pathways/${selectedPathwayDiagnostic.pathwaySlug}/diagnostic?bootcamp=${encodeURIComponent(slug)}`}
+                            variant="outlined"
+                            sx={{ color: selectedPathwayDiagnostic.pathwayColor || 'primary.main', borderColor: selectedPathwayDiagnostic.pathwayColor || 'primary.main' }}
+                          >
+                            Take the diagnostic
+                          </Button>
+                        )}
+                      </Box>
                       {selected.courses.length > 0 ? (
                         <CoursePricingRoadmap courses={selected.courses} accent={selected.pathwayColor || undefined} />
                       ) : (
@@ -559,6 +589,13 @@ export default function BootcampDetailPage() {
               on the page, always in view instead of requiring a scroll back up or down to find
               it (previously duplicated in the header AND a "Book" card at the very bottom). */}
           <Box sx={{ flex: '1 1 300px', minWidth: 280, maxWidth: { xs: '100%', md: 340 }, position: { md: 'sticky' }, top: { md: 24 } }}>
+            {selectedHubRun && (
+              <HubPreviewCard
+                hubId={selectedHubRun.hub.id}
+                run={selectedHubRun}
+                onClose={() => setSelectedHubRun(null)}
+              />
+            )}
             <Box
               sx={{
                 p: 3,
@@ -596,25 +633,6 @@ export default function BootcampDetailPage() {
               >
                 Enquire to book
               </Button>
-
-              {/* Only the pathway currently expanded below (see selectedPathwayDiagnostic) — not
-                  every pathway's diagnostic at once. Nothing shows here until a visitor picks a
-                  pathway in "Pathways in this bootcamp"; the same button is also right there
-                  next to that pathway's name, this is just a shortcut back up to it. Links to
-                  /pathways/:slug/diagnostic?bootcamp=:slug (see DiagnosticPage.jsx's comment on
-                  that param — it keeps the bootcamp's auto-enroll option on the report). */}
-              {selectedPathwayDiagnostic && (
-                <Button
-                  component={RouterLink}
-                  to={`/pathways/${selectedPathwayDiagnostic.pathwaySlug}/diagnostic?bootcamp=${encodeURIComponent(slug)}`}
-                  variant="text"
-                  size="large"
-                  fullWidth
-                  sx={{ mt: 0.5, color: selectedPathwayDiagnostic.pathwayColor || 'primary.main' }}
-                >
-                  Take the diagnostic
-                </Button>
-              )}
 
               <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mt: 1.5, textAlign: 'center' }}>
                 No online checkout yet — we&apos;ll confirm dates and how to secure a place.
