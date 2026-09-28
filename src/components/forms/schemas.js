@@ -17,7 +17,7 @@ const honeypot = { [HONEYPOT_FIELD]: z.string().optional() };
 // z.object() strips keys it doesn't know about. `referenceId` is still set by
 // the page, not the user.
 const interestedIn = z
-  .enum(['bootcamp', 'project', 'quarky', 'general'])
+  .enum(['bootcamp', 'project', 'quarky', 'home_schooling', 'general'])
   .optional()
   .default('general');
 

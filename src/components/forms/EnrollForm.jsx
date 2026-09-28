@@ -17,7 +17,7 @@ import FormStatus from './FormStatus.jsx';
 import Honeypot, { HONEYPOT_DEFAULT, isBot } from './Honeypot.jsx';
 import HubTypeSchedule from './HubTypeSchedule.jsx';
 
-// `value` must stay within the lead API's enum (bootcamp | project | quarky |
+// `value` must stay within the lead API's enum (bootcamp | project | quarky | home_schooling |
 // general — WEBSITE_INTEGRATION_CONTRACT §4.1); labels are free to be broader.
 // Store items pass a specific slug in `referenceId` so staff still see exactly
 // what was enquired about.
@@ -25,6 +25,7 @@ const INTEREST_OPTIONS = [
   { value: 'project', label: 'A project' },
   { value: 'quarky', label: 'The Quarky robot or a kit' },
   { value: 'bootcamp', label: 'A bootcamp' },
+  { value: 'home_schooling', label: 'Home Schooling' },
   { value: 'general', label: 'Not sure yet — help me choose' },
 ];
 
@@ -55,6 +56,7 @@ export default function EnrollForm({
   defaultMessage = '',
 }) {
   const isEnquiry = variant === 'enquiry';
+  const isHomeSchooling = defaultInterest === 'home_schooling';
   const mutation = useLeadSubmission();
   const [spamBlocked, setSpamBlocked] = useState(false);
   // withHub runs as a wizard: 'hub' -> 'details'. Everything else is a single 'details' step.
@@ -251,24 +253,26 @@ export default function EnrollForm({
           helperText={errors.parentPhone?.message}
         />
       </Box>
-      <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '2fr 1fr' } }}>
-        <TextField
-          label={isEnquiry ? 'Learner’s name (optional)' : 'Learner’s name'}
-          required={!isEnquiry}
-          {...register('learnerName')}
-          error={!!errors.learnerName}
-          helperText={errors.learnerName?.message}
-        />
-        <TextField
-          label={isEnquiry ? 'Learner’s age (optional)' : 'Learner’s age'}
-          type="number"
-          required={!isEnquiry}
-          inputProps={{ min: 3, max: 19 }}
-          {...register('learnerAge')}
-          error={!!errors.learnerAge}
-          helperText={errors.learnerAge?.message}
-        />
-      </Box>
+      {!isHomeSchooling && (
+        <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '2fr 1fr' } }}>
+          <TextField
+            label={isEnquiry ? 'Learner’s name (optional)' : 'Learner’s name'}
+            required={!isEnquiry}
+            {...register('learnerName')}
+            error={!!errors.learnerName}
+            helperText={errors.learnerName?.message}
+          />
+          <TextField
+            label={isEnquiry ? 'Learner’s age (optional)' : 'Learner’s age'}
+            type="number"
+            required={!isEnquiry}
+            inputProps={{ min: 3, max: 19 }}
+            {...register('learnerAge')}
+            error={!!errors.learnerAge}
+            helperText={errors.learnerAge?.message}
+          />
+        </Box>
+      )}
 
       {/* The pathway flow doesn't ask "Interested in" — they're enrolling in a named pathway. */}
       {!withHub && (
