@@ -60,6 +60,13 @@ export const publicApi = {
   listStoreItems: () => api.get('/api/public/store').then((r) => r.data),
   getStoreItem: (slug) => api.get(`/api/public/store/${encodeURIComponent(slug)}`).then((r) => r.data),
 
+  // Home Schooling packages = the designated admin's Home Learning packages ticked "Show on the
+  // website" in the portal's Home Learning → Packages (WEBSITE_INTEGRATION_CONTRACT.md, Home
+  // Learning handoff). The same records families are signed up and invoiced on.
+  listHomeLearningPackages: () => api.get('/api/public/home-learning/packages').then((r) => r.data),
+  getHomeLearningPackage: (idOrSlug) =>
+    api.get(`/api/public/home-learning/packages/${encodeURIComponent(idOrSlug)}`).then((r) => r.data),
+
   // Bootcamps = the designated admin's Event curricula (short-run cohorts) flipped "List on
   // the website" in the portal's Event view (WEBSITE_INTEGRATION_CONTRACT.md §3.1/§3.2).
   // Reintroduced 10 Sep 2026 as a for-sale flag on the existing Event concept — not the old

@@ -10,6 +10,7 @@
  */
 import { projects, projectDetail } from './fixtures/projects.js';
 import { storeList, storeItemDetail } from './fixtures/store.js';
+import { homeLearningPackages, homeLearningPackageDetail } from './fixtures/homeLearning.js';
 import { bootcampList, bootcampDetail } from './fixtures/bootcamps.js';
 import { competitionList, competitionDetail } from './fixtures/competitions.js';
 import { hubList, hubTypeList } from './fixtures/hubs.js';
@@ -95,6 +96,18 @@ export async function mockAdapter(config) {
   if (method === 'get' && m) {
     const detail = storeItemDetail(decodeURIComponent(m[1]));
     return detail ? ok(detail, config) : fail(404, 'Store item not found', config);
+  }
+
+  // ---- GET /api/public/home-learning/packages (published Home Learning packages) ----
+  if (method === 'get' && path === '/api/public/home-learning/packages') {
+    return ok(homeLearningPackages, config);
+  }
+
+  // ---- GET /api/public/home-learning/packages/:idOrSlug ----
+  m = path.match(/^\/api\/public\/home-learning\/packages\/([^/]+)$/);
+  if (method === 'get' && m) {
+    const pkg = homeLearningPackageDetail(decodeURIComponent(m[1]));
+    return pkg ? ok(pkg, config) : fail(404, 'Package not found', config);
   }
 
   // ---- GET /api/public/bootcamps (for-sale program curricula) ----

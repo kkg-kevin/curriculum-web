@@ -17,6 +17,7 @@ export const NAV_LINKS = [
   { label: 'Projects', to: '/projects' },
   { label: 'Bootcamps', to: '/bootcamps' },
   { label: 'Competitions', to: '/competitions' },
+  { label: 'Home Schooling', to: '/home-schooling' },
   { label: 'Store', to: '/store' },
   { label: 'About', to: '/about' },
 ];

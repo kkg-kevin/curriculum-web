@@ -102,6 +102,14 @@ received but not surfaced — see §6.
    - *Pathway card/detail:* `name`, `slug`, `description`, `color`,
      `courseCount`; detail also `courses[]`
      (`{ name, description, ageMin, ageMax, coverImage }`, in learning order).
+   - *Home Schooling package card* (`GET /api/public/home-learning/packages`,
+     plus `/:slug` for the enquiry form's `?package=`): `slug`, `name`, `summary`,
+     `childrenIncluded`, `monthlyAmount`, `allowExtraChildren`, `extraChildAmount`,
+     `maxChildren`, `features[]`, `badge`. Packages are created and published in
+     the curriculum system's Home Learning → Packages; the enquiry sends the
+     package `slug` as `referenceId`, so staff can create the household on that
+     exact package. Full contract: `Guide/WEBSITE_INTEGRATION_CONTRACT.md`
+     ("Home Learning handoff") in the curriculum repo.
    - We **ignore** `id`, `isPublished`, `createdAt`, `updatedAt` — fine to send,
      we don't read them.
 4. **`coverImage`** — we accept an absolute URL, a `data:` URI, **or** a
@@ -234,7 +242,7 @@ Rate limit: **20 req / 15 min / IP.** Request (JSON):
   "parentPhone": "optional (or \"\"), 7–20, /^[+0-9()\\-\\s]+$/",
   "learnerName": "optional (or \"\"), ≤120",
   "learnerAge":  "optional / null, integer 3–19",
-  "interestedIn": "bootcamp | project | quarky | general   (default general)",
+  "interestedIn": "bootcamp | project | quarky | home_schooling | general   (default general)",
   "referenceId": "optional / null, ≤100 — the programme SLUG the form came from",
   "note":        "optional (or \"\"), ≤1000 — the form's 'anything else' field"
 }

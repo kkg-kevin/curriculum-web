@@ -37,7 +37,7 @@ const SETTLE_WAIT_MS = 400; // small extra buffer after ready, for Helmet flush
 // reachable, otherwise we'd bake a "couldn't load" / empty page into static HTML.
 // Skipped routes still work as a normal client-rendered SPA via the index.html
 // fallback.
-const DATA_DRIVEN_STATIC = new Set(['/pathways', '/projects', '/store', '/bootcamps', '/competitions']);
+const DATA_DRIVEN_STATIC = new Set(['/pathways', '/projects', '/store', '/bootcamps', '/competitions', '/home-schooling']);
 
 let apiReachable = useMock; // mock adapter always "reachable"
 
@@ -168,7 +168,10 @@ async function main() {
       // visitor's real preference on hydration (src/theme/colorMode.js).
       await page.emulateMediaFeatures([{ name: 'prefers-color-scheme', value: 'light' }]);
       const url = `http://localhost:${PORT}${route}`;
-      await page.goto(url, { waitUntil: 'networkidle0', timeout: 30000 });
+      // API requests can stay active (or fail slowly) while the route mounts. The
+      // app-ready signal below already waits for React, route chunks, and queries,
+      // so waiting for every browser connection to become idle can hang prerendering.
+      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
 
       // Wait for the app to signal it has mounted and settled all data fetches
       // (window.__APP_READY__, set in src/utils/prerenderSignal.js).
