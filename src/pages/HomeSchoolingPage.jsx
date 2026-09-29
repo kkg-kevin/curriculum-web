@@ -25,7 +25,7 @@ import PriceCalculator from '../components/homeSchooling/PriceCalculator.jsx';
 import PackageCard from '../components/homeSchooling/PackageCard.jsx';
 import { usePublicHomeLearningPackages } from '../hooks/usePublicHomeLearning.js';
 import {
-  formatKsh, homeSchoolingBenefits, homeSchoolingEnquiryPath, homeSchoolingFaqs, homeSchoolingHero, homeSchoolingSteps,
+  formatKsh, homeSchoolingBenefits, homeSchoolingEnquiryPath, homeSchoolingFaqs, homeSchoolingHero, homeSchoolingSignupPath, homeSchoolingSteps,
   maxChildrenOffered, perChildAmount,
 } from '../content/homeSchooling.js';
 
@@ -58,7 +58,7 @@ function Hero({ packages, isLoading }) {
   const facts = [
     lowest != null && `From ${formatKsh(lowest)} a month`,
     largestFamily > 1 && `Families of up to ${largestFamily} children`,
-    'Free, no-commitment enquiry',
+    'Sign up online in minutes',
   ].filter(Boolean);
 
   return (
@@ -242,7 +242,7 @@ function Packages({ packages, isLoading, isError, error, refetch }) {
         </Box>
       </Reveal>
       <Typography variant="body2" color="text.secondary" sx={{ mt: 2, textAlign: 'center' }}>
-        Prices are per month, in Kenyan shillings. Enquiring is free and does not commit you to a payment.
+        Prices are per month, in Kenyan shillings. Signing up creates your family’s accounts; you pay the first month in cash and we unlock them once it’s confirmed.
       </Typography>
     </Section>
   );
@@ -346,9 +346,9 @@ export default function HomeSchoolingPage() {
       <Box sx={{ pt: { xs: 7, md: 10 } }}>
         <CTABanner
           heading="Ready to bring learning home?"
-          body="Send a free enquiry and our team will call you to talk through your children’s needs and the right package."
-          primary={{ label: 'Enquire now', to: homeSchoolingEnquiryPath() }}
-          secondary={{ label: 'Talk to us', to: '/contact' }}
+          body="Sign up in a few minutes — choose a package, add your children and your home. Rather talk first? Ask us anything."
+          primary={{ label: 'Sign up now', to: homeSchoolingSignupPath() }}
+          secondary={{ label: 'Ask a question', to: homeSchoolingEnquiryPath() }}
         />
       </Box>
     </>

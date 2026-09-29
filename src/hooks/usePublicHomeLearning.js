@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { publicApi } from '../services/api.js';
 
 /**
@@ -40,4 +40,9 @@ export function usePublicHomeLearningPackage(slug) {
     staleTime: 5 * 60 * 1000,
     retry: (count, err) => err?.status !== 404 && count < 2,
   });
+}
+
+/** POST /api/public/home-learning/signups — the family's self sign-up (see HomeSchoolingSignupForm). */
+export function useHomeLearningSignup() {
+  return useMutation({ mutationFn: (payload) => publicApi.submitHomeLearningSignup(payload) });
 }

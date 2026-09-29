@@ -150,3 +150,70 @@ export const bootcampEnrollmentSchema = z
     message: 'Passwords don’t match',
     path: ['confirmPassword'],
   });
+
+/**
+ * Home Schooling sign-up → POST /api/public/home-learning/signups. Mirrors the server's
+ * signupSchema (home-learning.validation.js): the parent's email + password become their portal
+ * login, each child gets their own username + password, and the home details tell the educator
+ * where to go. Our team places each child (curriculum, grade, educator) after sign-up, so the
+ * form only asks for the child's current school/grade to help with that.
+ */
+const loginPassword = z.string().min(8, 'Use at least 8 characters').max(72, 'Use at most 72 characters');
+const requiredText = (max, message) => z.string().trim().min(1, message).max(max);
+const optionalText = (max) => z.string().trim().max(max).optional().or(z.literal(''));
+
+// Same rule as the server: a Google Maps share link or a google.<tld>/maps URL, or nothing.
+export function isGoogleMapsUrl(value) {
+  let url;
+  try { url = new URL(value); } catch { return false; }
+  if (!['http:', 'https:'].includes(url.protocol)) return false;
+  const host = url.hostname.toLowerCase();
+  if (host === 'maps.app.goo.gl') return true;
+  if (host === 'goo.gl') return url.pathname.startsWith('/maps');
+  if (/^maps\.google\.[a-z.]+$/.test(host)) return true;
+  return /^(www\.)?google\.[a-z.]+$/.test(host) && url.pathname.startsWith('/maps');
+}
+
+export const signupChildSchema = z.object({
+  firstName: requiredText(80, 'Enter their first name'),
+  lastName: requiredText(80, 'Enter their last name'),
+  gender: z.enum(['female', 'male', 'other'], { errorMap: () => ({ message: 'Choose one' }) }),
+  dateOfBirth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Enter their date of birth').optional().or(z.literal('')),
+  currentGrade: optionalText(150),
+  username,
+  password: loginPassword,
+});
+
+export const homeSchoolingSignupSchema = z
+  .object({
+    packageSlug: z.string().min(1, 'Choose a package'),
+    parent: z.object({
+      name: requiredText(150, 'Enter your name'),
+      email: z.string().trim().email('Enter a valid email address').max(255),
+      phone,
+      password: loginPassword,
+      confirmPassword: z.string().min(1, 'Please confirm your password'),
+    }),
+    children: z.array(signupChildSchema).min(1, 'Add at least one child').max(20),
+    home: z.object({
+      county: requiredText(100, 'Enter your county'),
+      subCounty: optionalText(100),
+      town: requiredText(100, 'Enter your town or area'),
+      addressLine: requiredText(255, 'Enter your home address'),
+      landmark: optionalText(255),
+      mapUrl: z.string().trim().max(2048).refine((v) => !v || isGoogleMapsUrl(v), 'Paste a Google Maps link (e.g. https://maps.app.goo.gl/…)').optional(),
+    }),
+    consent: z.literal(true, { errorMap: () => ({ message: 'Please agree so we can store your family’s details' }) }),
+    ...honeypot,
+  })
+  .superRefine((data, ctx) => {
+    if (data.parent.password !== data.parent.confirmPassword) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['parent', 'confirmPassword'], message: 'Passwords don’t match' });
+    }
+    const seen = new Set();
+    data.children.forEach((child, index) => {
+      const key = child.username.toLowerCase();
+      if (key && seen.has(key)) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['children', index, 'username'], message: 'Each child needs a different username' });
+      seen.add(key);
+    });
+  });
