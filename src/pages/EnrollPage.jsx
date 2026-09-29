@@ -8,7 +8,7 @@ import Section from '../components/common/Section.jsx';
 import EnrollForm from '../components/forms/EnrollForm.jsx';
 import { getProject } from '../content/projects.js';
 import { LoadingBlock } from '../components/common/StateViews.jsx';
-import { childrenLabel, packageEnquiryNote } from '../content/homeSchooling.js';
+import { childrenLabel, packageEnquiryNote, priceForPackage } from '../content/homeSchooling.js';
 import { usePublicHomeLearningPackage } from '../hooks/usePublicHomeLearning.js';
 
 const VALID_INTEREST = ['bootcamp', 'project', 'quarky', 'home_schooling', 'general'];
@@ -26,6 +26,8 @@ const VALID_INTEREST = ['bootcamp', 'project', 'quarky', 'home_schooling', 'gene
  *   - course                  — an age-based starting-course suggestion (pathway page)
  *   - package                 — a Home Schooling package slug (with interestedIn=home_schooling),
  *                               looked up from the curriculum system and sent as referenceId
+ *   - children                — how many children the family has (the Home Schooling price
+ *                               calculator); ignored unless the package can take that many
  */
 export default function EnrollPage() {
   const [params] = useSearchParams();
@@ -39,6 +41,10 @@ export default function EnrollPage() {
   // slug just falls back to a general Home Schooling enquiry.
   const packageQuery = usePublicHomeLearningPackage(packageSlug);
   const homeSchoolingPackage = packageQuery.data || null;
+  const childrenParam = Number(params.get('children'));
+  const familyChildren = homeSchoolingPackage && Number.isInteger(childrenParam) && priceForPackage(homeSchoolingPackage, childrenParam)
+    ? childrenParam
+    : null;
   const isPathwayFlow = params.get('flow') === 'pathway';
 
   // A project / store reference (or an explicit ?enquiry=1) switches to the lighter enquiry
@@ -97,11 +103,11 @@ export default function EnrollPage() {
             defaultInterest={defaultInterest}
             referenceId={homeSchoolingPackage ? homeSchoolingPackage.slug : referenceId}
             referenceLabel={homeSchoolingPackage
-              ? `Home Schooling — ${homeSchoolingPackage.name} (${childrenLabel(homeSchoolingPackage.childrenIncluded)})`
+              ? `Home Schooling — ${homeSchoolingPackage.name} (${childrenLabel(familyChildren || homeSchoolingPackage.childrenIncluded)})`
               : isHomeSchooling ? 'Home Schooling' : referenceLabel}
             defaultMessage={
               homeSchoolingPackage
-                ? packageEnquiryNote(homeSchoolingPackage)
+                ? packageEnquiryNote(homeSchoolingPackage, familyChildren)
                 : isHomeSchooling
                   ? 'I am interested in Home Schooling. Please contact me to discuss package options.'
                   : suggestedCourse ? `Suggested starting course based on age: ${suggestedCourse}` : undefined
