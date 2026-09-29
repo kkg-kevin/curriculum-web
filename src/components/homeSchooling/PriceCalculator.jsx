@@ -10,7 +10,7 @@ import RemoveRoundedIcon from '@mui/icons-material/RemoveRounded';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import ChildIcons from './ChildIcons.jsx';
 import {
-  bestPackageFor, childrenLabel, formatKsh, homeSchoolingEnquiryPath, maxChildrenOffered,
+  bestPackageFor, childrenLabel, formatKsh, homeSchoolingEnquiryPath, homeSchoolingSignupPath, maxChildrenOffered,
 } from '../../content/homeSchooling.js';
 
 const panelSx = {
@@ -91,7 +91,7 @@ export default function PriceCalculator({ packages, isLoading }) {
           )}
           <Button
             component={RouterLink}
-            to={homeSchoolingEnquiryPath(best.pkg.slug, children)}
+            to={homeSchoolingSignupPath(best.pkg.slug, children)}
             variant="contained"
             color="secondary"
             size="large"
@@ -99,10 +99,11 @@ export default function PriceCalculator({ packages, isLoading }) {
             endIcon={<ArrowForwardIcon />}
             sx={{ mt: 2.5 }}
           >
-            Enquire for {childrenLabel(children)}
+            Sign up for {childrenLabel(children)}
           </Button>
           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1.25, textAlign: 'center' }}>
-            Free to enquire · no payment or sign-up
+            Pay in cash once you’re signed up ·{' '}
+            <Box component={RouterLink} to={homeSchoolingEnquiryPath(best.pkg.slug, children)} sx={{ color: 'inherit' }}>or ask us a question</Box>
           </Typography>
         </Box>
       ) : (

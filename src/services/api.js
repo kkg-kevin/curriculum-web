@@ -140,4 +140,13 @@ export const publicApi = {
   // cash payment against it (see server: bootcamp-enrollment.service.js).
   submitBootcampEnrollment: (payload) =>
     api.post('/api/public/bootcamp-enrollments', payload).then((r) => r.data),
+
+  // ---- Home Schooling sign-up (creates the family's accounts) ----------------------
+  // Creates the household, the parent's login (email + password) and each child's login
+  // (username + password), plus the first month's invoice. The logins show "payment pending"
+  // until an admin approves the (cash) payment (see server: home-learning-signup.service.js).
+  // Resolves to { householdId, packageName, childCount, monthlyAmount, currency, invoiceNumber,
+  // amountDue, parentEmail, children: [{ name, username }] }.
+  submitHomeLearningSignup: (payload) =>
+    api.post('/api/public/home-learning/signups', payload).then((r) => r.data.data),
 };

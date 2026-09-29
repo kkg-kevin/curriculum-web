@@ -194,6 +194,23 @@ export async function mockAdapter(config) {
     );
   }
 
+  // ---- POST /api/public/home-learning/signups (offline stand-in: nothing is created) ----
+  if (method === 'post' && path === '/api/public/home-learning/signups') {
+    const body = safeParse(config.data);
+    if (!body?.parent?.email || !Array.isArray(body?.children) || !body.children.length) {
+      return fail(400, 'Please check your details and try again', config);
+    }
+    console.warn('[mockApi] OFFLINE MODE (VITE_USE_MOCK=true) — sign-up NOT created, only logged.', body);
+    return ok({
+      success: true,
+      data: {
+        householdId: 'mock-household', packageName: body.packageSlug, childCount: body.children.length,
+        monthlyAmount: 0, currency: 'KES', invoiceNumber: 'INV-MOCK-000001', amountDue: 0, parentEmail: body.parent.email,
+        children: body.children.map((c) => ({ name: `${c.firstName} ${c.lastName}`, username: c.username })),
+      },
+    }, config, 201);
+  }
+
   // ---- POST /api/public/contact ----
   if (method === 'post' && path === '/api/public/contact') {
     const body = safeParse(config.data);

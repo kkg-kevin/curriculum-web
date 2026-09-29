@@ -53,6 +53,12 @@ export function homeSchoolingEnquiryPath(packageSlug, children) {
   return `/enroll?${query}`;
 }
 
+/** The Home Schooling sign-up form, optionally with a package and number of children chosen. */
+export function homeSchoolingSignupPath(packageSlug, children) {
+  if (!packageSlug) return '/home-schooling/signup';
+  return `/home-schooling/signup?package=${encodeURIComponent(packageSlug)}${children ? `&children=${Number(children)}` : ''}`;
+}
+
 /**
  * The enquiry note for a chosen package. Keep the "<n> child/children" wording, and keep the
  * family's count as the FIRST such phrase: the curriculum system reads the first one for the
@@ -105,9 +111,9 @@ export const homeSchoolingBenefits = [
 ];
 
 export const homeSchoolingSteps = [
-  { title: 'Pick a package', body: 'Choose the package that fits the number of children in your family and send an enquiry. It’s free.' },
-  { title: 'Talk to our team', body: 'We call you to learn about your children — their ages, where they are now, and what you want for them.' },
-  { title: 'Meet your educator', body: 'Each child is placed at the right level and an educator is assigned to teach them at home.' },
+  { title: 'Sign up', body: 'Choose your package and create logins for you and your children — it takes a few minutes.' },
+  { title: 'Pay and get approved', body: 'Pay the first month in cash to our team. As soon as we confirm it, your logins unlock.' },
+  { title: 'Meet your educator', body: 'We place each child at the right level and assign an educator to teach them at home.' },
   { title: 'Watch them grow', body: 'Lessons, assessments and reports build a clear picture of each child’s progress, month after month.' },
 ];
 
@@ -130,11 +136,15 @@ export function homeSchoolingFaqs(lowestExtra) {
     },
     {
       q: 'How does payment work?',
-      a: 'Your family receives one invoice each month for your package. There is nothing to pay when you enquire.',
+      a: 'Your family receives one invoice each month for your package — the first one when you sign up. Payment is in cash to our team for now.',
     },
     {
-      q: 'Does enquiring commit me to anything?',
-      a: 'No. An enquiry just lets our team call you to talk it through — it isn’t a payment or a sign-up.',
+      q: 'How do I sign up and pay?',
+      a: 'Choose a package and click Sign up. You create logins for yourself (your email) and each child (a username), then pay the first month in cash to our team. Your logins unlock as soon as we confirm the payment — until then, signing in shows “payment pending”.',
+    },
+    {
+      q: 'Can I ask questions before signing up?',
+      a: 'Of course. Use “Ask a question” and our team will call you — it doesn’t commit you to anything.',
     },
   ];
 }

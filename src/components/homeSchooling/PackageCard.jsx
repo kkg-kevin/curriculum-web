@@ -6,7 +6,7 @@ import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import AddCircleOutlineRoundedIcon from '@mui/icons-material/AddCircleOutlineRounded';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import ChildIcons from './ChildIcons.jsx';
-import { childrenLabel, formatKsh, homeSchoolingEnquiryPath, perChildAmount } from '../../content/homeSchooling.js';
+import { childrenLabel, formatKsh, homeSchoolingSignupPath, perChildAmount } from '../../content/homeSchooling.js';
 
 function Point({ icon: Icon = CheckCircleRoundedIcon, children }) {
   return (
@@ -116,7 +116,7 @@ export default function PackageCard({ pkg, highestPerChild }) {
 
         <Button
           component={RouterLink}
-          to={homeSchoolingEnquiryPath(pkg.slug)}
+          to={homeSchoolingSignupPath(pkg.slug)}
           variant={featured ? 'contained' : 'outlined'}
           color={featured ? 'secondary' : 'primary'}
           size="large"
