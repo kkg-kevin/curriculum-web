@@ -82,7 +82,7 @@ export default function HubDetailPage() {
 
   return (
     <>
-      <SeoHead title={`${hub.name} — Digifunzi`} description={(hub.description || '').slice(0, 155)} noindex />
+      <SeoHead title={hub.name} description={hub.description} noindex />
       <JsonLd data={[organizationSchema()]} />
 
       {/* header band */}

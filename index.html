@@ -3,7 +3,6 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="/logo.png" />
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="apple-touch-icon" href="/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
@@ -31,9 +30,11 @@
     <!--
       Per-route <title>, description, OG/Twitter tags and JSON-LD are injected at
       runtime by react-helmet-async and frozen into static HTML by scripts/prerender.js.
-      The values below are the crawl-safe fallback for the bare SPA shell.
+      The values below are the crawl-safe fallback for the bare SPA shell (served as 200.html
+      for client-only routes); prerender.js strips them from every prerendered page so each
+      tag appears exactly once. %VITE_SITE_URL% is substituted by Vite at build time.
     -->
-    <title>Digifunzi — Robotics &amp; STEM Learning for Kids in Kenya</title>
+    <title>Digifunzi — Robotics, Coding &amp; STEM for Kids in Kenya</title>
     <meta
       name="description"
       content="Digifunzi teaches robotics, coding and STEM to children across Kenya through hands-on projects, bootcamps and the Quarky robot."
@@ -43,12 +44,12 @@
 
     <meta property="og:site_name" content="Digifunzi" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Digifunzi — Robotics &amp; STEM Learning for Kids in Kenya" />
+    <meta property="og:title" content="Digifunzi — Robotics, Coding &amp; STEM for Kids in Kenya" />
     <meta
       property="og:description"
       content="Hands-on robotics, coding and STEM education for children across Kenya."
     />
-    <meta property="og:image" content="/og-default.png" />
+    <meta property="og:image" content="%VITE_SITE_URL%/hero-students.png" />
     <meta name="twitter:card" content="summary_large_image" />
   </head>
   <body>

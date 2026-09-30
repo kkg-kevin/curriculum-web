@@ -16,7 +16,7 @@ import EventIcon from '@mui/icons-material/Event';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SeoHead from '../components/seo/SeoHead.jsx';
-import JsonLd, { organizationSchema, productSchema } from '../components/seo/JsonLd.jsx';
+import JsonLd, { organizationSchema, breadcrumbSchema, eventSchema } from '../components/seo/JsonLd.jsx';
 import Section from '../components/common/Section.jsx';
 import SmartImage from '../components/common/SmartImage.jsx';
 import CTABanner from '../components/home/CTABanner.jsx';
@@ -28,6 +28,8 @@ import CoursePricingRoadmap from '../components/pathway/CoursePricingRoadmap.jsx
 import { usePublicBootcamp } from '../hooks/usePublicBootcamps.js';
 import { formatPrice, ageLabel } from '../utils/format.js';
 import { formatDateRange } from '../utils/dates.js';
+import { resolveMediaUrl } from '../utils/media.js';
+import { titleWithKind } from '../utils/seo.js';
 
 const RUN_STATUS_LABEL = { upcoming: 'Upcoming', active: 'Running now' };
 
@@ -141,25 +143,32 @@ export default function BootcampDetailPage() {
   return (
     <>
       <SeoHead
-        title={`${name} — Digifunzi Bootcamp`}
-        description={(tagline || description || '').slice(0, 155)}
-        type="product"
+        title={titleWithKind(name, 'Bootcamp')}
+        description={tagline || description}
+        image={resolveMediaUrl(coverImage) || undefined}
       />
+      {/* A bootcamp is something that happens on dates at a place — one EducationEvent per
+          scheduled run at a real hub (Google's event rich result), rather than a Product with a
+          placeholder price. Runs without a start date are skipped by eventSchema. */}
       <JsonLd
         data={[
           organizationSchema(),
-          productSchema(
-            {
-              name,
-              slug,
-              summary: tagline || description,
-              description,
-              image: coverImage,
-              price: price ? { amount: price.amount, currency: price.currency } : null,
-              kind: 'bootcamp',
-            },
-            `/bootcamps/${slug}`,
-            { pricingIsPlaceholder: true },
+          breadcrumbSchema([
+            { name: 'Home', path: '/' },
+            { name: 'Bootcamps', path: '/bootcamps' },
+            { name, path: `/bootcamps/${slug}` },
+          ]),
+          ...upcomingRuns.map((run) =>
+            eventSchema({
+              type: 'EducationEvent',
+              name: run.hub?.name ? `${name} — ${run.hub.name}` : name,
+              description: tagline || description,
+              startDate: run.startDate,
+              endDate: run.endDate,
+              image: resolveMediaUrl(coverImage),
+              path: `/bootcamps/${slug}`,
+              location: run.hub ? { name: run.hub.name, address: run.hub.address } : null,
+            }),
           ),
         ]}
       />

@@ -89,7 +89,7 @@ export default function ProjectsListPage() {
   return (
     <>
       <SeoHead
-        title="Projects — Guided Build Projects for Kids"
+        title="Guided Build Projects for Kids"
         description="Guided build projects a child works through at their own pace — robotics, coding, data and automation. Bought once, yours for life."
       />
       <JsonLd

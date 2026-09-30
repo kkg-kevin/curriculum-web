@@ -12,7 +12,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import SeoHead from '../components/seo/SeoHead.jsx';
-import JsonLd, { organizationSchema } from '../components/seo/JsonLd.jsx';
+import JsonLd, { organizationSchema, breadcrumbSchema, eventSchema } from '../components/seo/JsonLd.jsx';
 import Section from '../components/common/Section.jsx';
 import SmartImage from '../components/common/SmartImage.jsx';
 import CTABanner from '../components/home/CTABanner.jsx';
@@ -21,6 +21,8 @@ import { FORMAT_LABEL, CADENCE_LABEL } from '../components/cards/CompetitionCard
 import CoursePricingRoadmap from '../components/pathway/CoursePricingRoadmap.jsx';
 import { usePublicCompetition } from '../hooks/usePublicCompetitions.js';
 import { formatDateRange } from '../utils/dates.js';
+import { resolveMediaUrl } from '../utils/media.js';
+import { titleWithKind } from '../utils/seo.js';
 
 const TRACK_GREEN = '#2E7D32';
 
@@ -165,10 +167,30 @@ export default function CompetitionDetailPage() {
   return (
     <>
       <SeoHead
-        title={`${name} — Digifunzi Competition`}
-        description={(description || `Enter a team for ${name}.`).slice(0, 155)}
+        title={titleWithKind(name, 'Competition')}
+        description={description || `Enter a team for ${name}.`}
+        image={resolveMediaUrl(coverImage) || undefined}
       />
-      <JsonLd data={organizationSchema()} />
+      {/* No venue is recorded for a competition season, so the Event carries dates only —
+          eventSchema never invents a location. */}
+      <JsonLd
+        data={[
+          organizationSchema(),
+          breadcrumbSchema([
+            { name: 'Home', path: '/' },
+            { name: 'Competitions', path: '/competitions' },
+            { name, path: `/competitions/${slug}` },
+          ]),
+          eventSchema({
+            name,
+            description,
+            startDate,
+            endDate,
+            image: resolveMediaUrl(coverImage),
+            path: `/competitions/${slug}`,
+          }),
+        ]}
+      />
 
       {/* header band */}
       <Box

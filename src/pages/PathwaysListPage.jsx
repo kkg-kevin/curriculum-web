@@ -57,8 +57,8 @@ export default function PathwaysListPage() {
   return (
     <>
       <SeoHead
-        title="Learning Pathways — Robotics, Coding, AI & Design for Kids"
-        description="Guided tracks of Digifunzi courses a child works through in order — robotics, coding, AI, data, digital design and more — building real skills one course at a time."
+        title="Coding, Robotics & AI Pathways for Kids"
+        description="Guided tracks of courses a child works through in order — robotics, coding, AI, data, digital design and more — building real skills one course at a time."
       />
       <JsonLd
         data={[

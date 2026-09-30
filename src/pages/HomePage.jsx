@@ -10,9 +10,9 @@ export default function HomePage() {
   return (
     <>
       <SeoHead
-        title="Robotics & STEM Learning for Kids in Kenya"
+        title="Digifunzi — Robotics, Coding & STEM for Kids in Kenya"
         titleTemplate={false}
-        description="Digifunzi teaches robotics, coding and STEM to children across Kenya through hands-on weekly projects, holiday bootcamps, competitions and the Quarky robot."
+        description="Digifunzi teaches robotics, coding and STEM to children across Kenya through hands-on projects, holiday bootcamps, competitions and the Quarky robot."
       />
       <JsonLd data={organizationSchema()} />
 

@@ -52,8 +52,10 @@ export const routes = [
       { path: 'home-schooling/signup', element: <HomeSchoolingSignupPage /> },
       { path: 'store', element: <StoreListPage /> },
       { path: 'store/:slug', element: <StoreItemPage /> },
-      // /quarky was the single-product page before the Store existed.
-      { path: 'quarky', element: <Navigate to="/store/quarky" replace /> },
+      // /quarky was the single-product page before the Store existed. Its item's slug is set in
+      // the portal's Inventory and can change, so this lands on the Store itself rather than a
+      // guessed /store/<slug> that 404s. public/.htaccess does the same as a real 301.
+      { path: 'quarky', element: <Navigate to="/store" replace /> },
       { path: 'enroll', element: <EnrollPage /> },
       { path: 'contact', element: <ContactPage /> },
       { path: 'about', element: <AboutPage /> },

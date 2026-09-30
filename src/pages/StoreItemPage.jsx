@@ -11,7 +11,8 @@ import Link from '@mui/material/Link';
 import Skeleton from '@mui/material/Skeleton';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import SeoHead from '../components/seo/SeoHead.jsx';
-import JsonLd, { organizationSchema, productSchema } from '../components/seo/JsonLd.jsx';
+import JsonLd, { organizationSchema, productSchema, breadcrumbSchema } from '../components/seo/JsonLd.jsx';
+import { resolveMediaUrl } from '../utils/media.js';
 import Section from '../components/common/Section.jsx';
 import SmartImage from '../components/common/SmartImage.jsx';
 import CTABanner from '../components/home/CTABanner.jsx';
@@ -75,18 +76,24 @@ export default function StoreItemPage() {
   return (
     <>
       <SeoHead
-        title={`${name} — Digifunzi Store`}
-        description={(tagline || description || '').slice(0, 155)}
+        title={name}
+        description={tagline || description}
+        image={resolveMediaUrl(image) || undefined}
         type="product"
       />
       <JsonLd
         data={[
           organizationSchema(),
+          breadcrumbSchema([
+            { name: 'Home', path: '/' },
+            { name: 'Store', path: '/store' },
+            { name, path: `/store/${slug}` },
+          ]),
           productSchema(
             {
               name,
               description: description || tagline,
-              image,
+              image: resolveMediaUrl(image),
               price: price ? { amount: price.amount, currency: price.currency } : null,
               status: notAvailable ? stockStatus : 'available',
             },
