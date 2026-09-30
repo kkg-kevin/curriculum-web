@@ -12,6 +12,13 @@
  * interactive experience changes — crawlers and slow connections just get real
  * content immediately.
  *
+ * Alongside the routes it also writes two files public/.htaccess relies on:
+ *   - dist/200.html — the bare, un-prerendered SPA shell, copied BEFORE "/" overwrites
+ *     dist/index.html with the home page. Served for client-only routes (a pathway added after
+ *     the last build, a diagnostic). Without it those URLs got the prerendered HOME page's HTML —
+ *     home title, home canonical — until JS ran.
+ *   - dist/404.html — the NotFound page, prerendered, served with a real 404 status.
+ *
  * Dynamic routes — /pathways/:slug, /projects/:slug, /store/:slug,
  * /bootcamps/:slug and /competitions/:slug — are all discovered from the public API
  * (/api/public/{pathways,projects,store,bootcamps,competitions}), or from local fixtures when
@@ -29,6 +36,8 @@ const { apiUrl, useMock } = getConfig();
 const PORT = 4199;
 const READY_TIMEOUT_MS = 15000; // max wait for window.__APP_READY__
 const SETTLE_WAIT_MS = 400; // small extra buffer after ready, for Helmet flush
+// Any path no route matches renders NotFoundPage; its snapshot is written to dist/404.html.
+const NOT_FOUND_ROUTE = '/__prerender-not-found__';
 
 // ---- 1. discover routes -----------------------------------------------------
 
@@ -112,8 +121,40 @@ function startServer() {
 
 // ---- 3. render each route -------------------------------------------------
 
+// index.html's hard-coded fallback <title>/description/OG/Twitter tags stay in the DOM next to
+// the ones react-helmet-async adds (marked data-rh), so a snapshot would carry two og:image, two
+// descriptions, etc. Drop each fallback that Helmet has a replacement for. Runs in the page.
+function dedupeHeadTags() {
+  const head = document.head;
+  const key = (el) => (el.tagName === 'TITLE' ? 'title' : el.getAttribute('property') || el.getAttribute('name'));
+  const managed = new Set([...head.querySelectorAll('[data-rh]')].map(key).filter(Boolean));
+  const titles = head.querySelectorAll('title');
+  if (titles.length > 1) managed.add('title');
+  head.querySelectorAll('title:not([data-rh]), meta:not([data-rh])').forEach((el) => {
+    const k = key(el);
+    if (!k || !managed.has(k)) return;
+    // Keep the last <title> when Helmet reused one without marking it.
+    if (k === 'title' && el === titles[titles.length - 1] && !head.querySelector('title[data-rh]')) return;
+    el.remove();
+  });
+}
+
+// Keep the bare SPA shell as 200.html (see header). Only when dist/index.html is still the
+// shell — a re-run over an already-prerendered dist must not copy the home page over it.
+function saveSpaShell() {
+  const indexPath = path.join(DIST, 'index.html');
+  const html = fs.readFileSync(indexPath, 'utf8');
+  if (/<div id="root"><\/div>/.test(html)) {
+    fs.writeFileSync(path.join(DIST, '200.html'), html, 'utf8');
+    console.log('[prerender] saved SPA shell -> 200.html');
+  } else if (!fs.existsSync(path.join(DIST, '200.html'))) {
+    console.warn('[prerender] dist/index.html is already prerendered and there is no 200.html — rebuild with `vite build` first.');
+  }
+}
+
 async function main() {
   ensureDist();
+  saveSpaShell();
 
   let puppeteer;
   try {
@@ -146,6 +187,7 @@ async function main() {
     ...storeSlugs.map((s) => `/store/${s}`),
     ...bootcampSlugs.map((s) => `/bootcamps/${s}`),
     ...competitionSlugs.map((s) => `/competitions/${s}`),
+    NOT_FOUND_ROUTE,
   ];
 
   if (!useMock && !apiReachable) {
@@ -183,14 +225,17 @@ async function main() {
         console.warn(`[prerender] ${route}: __APP_READY__ not reached in ${READY_TIMEOUT_MS}ms — snapshotting anyway`);
       }
       await new Promise((r) => setTimeout(r, SETTLE_WAIT_MS));
+      await page.evaluate(dedupeHeadTags);
 
       const html = await page.content();
-      const outDir = route === '/' ? DIST : path.join(DIST, route);
-      fs.mkdirSync(outDir, { recursive: true });
-      fs.writeFileSync(path.join(outDir, 'index.html'), html, 'utf8');
+      let outFile;
+      if (route === NOT_FOUND_ROUTE) outFile = path.join(DIST, '404.html');
+      else outFile = path.join(route === '/' ? DIST : path.join(DIST, route), 'index.html');
+      fs.mkdirSync(path.dirname(outFile), { recursive: true });
+      fs.writeFileSync(outFile, html, 'utf8');
       await page.close();
       ok += 1;
-      console.log(`[prerender] ${route} -> ${path.relative(DIST, path.join(outDir, 'index.html'))}`);
+      console.log(`[prerender] ${route} -> ${path.relative(DIST, outFile)}`);
     }
   } finally {
     await browser.close();

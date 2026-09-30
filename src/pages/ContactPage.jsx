@@ -36,7 +36,7 @@ export default function ContactPage() {
   return (
     <>
       <SeoHead
-        title="Contact Digifunzi"
+        title="Contact Us"
         description="Get in touch with the Digifunzi team about robotics and STEM programmes for your family or school in Kenya."
       />
       <JsonLd data={organizationSchema()} />

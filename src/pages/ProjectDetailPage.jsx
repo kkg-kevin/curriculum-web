@@ -12,13 +12,15 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import BuildCircleIcon from '@mui/icons-material/BuildCircle';
 import Inventory2Icon from '@mui/icons-material/Inventory2';
 import SeoHead from '../components/seo/SeoHead.jsx';
-import JsonLd, { organizationSchema, productSchema } from '../components/seo/JsonLd.jsx';
+import JsonLd, { organizationSchema, productSchema, breadcrumbSchema } from '../components/seo/JsonLd.jsx';
 import Section from '../components/common/Section.jsx';
 import SmartImage from '../components/common/SmartImage.jsx';
 import CTABanner from '../components/home/CTABanner.jsx';
 import { ErrorBlock } from '../components/common/StateViews.jsx';
 import { usePublicProject } from '../hooks/usePublicProjects.js';
 import { formatPrice, ageLabel } from '../utils/format.js';
+import { resolveMediaUrl } from '../utils/media.js';
+import { titleWithKind } from '../utils/seo.js';
 
 const LEVEL_LABEL = { beginner: 'Beginner', intermediate: 'Intermediate', advanced: 'Advanced' };
 
@@ -106,20 +108,26 @@ export default function ProjectDetailPage() {
   return (
     <>
       <SeoHead
-        title={`${name} — Digifunzi Project`}
-        description={(tagline || description || '').slice(0, 155)}
+        title={titleWithKind(name, 'Project')}
+        description={tagline || description}
+        image={resolveMediaUrl(coverImage) || undefined}
         type="product"
       />
       <JsonLd
         data={[
           organizationSchema(),
+          breadcrumbSchema([
+            { name: 'Home', path: '/' },
+            { name: 'Projects', path: '/projects' },
+            { name, path: `/projects/${slug}` },
+          ]),
           productSchema(
             {
               name,
               slug,
               summary: tagline || description,
               description,
-              image: coverImage,
+              image: resolveMediaUrl(coverImage),
               price: price ? { amount: price.amount, currency: price.currency } : null,
               kind: 'project',
             },

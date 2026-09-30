@@ -89,7 +89,7 @@ export default function StoreListPage() {
   return (
     <>
       <SeoHead
-        title="Store — The Quarky Robot, Kits & Bundles"
+        title="Quarky Robot, Kits & Bundles — Store"
         description="Buy the Quarky learning robot, classroom bundles and accessories from Digifunzi. Looking for a guided build project instead? Those are in the Projects section."
       />
       <JsonLd

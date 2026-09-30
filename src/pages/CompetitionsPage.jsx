@@ -44,7 +44,7 @@ export default function CompetitionsPage() {
   return (
     <>
       <SeoHead
-        title="STEM, Coding & Robotics Competitions for Kids in Kenya"
+        title="Coding & Robotics Competitions for Kids"
         description="Friendly, team-based coding, AI and robotics competitions for young learners in Kenya — pick a track, build a project, and present it to judges."
       />
       <JsonLd

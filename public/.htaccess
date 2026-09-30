@@ -1,10 +1,17 @@
 # Apache / cPanel (Truehost) static hosting for the Digifunzi landing SPA.
 # Domain: https://africa.digifunzi.com
 # Vite copies this file verbatim from public/ into dist/. Upload it with the rest.
+#
+# Relies on two files scripts/prerender.js writes into dist/: 200.html (the bare SPA shell) and
+# 404.html (the prerendered NotFound page). A `build:spa` build (no prerender) has neither.
 
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
+
+  # --- One canonical host: www.<host> -> <host>, straight to https in a single hop.
+  RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+  RewriteRule ^ https://%1%{REQUEST_URI} [L,R=301]
 
   # --- Force HTTPS (SEO + security). Needs AutoSSL/Let's Encrypt active in cPanel.
   #     If you run AutoSSL and it fails validation, temporarily rename this file
@@ -19,7 +26,12 @@
   # RewriteCond %{HTTP_HOST} ^(www\.)?digifunzi\.com$ [NC]
   # RewriteRule ^ https://africa.digifunzi.com%{REQUEST_URI} [L,R=301]
 
+  # --- Legacy: /quarky was the single-product page before the Store existed.
+  RewriteRule ^quarky/?$ /store/ [L,R=301]
+
   # 1. Real files (assets, sitemap.xml, robots.txt) and real dirs — serve directly.
+  #    A prerendered route is a real dir (dist/<route>/index.html), so `/pathways` gets the
+  #    server's usual 301 to `/pathways/` — the form canonicals and sitemap.xml use.
   RewriteCond %{REQUEST_FILENAME} -f [OR]
   RewriteCond %{REQUEST_FILENAME} -d
   RewriteRule ^ - [L]
@@ -28,8 +40,21 @@
   RewriteCond %{DOCUMENT_ROOT}/%{REQUEST_URI}/index.html -f
   RewriteRule ^(.*)$ /$1/index.html [L]
 
-  # 3. Everything else -> SPA shell; the client router renders the page.
-  RewriteRule ^ /index.html [L]
+  # 3. A missing file (image, script, favicon…) is a real 404 — never the HTML shell with a 200,
+  #    which is what made a missing og:image silently break every link preview.
+  RewriteCond %{REQUEST_URI} \.[A-Za-z0-9]{1,5}$
+  RewriteRule ^ - [R=404,L]
+
+  # 4. Routes the client router can render but that weren't prerendered — a pathway/project/
+  #    store item/bootcamp/competition added since the last build, the diagnostic and report
+  #    pages, hub pages, sign-up — get the bare SPA shell (200.html), never the prerendered home
+  #    page. A slug that turns out not to exist renders the NotFound page (noindex) client-side.
+  RewriteRule ^(pathways|projects|store|bootcamps|competitions)(/.*)?$ /200.html [L]
+  RewriteRule ^home-schooling(/signup)?/?$ /200.html [L]
+  RewriteRule ^(about|contact|enroll)/?$ /200.html [L]
+
+  # 5. Anything else isn't a page on this site: a real 404 status, served with 404.html.
+  RewriteRule ^ - [R=404,L]
 </IfModule>
 
 # Caching: content-hashed assets are immutable; HTML must always revalidate
@@ -47,5 +72,5 @@
   AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json image/svg+xml application/xml
 </IfModule>
 
-# SPA 404s are handled by rule 3 above (client router shows the NotFound page).
-ErrorDocument 404 /index.html
+# The prerendered NotFound page, served with a real 404 status (rules 3 and 5 above).
+ErrorDocument 404 /404.html

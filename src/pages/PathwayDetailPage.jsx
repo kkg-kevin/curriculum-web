@@ -8,7 +8,7 @@ import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Link from '@mui/material/Link';
 import Skeleton from '@mui/material/Skeleton';
 import SeoHead from '../components/seo/SeoHead.jsx';
-import JsonLd, { organizationSchema, pathwayCourseSchema } from '../components/seo/JsonLd.jsx';
+import JsonLd, { organizationSchema, pathwayCourseSchema, breadcrumbSchema } from '../components/seo/JsonLd.jsx';
 import Section from '../components/common/Section.jsx';
 import SmartImage from '../components/common/SmartImage.jsx';
 import { ErrorBlock } from '../components/common/StateViews.jsx';
@@ -136,8 +136,18 @@ export default function PathwayDetailPage() {
 
   return (
     <>
-      <SeoHead title={`${name} Pathway`} description={description?.slice(0, 155)} type="article" />
-      <JsonLd data={[organizationSchema(), pathwayCourseSchema(data, pathname)]} />
+      <SeoHead title={`${name} Pathway`} description={description} type="article" />
+      <JsonLd
+        data={[
+          organizationSchema(),
+          pathwayCourseSchema(data, pathname),
+          breadcrumbSchema([
+            { name: 'Home', path: '/' },
+            { name: 'Pathways', path: '/pathways' },
+            { name, path: pathname },
+          ]),
+        ]}
+      />
 
       {/* header band with the pathway's colour accent */}
       <Box

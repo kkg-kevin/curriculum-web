@@ -333,8 +333,8 @@ export default function HomeSchoolingPage() {
   return (
     <>
       <SeoHead
-        title="Home Schooling"
-        description="Digifunzi Home Schooling: an educator teaches your children at home, each at the right level. Simple monthly family packages — see prices and enquire for free."
+        title="Home Schooling Packages for Families in Kenya"
+        description="An educator teaches your children at home, each at the right level. Simple monthly family packages — see prices and enquire for free."
       />
       <JsonLd data={organizationSchema()} />
 

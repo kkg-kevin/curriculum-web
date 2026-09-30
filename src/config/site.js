@@ -42,7 +42,11 @@ export const ORG = {
   ],
   // Relative to the site root; callers prefix with the base URL.
   logoPath: '/logo.png',
-  ogImagePath: '/og-default.png',
+  // Default link-preview image (WhatsApp/Facebook/LinkedIn) for pages without their own cover.
+  // The hero photo (1366×768) stands in until a purpose-made 1200×630 og-default.png is added to
+  // public/ — point this at it then. Must be a file that really exists in public/: the host
+  // answers a missing file with a 404, so a wrong path here silently kills every preview image.
+  ogImagePath: '/hero-students.png',
 };
 
 /**
@@ -51,7 +55,9 @@ export const ORG = {
  * scripts — all three discovered from live API data (/api/public/*) at build
  * time, or from src/mocks/fixtures/* under VITE_USE_MOCK.
  *
- * changefreq / priority are advisory hints for sitemap.xml.
+ * changefreq / priority are advisory hints for sitemap.xml. `sitemap: false` keeps a route
+ * prerendered but out of sitemap.xml — for pages that are deliberately noindex (listing a URL
+ * you've asked search engines not to index is a contradictory signal).
  */
 export const STATIC_ROUTES = [
   { path: '/', changefreq: 'weekly', priority: 1.0 },
@@ -62,7 +68,7 @@ export const STATIC_ROUTES = [
   { path: '/home-schooling', changefreq: 'monthly', priority: 0.8 },
   { path: '/store', changefreq: 'weekly', priority: 0.9 },
   { path: '/about', changefreq: 'monthly', priority: 0.6 },
-  { path: '/enroll', changefreq: 'monthly', priority: 0.8 },
+  { path: '/enroll', sitemap: false }, // noindex — see EnrollPage
   { path: '/contact', changefreq: 'yearly', priority: 0.5 },
 ];
 

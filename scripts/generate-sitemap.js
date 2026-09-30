@@ -46,6 +46,16 @@ async function getSectionSlugs(section, mockFixture, mockExport) {
   return slugs;
 }
 
+/**
+ * Absolute URL in the trailing-slash form the host serves (dist/<route>/index.html makes it 301
+ * `/x` → `/x/`) — same rule as pageUrl() in src/utils/seo.js, which the canonical tags use, so
+ * every sitemap URL matches its page's canonical and none of them is a redirect.
+ */
+function pageUrl(routePath) {
+  const clean = routePath.replace(/\/+$/, '');
+  return clean ? `${siteUrl}${clean}/` : `${siteUrl}/`;
+}
+
 function urlEntry({ loc, changefreq, priority, lastmod }) {
   return [
     '  <url>',
@@ -65,10 +75,12 @@ async function main() {
   const today = new Date().toISOString().slice(0, 10);
   const entries = [];
 
-  for (const r of STATIC_ROUTES) {
+  // `sitemap: false` routes (deliberately noindex, e.g. /enroll) are prerendered but not listed.
+  const sitemapRoutes = STATIC_ROUTES.filter((r) => r.sitemap !== false);
+  for (const r of sitemapRoutes) {
     entries.push(
       urlEntry({
-        loc: `${siteUrl}${r.path === '/' ? '/' : r.path}`,
+        loc: pageUrl(r.path),
         changefreq: r.changefreq,
         priority: r.priority,
         lastmod: today,
@@ -85,19 +97,19 @@ async function main() {
   ]);
 
   for (const slug of pathwaySlugs) {
-    entries.push(urlEntry({ loc: `${siteUrl}/pathways/${slug}`, changefreq: 'monthly', priority: 0.7, lastmod: today }));
+    entries.push(urlEntry({ loc: pageUrl(`/pathways/${slug}`), changefreq: 'monthly', priority: 0.7, lastmod: today }));
   }
   for (const slug of projectSlugs) {
-    entries.push(urlEntry({ loc: `${siteUrl}/projects/${slug}`, changefreq: 'monthly', priority: 0.7, lastmod: today }));
+    entries.push(urlEntry({ loc: pageUrl(`/projects/${slug}`), changefreq: 'monthly', priority: 0.7, lastmod: today }));
   }
   for (const slug of storeSlugs) {
-    entries.push(urlEntry({ loc: `${siteUrl}/store/${slug}`, changefreq: 'monthly', priority: 0.7, lastmod: today }));
+    entries.push(urlEntry({ loc: pageUrl(`/store/${slug}`), changefreq: 'monthly', priority: 0.7, lastmod: today }));
   }
   for (const slug of bootcampSlugs) {
-    entries.push(urlEntry({ loc: `${siteUrl}/bootcamps/${slug}`, changefreq: 'monthly', priority: 0.7, lastmod: today }));
+    entries.push(urlEntry({ loc: pageUrl(`/bootcamps/${slug}`), changefreq: 'monthly', priority: 0.7, lastmod: today }));
   }
   for (const slug of competitionSlugs) {
-    entries.push(urlEntry({ loc: `${siteUrl}/competitions/${slug}`, changefreq: 'monthly', priority: 0.7, lastmod: today }));
+    entries.push(urlEntry({ loc: pageUrl(`/competitions/${slug}`), changefreq: 'monthly', priority: 0.7, lastmod: today }));
   }
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -116,7 +128,7 @@ Sitemap: ${siteUrl}/sitemap.xml
   fs.writeFileSync(path.join(DIST, 'robots.txt'), robots, 'utf8');
 
   console.log(
-    `[sitemap] wrote ${entries.length} URLs (${STATIC_ROUTES.length} static, ${pathwaySlugs.length} pathways, ` +
+    `[sitemap] wrote ${entries.length} URLs (${sitemapRoutes.length} static, ${pathwaySlugs.length} pathways, ` +
       `${projectSlugs.length} projects, ${storeSlugs.length} store items, ${bootcampSlugs.length} bootcamps, ` +
       `${competitionSlugs.length} competitions) + robots.txt`,
   );
