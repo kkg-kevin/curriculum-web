@@ -11,6 +11,7 @@ import HourglassTopIcon from '@mui/icons-material/HourglassTop';
 import SmartImage from '../common/SmartImage.jsx';
 import { formatPrice, ageLabel } from '../../utils/format.js';
 import { formatDateRange, formatDate } from '../../utils/dates.js';
+import { GameIcon, gamesSummary } from '../bootcamp/BootcampGames.jsx';
 
 export const FORMAT_LABEL = {
   holiday: 'Holiday',
@@ -53,13 +54,14 @@ function registrationStatus(openDate, closeDate) {
  * /bootcamps/:slug.
  *
  * Data shape: { slug, name, tagline, format, duration, ageMin, ageMax, coverImage, price,
- * priceNotes, startDate, endDate, registrationOpenDate, registrationCloseDate, highlightCount }
+ * priceNotes, startDate, endDate, registrationOpenDate, registrationCloseDate, highlightCount,
+ * games: [{ name, icon, color }] }
  * (see usePublicBootcamps.js).
  */
 export default function BootcampCard({ bootcamp }) {
   const {
     slug, name, tagline, format, duration, ageMin, ageMax, coverImage, price, priceNotes = [],
-    startDate, endDate, registrationOpenDate, registrationCloseDate,
+    startDate, endDate, registrationOpenDate, registrationCloseDate, games = [],
   } = bootcamp;
 
   const age = ageLabel(ageMin, ageMax);
@@ -215,6 +217,37 @@ export default function BootcampCard({ bootcamp }) {
                 <EventIcon sx={{ fontSize: 15, color: 'text.disabled', flexShrink: 0 }} />
                 <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
                   {dateRange}
+                </Typography>
+              </Box>
+            )}
+
+            {/* The bootcamp's games — the "it's not just lessons" signal, before anyone clicks. */}
+            {games.length > 0 && (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, minWidth: 0 }}>
+                <Box sx={{ display: 'flex', flexShrink: 0 }}>
+                  {games.slice(0, 3).map((g, i) => (
+                    <Box
+                      key={`${g.name}-${i}`}
+                      aria-hidden="true"
+                      sx={{
+                        width: 24,
+                        height: 24,
+                        ml: i ? -0.75 : 0,
+                        borderRadius: '50%',
+                        display: 'grid',
+                        placeItems: 'center',
+                        color: '#fff',
+                        bgcolor: g.color || '#25476a',
+                        border: '2px solid',
+                        borderColor: 'background.paper',
+                      }}
+                    >
+                      <GameIcon name={g.icon} size={13} strokeWidth={2.2} />
+                    </Box>
+                  ))}
+                </Box>
+                <Typography sx={{ fontSize: 12, color: 'text.secondary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <Box component="span" sx={{ fontWeight: 700, color: 'text.primary' }}>Plus games:</Box> {gamesSummary(games)}
                 </Typography>
               </Box>
             )}

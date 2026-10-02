@@ -28,6 +28,15 @@ const raw = [
       'Drive it through an obstacle course you design',
       'Showcase for families on the final afternoon',
     ],
+    // Games and play that come with the bootcamp — the public projection of the games an admin
+    // picked from Events → Games (see public-bootcamp.service.js's projectGame).
+    gamesNote: 'A 30-minute game break every afternoon.',
+    games: [
+      { id: 'g0000000-0001-4000-8000-000000000001', name: 'Chess', description: 'Two players, sixty-four squares. Plan ahead, protect your king and outthink your opponent.', skills: ['Strategy', 'Patience', 'Focus'], icon: 'chess-knight', color: '#25476a', image: null },
+      { id: 'g0000000-0001-4000-8000-000000000002', name: 'Monopoly', description: 'Buy, build and trade your way round the board without going broke.', skills: ['Money sense', 'Negotiation'], icon: 'property', color: '#D92D20', image: null },
+      { id: 'g0000000-0001-4000-8000-000000000003', name: 'Scrabble', description: 'Build words from your letter tiles and chase the high-scoring squares.', skills: ['Vocabulary', 'Spelling'], icon: 'letters', color: '#0E9384', image: null },
+      { id: 'g0000000-0001-4000-8000-000000000004', name: 'Treasure Hunt', description: 'Crack the clues, follow the map and find the prize.', skills: ['Teamwork', 'Problem solving'], icon: 'map', color: '#C4320A', image: null },
+    ],
     upcomingRuns: [
       {
         hub: {
@@ -91,6 +100,8 @@ export const bootcamps = raw.map((b) => ({
   ...b,
   slug: slugify(b.name),
   highlightCount: b.highlights.length,
+  games: b.games || [],
+  gamesNote: b.gamesNote || '',
 }));
 
 // The list projection is the item minus the detail-only fields.
@@ -98,9 +109,11 @@ const LIST_FIELDS = [
   'id', 'slug', 'name', 'tagline', 'format', 'duration', 'ageMin', 'ageMax', 'coverImage', 'price',
   'highlightCount',
 ];
-export const bootcampList = bootcamps.map((b) =>
-  Object.fromEntries(LIST_FIELDS.map((k) => [k, b[k]])),
-);
+// A list item carries just enough of each game for a card to say "plus games: …".
+export const bootcampList = bootcamps.map((b) => ({
+  ...Object.fromEntries(LIST_FIELDS.map((k) => [k, b[k]])),
+  games: b.games.map(({ name, icon, color }) => ({ name, icon, color })),
+}));
 
 export function bootcampDetail(idOrSlug) {
   return bootcamps.find((b) => b.id === idOrSlug || b.slug === idOrSlug) || null;
