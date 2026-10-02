@@ -25,6 +25,7 @@ import { FORMAT_LABEL } from '../components/cards/BootcampCard.jsx';
 import BootcampPathwayCard from '../components/cards/BootcampPathwayCard.jsx';
 import HubPreviewCard from '../components/hubs/HubPreviewCard.jsx';
 import CoursePricingRoadmap from '../components/pathway/CoursePricingRoadmap.jsx';
+import BootcampGames, { GameIcon, gamesSummary } from '../components/bootcamp/BootcampGames.jsx';
 import { usePublicBootcamp } from '../hooks/usePublicBootcamps.js';
 import { formatPrice, ageLabel } from '../utils/format.js';
 import { formatDateRange } from '../utils/dates.js';
@@ -96,6 +97,8 @@ export default function BootcampDetailPage() {
   const {
     name, tagline, description, format, duration, ageMin, ageMax, coverImage, price,
     highlights = [], upcomingRuns = [], coursePricing = [], priceNotes = [], curriculum, pathwayDiagnostics = [],
+    // Games and play that come with the bootcamp — absent on an older API, which reads as none.
+    games = [], gamesNote = '',
   } = data;
 
   // Only the currently expanded pathway's diagnostic (if it has one) — `selectedPathwayKey` is a
@@ -292,6 +295,9 @@ export default function BootcampDetailPage() {
                 </Box>
               </Box>
             )}
+
+            {/* The fun side — right after what they'll build, before the practical details. */}
+            <BootcampGames games={games} note={gamesNote} />
 
             {/* Running at — every hub this bootcamp currently runs at, resolved server-side into
                 a richer projection (photo/address/contact) than the old "Upcoming runs" list
@@ -628,6 +634,15 @@ export default function BootcampDetailPage() {
                       </Typography>
                     </Box>
                   ))}
+                </Box>
+              )}
+
+              {games.length > 0 && (
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.75, mt: priceNotes.length > 0 ? 0.75 : 2 }}>
+                  <GameIcon name="dice" size={15} sx={{ color: 'primary.main', mt: '3px' }} />
+                  <Typography variant="body2" color="text.secondary">
+                    Game time included: {gamesSummary(games, 3)}
+                  </Typography>
                 </Box>
               )}
 
