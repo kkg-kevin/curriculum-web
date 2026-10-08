@@ -64,6 +64,7 @@ export const privacyPolicy = {
         'The companies that host our systems and deliver our email, who handle the information only to provide that service to us.',
       ],
       after: [
+        'A course certificate carries a verification link, printed on it as a QR code. Anyone given that link can see the learner’s name, the course, the learning hub and the date it was awarded, and whether the certificate is still valid. Nothing else about the learner is shown.',
         'A diagnostic report has its own link. Anyone you share that link with can open it. The report shows the child’s first name if you gave one, their age and their results. It never shows your name, phone number or email.',
       ],
     },
