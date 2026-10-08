@@ -15,6 +15,9 @@ import { ErrorBlock } from '../components/common/StateViews.jsx';
 import { usePathway } from '../hooks/usePathways.js';
 import { useDiagnosticAvailability } from '../hooks/useDiagnostic.js';
 import { ageLabel } from '../utils/format.js';
+import { PROSE_MAX_WIDTH } from '../theme/layout.js';
+import DetailLayout from '../components/common/DetailLayout.jsx';
+import { RelatedPathways } from '../components/common/Related.jsx';
 
 const FALLBACK_ACCENT = '#25476a';
 
@@ -69,7 +72,7 @@ function PathwayStep({ index, total, course, accent }) {
             </Typography>
             {age && <Chip size="small" variant="outlined" label={age} sx={{ mb: 1 }} />}
             {course.description && (
-              <Typography sx={{ color: 'text.secondary', whiteSpace: 'pre-line' }}>
+              <Typography sx={{ color: 'text.secondary', whiteSpace: 'pre-line', maxWidth: PROSE_MAX_WIDTH }}>
                 {course.description}
               </Typography>
             )}
@@ -208,64 +211,68 @@ export default function PathwayDetailPage() {
       </Box>
 
       <Section>
-        <Typography variant="h2" component="h2" sx={{ mb: 1 }}>
-          The pathway
-        </Typography>
-        <Typography sx={{ color: 'text.secondary', mb: 5, maxWidth: 720 }}>
-          Courses are worked through in order — each one builds on the last.
-          {diagnostic?.available
-            ? ' A learner can start at the beginning or, after a short diagnostic, join further along.'
-            : ' A learner starts at the beginning, or our team places them further along based on their age and experience.'}
-        </Typography>
-
-        <Box sx={{ maxWidth: 820 }}>
-          {courses.map((course, i) => (
-            <PathwayStep
-              key={`${course.name}-${i}`}
-              index={i}
-              total={courses.length}
-              course={course}
-              accent={accent}
-            />
-          ))}
-        </Box>
-
-        <Box
-          sx={{
-            mt: 6,
-            maxWidth: 820,
-            p: 3,
-            border: '1px solid',
-            borderColor: 'divider',
-            borderRadius: 2,
-            backgroundColor: 'background.paper',
-          }}
+        <DetailLayout
+          aside={
+            <Box
+              sx={{
+                p: 3,
+                border: '1px solid',
+                borderColor: 'divider',
+                borderRadius: 2,
+                backgroundColor: 'background.paper',
+              }}
+            >
+              <Typography variant="h4" component="h2" gutterBottom>
+                Ready to start {name}?
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                {diagnostic?.available
+                  ? 'Register interest and our team will get the learner set up — or take the short diagnostic first for an instant learner-profile report showing where to start.'
+                  : 'Register interest now and our team will get the learner set up at the right step for their age and experience.'}
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                <Button component={RouterLink} to={enrollTo} variant="contained" size="large">
+                  Enroll in this pathway
+                </Button>
+                {diagnostic?.available && (
+                  <Button
+                    component={RouterLink}
+                    to={`/pathways/${slug}/diagnostic`}
+                    variant="outlined"
+                    size="large"
+                  >
+                    Take the diagnostic
+                  </Button>
+                )}
+              </Box>
+            </Box>
+          }
         >
-          <Typography variant="h4" component="h2" gutterBottom>
-            Ready to start {name}?
+          <Typography variant="h2" component="h2" sx={{ mb: 1 }}>
+            The pathway
           </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          <Typography sx={{ color: 'text.secondary', mb: 5, maxWidth: 720 }}>
+            Courses are worked through in order — each one builds on the last.
             {diagnostic?.available
-              ? 'Register interest and our team will get the learner set up — or take the short diagnostic first for an instant learner-profile report showing where to start.'
-              : 'Register interest now and our team will get the learner set up at the right step for their age and experience.'}
+              ? ' A learner can start at the beginning or, after a short diagnostic, join further along.'
+              : ' A learner starts at the beginning, or our team places them further along based on their age and experience.'}
           </Typography>
-          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-            <Button component={RouterLink} to={enrollTo} variant="contained" size="large">
-              Enroll in this pathway
-            </Button>
-            {diagnostic?.available && (
-              <Button
-                component={RouterLink}
-                to={`/pathways/${slug}/diagnostic`}
-                variant="outlined"
-                size="large"
-              >
-                Take the diagnostic
-              </Button>
-            )}
+
+          <Box>
+            {courses.map((course, i) => (
+              <PathwayStep
+                key={`${course.name}-${i}`}
+                index={i}
+                total={courses.length}
+                course={course}
+                accent={accent}
+              />
+            ))}
           </Box>
-        </Box>
+        </DetailLayout>
       </Section>
+
+      <RelatedPathways currentSlug={slug} />
     </>
   );
 }

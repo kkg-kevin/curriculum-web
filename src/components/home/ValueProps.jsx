@@ -6,11 +6,11 @@ import Reveal from '../common/Reveal.jsx';
 import { valueProps } from '../../content/home.js';
 
 /**
- * "Why families choose Digifunzi" — a two-column editorial block. The section
- * opener sits in a sticky left rail; the four value props run down the right as
- * generously-spaced rows with a line-art glyph and a hairline divider between
- * them. Deliberately NOT a 4-up card grid — this is the "story" beat of the
- * page, so it reads as prose with structure rather than tiles.
+ * "Why families choose Digifunzi" — an editorial block. The opener runs across
+ * the top (heading left, three figures right); under it the four value props sit
+ * two by two, each a row with a line-art glyph and a hairline rule above it.
+ * Deliberately NOT a 4-up card grid — this is the "story" beat of the page, so
+ * it reads as prose with structure rather than tiles.
  *
  * Each glyph is inline SVG (stroke: currentColor) keyed by index.
  */
@@ -44,15 +44,19 @@ const GLYPHS = [
 export default function ValueProps() {
   return (
     <Section dots>
-      <Box
-        sx={{
-          display: 'grid',
-          gap: { xs: 5, md: 8 },
-          gridTemplateColumns: { xs: '1fr', md: '5fr 7fr' },
-          alignItems: 'start',
-        }}
-      >
-        <Box sx={{ position: { md: 'sticky' }, top: { md: 100 } }}>
+      <Box>
+        {/* opener: heading on the left, the three figures level with it on the right */}
+        <Box
+          sx={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'flex-end',
+            justifyContent: 'space-between',
+            columnGap: 8,
+            rowGap: 2,
+            mb: { xs: 3, md: 5 },
+          }}
+        >
           <SectionHeading
             eyebrow="Why Digifunzi"
             title="Why families choose Digifunzi"
@@ -62,8 +66,7 @@ export default function ValueProps() {
             delay={200}
             sx={{
               display: { xs: 'none', md: 'flex' },
-              mt: 5,
-              gap: 4,
+              gap: 5,
             }}
           >
             {[
@@ -89,7 +92,8 @@ export default function ValueProps() {
           </Reveal>
         </Box>
 
-        <Box>
+        {/* the four reasons: one column on phones, two by two from tablets up */}
+        <Box sx={{ display: 'grid', columnGap: { md: 8 }, gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' } }}>
           {valueProps.map((v, i) => (
             <Reveal key={v.title} delay={i * 80}>
               <Box
@@ -97,7 +101,7 @@ export default function ValueProps() {
                   display: 'flex',
                   gap: { xs: 2.5, sm: 3 },
                   py: { xs: 3, md: 3.5 },
-                  borderTop: i === 0 ? 'none' : '1px solid',
+                  borderTop: '1px solid',
                   borderColor: 'divider',
                 }}
               >

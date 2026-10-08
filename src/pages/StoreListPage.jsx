@@ -12,11 +12,12 @@ import CTABanner from '../components/home/CTABanner.jsx';
 import { ErrorBlock, EmptyBlock } from '../components/common/StateViews.jsx';
 import StoreItemCard from '../components/cards/StoreItemCard.jsx';
 import { usePublicStore } from '../hooks/usePublicStore.js';
+import { CARD_GRID_COLUMNS, shortListSx } from '../theme/layout.js';
 
 const GRID_SX = {
   display: 'grid',
   gap: { xs: 2.5, md: 3 },
-  gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
+  gridTemplateColumns: CARD_GRID_COLUMNS,
 };
 
 const CATEGORIES = [
@@ -195,7 +196,7 @@ export default function StoreListPage() {
                 body="Try another category, or get in touch and tell us what you're after."
               />
             ) : (
-              <Box sx={GRID_SX}>
+              <Box sx={{ ...GRID_SX, ...shortListSx(list.length) }}>
                 {list.map((it) => (
                   <StoreItemCard key={it.id} item={it} />
                 ))}

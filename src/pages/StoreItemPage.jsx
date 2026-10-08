@@ -5,7 +5,6 @@ import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import Button from '@mui/material/Button';
-import Divider from '@mui/material/Divider';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Link from '@mui/material/Link';
 import Skeleton from '@mui/material/Skeleton';
@@ -19,6 +18,9 @@ import CTABanner from '../components/home/CTABanner.jsx';
 import { ErrorBlock } from '../components/common/StateViews.jsx';
 import PriceTag from '../components/catalog/PriceTag.jsx';
 import { usePublicStoreItem } from '../hooks/usePublicStore.js';
+import { PROSE_MAX_WIDTH } from '../theme/layout.js';
+import DetailLayout from '../components/common/DetailLayout.jsx';
+import { RelatedStoreItems } from '../components/common/Related.jsx';
 
 const CATEGORY_LABEL = { kit: 'Robots & kits', bundle: 'Bundle', accessory: 'Accessory' };
 const STOCK_LABEL = { available: 'Available now', preorder: 'Pre-order', coming_soon: 'Coming soon' };
@@ -225,139 +227,140 @@ export default function StoreItemPage() {
       </Box>
 
       <Section>
-        {description && (
-          <Box sx={{ maxWidth: 760, mb: 6 }}>
-            <Typography variant="h2" component="h2" sx={{ mb: 2 }}>
-              About this{storeCategory === 'bundle' ? ' bundle' : ''}
-            </Typography>
-            <Typography sx={{ color: 'text.secondary', whiteSpace: 'pre-line', lineHeight: 1.7 }}>
-              {description}
-            </Typography>
-          </Box>
-        )}
-
-        {highlights.length > 0 && (
-          <Box sx={{ maxWidth: 760, mb: 6 }}>
-            <Typography variant="h4" component="h2" sx={{ mb: 2 }}>
-              Highlights
-            </Typography>
-            <Box sx={{ display: 'grid', gap: 1.25 }}>
-              {highlights.map((h, i) => (
-                <Box key={`${h}-${i}`} sx={{ display: 'flex', gap: 1.25, alignItems: 'flex-start' }}>
-                  <CheckCircleIcon sx={{ fontSize: 20, color: 'success.main', mt: 0.25, flexShrink: 0 }} />
-                  <Typography color="text.secondary">{h}</Typography>
-                </Box>
-              ))}
-            </Box>
-          </Box>
-        )}
-
-        {includes.length > 0 && (
-          <Box sx={{ mb: 6 }}>
-            <Typography variant="h2" component="h2" sx={{ mb: 3 }}>
-              What you get
-            </Typography>
-            <Box
-              sx={{
-                display: 'grid',
-                gap: 2,
-                gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
-                maxWidth: 820,
-              }}
-            >
-              {includes.map((inc, i) => (
-                <Box
-                  key={`${inc}-${i}`}
-                  sx={{
-                    p: 2.5,
-                    display: 'flex',
-                    gap: 1.5,
-                    alignItems: 'flex-start',
-                    backgroundColor: 'background.paper',
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    borderRadius: 2,
-                  }}
-                >
-                  <CheckCircleIcon sx={{ fontSize: 20, color: 'primary.main', mt: 0.25, flexShrink: 0 }} />
-                  <Typography variant="body2">{inc}</Typography>
-                </Box>
-              ))}
-            </Box>
-          </Box>
-        )}
-
-        {specs.length > 0 && (
-          <Box sx={{ mb: 2 }}>
-            <Typography variant="h2" component="h2" sx={{ mb: 3 }}>
-              Specifications
-            </Typography>
-            <Box
-              sx={{
-                display: 'grid',
-                gap: 2,
-                gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
-                maxWidth: 820,
-              }}
-            >
-              {specs.map((s, i) => (
-                <Box
-                  key={`${s.label}-${i}`}
-                  sx={{
-                    p: 2.5,
-                    backgroundColor: 'background.paper',
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    borderRadius: 2,
-                  }}
-                >
-                  <Typography variant="overline" color="text.secondary">
-                    {s.label}
-                  </Typography>
-                  <Typography>{s.value}</Typography>
-                </Box>
-              ))}
-            </Box>
-            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 2 }}>
-              Details are indicative and subject to confirmation.
-            </Typography>
-          </Box>
-        )}
-
-        <Divider sx={{ my: 4 }} />
-
-        <Box sx={{ maxWidth: 900 }}>
-          <Box
-            sx={{
-              p: 3,
-              borderRadius: 2,
-              border: '1px solid',
-              borderColor: 'divider',
-              bgcolor: 'background.paper',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: 2,
-              flexWrap: 'wrap',
-            }}
-          >
+        <DetailLayout
+          aside={
             <Box>
-              <Typography variant="h4" component="p" gutterBottom>
-                {notAvailable ? `Get notified about ${name}` : `Get ${name}`}
-              </Typography>
-              <PriceTag price={price} size="sm" />
+              <Box
+                sx={{
+                  p: 3,
+                  borderRadius: 2,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  bgcolor: 'background.paper',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 2,
+                  boxShadow: 'shadow.md',
+                }}
+              >
+                <Box>
+                  <Typography variant="h4" component="p" gutterBottom>
+                    {notAvailable ? `Get notified about ${name}` : `Get ${name}`}
+                  </Typography>
+                  <PriceTag price={price} size="sm" />
+                </Box>
+                <Button
+                  component={RouterLink}
+                  to={notAvailable ? contactTo : enquireTo}
+                  variant="contained"
+                  size="large"
+                >
+                  {notAvailable ? 'Notify me' : 'Enquire to buy'}
+                </Button>
+              </Box>
             </Box>
-            <Button
-              component={RouterLink}
-              to={notAvailable ? contactTo : enquireTo}
-              variant="contained"
-              size="large"
-            >
-              {notAvailable ? 'Notify me' : 'Enquire to buy'}
-            </Button>
-          </Box>
-        </Box>
+          }
+        >
+          {description && (
+            <Box sx={{ maxWidth: 760, mb: 6 }}>
+              <Typography variant="h2" component="h2" sx={{ mb: 2 }}>
+                About this{storeCategory === 'bundle' ? ' bundle' : ''}
+              </Typography>
+              <Typography sx={{ color: 'text.secondary', whiteSpace: 'pre-line', maxWidth: PROSE_MAX_WIDTH, lineHeight: 1.7 }}>
+                {description}
+              </Typography>
+            </Box>
+          )}
+
+          {highlights.length > 0 && (
+            <Box sx={{ maxWidth: 760, mb: 6 }}>
+              <Typography variant="h4" component="h2" sx={{ mb: 2 }}>
+                Highlights
+              </Typography>
+              <Box sx={{ display: 'grid', gap: 1.25 }}>
+                {highlights.map((h, i) => (
+                  <Box key={`${h}-${i}`} sx={{ display: 'flex', gap: 1.25, alignItems: 'flex-start' }}>
+                    <CheckCircleIcon sx={{ fontSize: 20, color: 'success.main', mt: 0.25, flexShrink: 0 }} />
+                    <Typography color="text.secondary">{h}</Typography>
+                  </Box>
+                ))}
+              </Box>
+            </Box>
+          )}
+
+          {includes.length > 0 && (
+            <Box sx={{ mb: 6 }}>
+              <Typography variant="h2" component="h2" sx={{ mb: 3 }}>
+                What you get
+              </Typography>
+              <Box
+                sx={{
+                  display: 'grid',
+                  gap: 2,
+                  gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+                }}
+              >
+                {includes.map((inc, i) => (
+                  <Box
+                    key={`${inc}-${i}`}
+                    sx={{
+                      p: 2.5,
+                      display: 'flex',
+                      gap: 1.5,
+                      alignItems: 'flex-start',
+                      backgroundColor: 'background.paper',
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      borderRadius: 2,
+                    }}
+                  >
+                    <CheckCircleIcon sx={{ fontSize: 20, color: 'primary.main', mt: 0.25, flexShrink: 0 }} />
+                    <Typography variant="body2">{inc}</Typography>
+                  </Box>
+                ))}
+              </Box>
+            </Box>
+          )}
+
+          {specs.length > 0 && (
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="h2" component="h2" sx={{ mb: 3 }}>
+                Specifications
+              </Typography>
+              <Box
+                sx={{
+                  display: 'grid',
+                  gap: 2,
+                  gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+                }}
+              >
+                {specs.map((s, i) => (
+                  <Box
+                    key={`${s.label}-${i}`}
+                    sx={{
+                      p: 2.5,
+                      backgroundColor: 'background.paper',
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      borderRadius: 2,
+                    }}
+                  >
+                    <Typography variant="overline" color="text.secondary">
+                      {s.label}
+                    </Typography>
+                    <Typography>{s.value}</Typography>
+                  </Box>
+                ))}
+              </Box>
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 2 }}>
+                Details are indicative and subject to confirmation.
+              </Typography>
+            </Box>
+          )}
+        </DetailLayout>
       </Section>
+
+      <RelatedStoreItems currentSlug={slug} />
 
       <CTABanner
         heading="Buying for a school or club?"

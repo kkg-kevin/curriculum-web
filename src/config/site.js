@@ -70,10 +70,24 @@ export const STATIC_ROUTES = [
   { path: '/about', changefreq: 'monthly', priority: 0.6 },
   { path: '/enroll', sitemap: false }, // noindex — see EnrollPage
   { path: '/contact', changefreq: 'yearly', priority: 0.5 },
+  { path: '/privacy', changefreq: 'yearly', priority: 0.3 },
+  { path: '/terms', changefreq: 'yearly', priority: 0.3 },
 ];
 
 /** Fallback base URL if none is provided by env (e.g. a script run without .env). */
 export const FALLBACK_SITE_URL = 'https://africa.digifunzi.com';
+
+/** True while ORG.telephone is still the all-zero stand-in — nothing should show or publish it. */
+export const isPlaceholderPhone = (tel) => /^(254)?0*$/.test(String(tel || '').replace(/\D/g, ''));
+
+/**
+ * A tap-to-call `tel:` URL for ORG.telephone, or null while the number is still the placeholder,
+ * so callers can leave the phone line out rather than show a number nobody answers.
+ */
+export function phoneUrl() {
+  if (isPlaceholderPhone(ORG.telephone)) return null;
+  return `tel:+${ORG.telephone.replace(/\D/g, '')}`;
+}
 
 /**
  * A "click to chat" WhatsApp URL for ORG.whatsappNumber, with an optional pre-filled message.

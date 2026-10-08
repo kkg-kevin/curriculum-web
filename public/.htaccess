@@ -51,7 +51,7 @@
   #    page. A slug that turns out not to exist renders the NotFound page (noindex) client-side.
   RewriteRule ^(pathways|projects|store|bootcamps|competitions)(/.*)?$ /200.html [L]
   RewriteRule ^home-schooling(/signup)?/?$ /200.html [L]
-  RewriteRule ^(about|contact|enroll)/?$ /200.html [L]
+  RewriteRule ^(about|contact|enroll|privacy|terms)/?$ /200.html [L]
 
   # 5. Anything else isn't a page on this site: a real 404 status, served with 404.html.
   RewriteRule ^ - [R=404,L]

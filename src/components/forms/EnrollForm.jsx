@@ -14,6 +14,7 @@ import { enrollSchema, pathwayEnrollSchema, storeEnquirySchema } from './schemas
 import { useLeadSubmission } from '../../hooks/useLeadSubmission.js';
 import { HUB_TYPE_LABELS } from '../../hooks/usePublicHubs.js';
 import FormStatus from './FormStatus.jsx';
+import PrivacyNote from './PrivacyNote.jsx';
 import Honeypot, { HONEYPOT_DEFAULT, isBot } from './Honeypot.jsx';
 import HubTypeSchedule from './HubTypeSchedule.jsx';
 
@@ -21,11 +22,17 @@ import HubTypeSchedule from './HubTypeSchedule.jsx';
 // general — WEBSITE_INTEGRATION_CONTRACT §4.1); labels are free to be broader.
 // Store items pass a specific slug in `referenceId` so staff still see exactly
 // what was enquired about.
-const INTEREST_OPTIONS = [
-  { value: 'project', label: 'A project' },
-  { value: 'quarky', label: 'The Quarky robot or a kit' },
+//
+// The API has no value for a pathway or a competition, so those two are sent as `wire`
+// ('general') with the choice written into the lead's note ("Interested in: …") — staff still
+// see it, and the form keeps working against a server that only knows the five values above.
+export const INTEREST_OPTIONS = [
+  { value: 'pathway', label: 'A learning pathway', wire: 'general' },
   { value: 'bootcamp', label: 'A bootcamp' },
   { value: 'home_schooling', label: 'Home Schooling' },
+  { value: 'project', label: 'A project' },
+  { value: 'quarky', label: 'The Quarky robot or a kit' },
+  { value: 'competition', label: 'A competition', wire: 'general' },
   { value: 'general', label: 'Not sure yet — help me choose' },
 ];
 
@@ -107,6 +114,8 @@ export default function EnrollForm({
     // The hub type / chosen hub aren't in the documented lead contract — fold them into the
     // note so staff see them in the Enquiries card. HUB_TYPE_LABELS keeps the note readable.
     const parts = [];
+    const interest = INTEREST_OPTIONS.find((o) => o.value === values.interestedIn);
+    if (interest?.wire) parts.push(`Interested in: ${interest.label}`);
     if (withHub && values.hubType) {
       parts.push(`Preferred hub type: ${HUB_TYPE_LABELS[values.hubType] || values.hubType}`);
       if (values.hubName) parts.push(`Chosen hub: ${values.hubName}`);
@@ -120,7 +129,7 @@ export default function EnrollForm({
       parentPhone: values.parentPhone,
       learnerName: values.learnerName || '',
       learnerAge: values.learnerAge === '' || values.learnerAge == null ? null : values.learnerAge,
-      interestedIn: values.interestedIn,
+      interestedIn: interest?.wire || values.interestedIn,
       referenceId: referenceId || null,
       note,
     });
@@ -309,9 +318,7 @@ export default function EnrollForm({
             ? 'Send enquiry'
             : 'Submit enrolment interest'}
       </Button>
-      <Typography variant="caption" color="text.secondary">
-        We use your details only to contact you about Digifunzi programmes.
-      </Typography>
+      <PrivacyNote>We use your details only to contact you about Digifunzi programmes. See our</PrivacyNote>
     </Box>
   );
 }

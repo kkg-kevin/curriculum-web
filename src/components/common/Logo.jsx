@@ -37,6 +37,9 @@ export default function Logo({ onClick }) {
         src="/logo.png"
         alt=""
         aria-hidden="true"
+        // The file's real size — lets the browser hold the space before the image arrives.
+        width={307}
+        height={331}
         sx={{
           height: 36,
           width: 'auto',

@@ -14,11 +14,13 @@ import CTABanner from '../components/home/CTABanner.jsx';
 import { ErrorBlock } from '../components/common/StateViews.jsx';
 import BootcampCard, { FORMAT_LABEL } from '../components/cards/BootcampCard.jsx';
 import { usePublicBootcamps } from '../hooks/usePublicBootcamps.js';
+import { hasEnded } from '../utils/dates.js';
+import { CARD_GRID_COLUMNS, shortListSx } from '../theme/layout.js';
 
 const GRID_SX = {
   display: 'grid',
   gap: { xs: 2.5, md: 3 },
-  gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
+  gridTemplateColumns: CARD_GRID_COLUMNS,
 };
 
 const FORMATS = [
@@ -136,6 +138,8 @@ export default function BootcampsPage() {
   };
 
   const count = data?.length || 0;
+  // The header pill only counts what a family can still book.
+  const openCount = (data || []).filter((b) => !hasEnded(b.endDate)).length;
 
   return (
     <>
@@ -157,7 +161,7 @@ export default function BootcampsPage() {
         title="Bootcamps"
         lead="Short, intensive holiday programmes — a full robotics or coding build packed into a week or two, with a showcase at the end."
       >
-        {!isLoading && !isError && count > 0 && (
+        {!isLoading && !isError && openCount > 0 && (
           <Box
             sx={{
               mt: 3,
@@ -174,7 +178,7 @@ export default function BootcampsPage() {
           >
             <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'success.main' }} />
             <Typography variant="body2" sx={{ fontWeight: 600 }}>
-              {count} {count === 1 ? 'bootcamp' : 'bootcamps'} open for enquiries
+              {openCount} {openCount === 1 ? 'bootcamp' : 'bootcamps'} open for enquiries
             </Typography>
           </Box>
         )}
@@ -230,7 +234,7 @@ export default function BootcampsPage() {
             {list.length === 0 ? (
               <ComingSoon />
             ) : (
-              <Box sx={GRID_SX}>
+              <Box sx={{ ...GRID_SX, ...shortListSx(list.length) }}>
                 {list.map((b) => (
                   <BootcampCard key={b.id} bootcamp={b} />
                 ))}

@@ -17,16 +17,17 @@ import Section from '../components/common/Section.jsx';
 import SmartImage from '../components/common/SmartImage.jsx';
 import CTABanner from '../components/home/CTABanner.jsx';
 import { ErrorBlock } from '../components/common/StateViews.jsx';
-import { FORMAT_LABEL, CADENCE_LABEL } from '../components/cards/CompetitionCard.jsx';
+import { FORMAT_LABEL, CADENCE_LABEL, competitionStatusLabel } from '../components/cards/CompetitionCard.jsx';
 import CoursePricingRoadmap from '../components/pathway/CoursePricingRoadmap.jsx';
 import { usePublicCompetition } from '../hooks/usePublicCompetitions.js';
 import { formatDateRange } from '../utils/dates.js';
 import { resolveMediaUrl } from '../utils/media.js';
 import { titleWithKind } from '../utils/seo.js';
+import { PROSE_MAX_WIDTH } from '../theme/layout.js';
+import DetailLayout, { AsideCard } from '../components/common/DetailLayout.jsx';
+import { RelatedCompetitions } from '../components/common/Related.jsx';
 
 const TRACK_GREEN = '#2E7D32';
-
-const STATUS_LABEL = { open: 'Registration open', closed: 'Registration closed' };
 
 // A track's Register button. An external http(s) URL opens in a new tab; a bare/relative value
 // (e.g. "/enroll?…") is an in-app route; nothing falls back to the generic enquiry.
@@ -68,7 +69,7 @@ function TrackCard({ track, competitionName }) {
         <Typography sx={{ color: TRACK_GREEN, fontWeight: 700, mb: 1.5 }}>{track.subtitle}</Typography>
       )}
       {track.description && (
-        <Typography sx={{ color: 'text.secondary', mb: 2, lineHeight: 1.7, whiteSpace: 'pre-line' }}>
+        <Typography sx={{ color: 'text.secondary', mb: 2, lineHeight: 1.7, whiteSpace: 'pre-line', maxWidth: PROSE_MAX_WIDTH }}>
           {track.description}
         </Typography>
       )}
@@ -162,6 +163,7 @@ export default function CompetitionDetailPage() {
   } = data;
 
   const dates = formatDateRange(startDate, endDate);
+  const statusLabel = competitionStatusLabel(status, endDate);
   const enquireTo = `/contact?subject=${encodeURIComponent(`${name} — entry details`)}`;
 
   return (
@@ -234,7 +236,7 @@ export default function CompetitionDetailPage() {
 
               {(dates || status) && (
                 <Typography variant="h4" component="p" sx={{ fontWeight: 400, color: 'text.secondary' }}>
-                  {[dates, STATUS_LABEL[status]].filter(Boolean).join(' · ')}
+                  {[dates, statusLabel].filter(Boolean).join(' · ')}
                 </Typography>
               )}
 
@@ -253,73 +255,97 @@ export default function CompetitionDetailPage() {
       </Box>
 
       <Section>
-        {description && (
-          <Box sx={{ maxWidth: 760, mb: 6 }}>
-            <Typography variant="h2" component="h2" sx={{ mb: 2 }}>
-              About {name}
-            </Typography>
-            <Typography sx={{ color: 'text.secondary', whiteSpace: 'pre-line', lineHeight: 1.7 }}>
-              {description}
-            </Typography>
-          </Box>
-        )}
-
-        {tracks.length > 0 ? (
-          <>
-            <Typography variant="h2" component="h2" sx={{ mb: 1 }}>
-              {tracks.length === 1 ? 'The track' : 'Tracks'}
-            </Typography>
-            <Typography sx={{ color: 'text.secondary', mb: 4, maxWidth: 620 }}>
-              Each learner or team picks one track to enter. Choose the one that fits their age and
-              interests.
-            </Typography>
-            <Box
-              sx={{
-                display: 'grid',
-                gap: { xs: 3, md: 3.5 },
-                gridTemplateColumns: { xs: '1fr', md: tracks.length === 1 ? '1fr' : 'repeat(2, 1fr)' },
-              }}
-            >
-              {tracks.map((t) => (
-                <TrackCard key={t.id} track={t} competitionName={name} />
-              ))}
+        <DetailLayout
+          aside={
+            <AsideCard>
+              <Box>
+                <Typography variant="overline" sx={{ color: 'text.secondary' }}>
+                  {statusLabel || 'Competition'}
+                </Typography>
+                <Typography variant="h4" component="p">
+                  {dates || 'Dates to be confirmed'}
+                </Typography>
+              </Box>
+              <Typography variant="body2" color="text.secondary">
+                Tell us your learners’ ages and which track interests them. We’ll send the entry
+                details and what to prepare.
+              </Typography>
+              <Button component={RouterLink} to={enquireTo} variant="contained" size="large" fullWidth>
+                Ask about entering
+              </Button>
+            </AsideCard>
+          }
+        >
+          {description && (
+            <Box sx={{ maxWidth: 760, mb: 6 }}>
+              <Typography variant="h2" component="h2" sx={{ mb: 2 }}>
+                About {name}
+              </Typography>
+              <Typography sx={{ color: 'text.secondary', whiteSpace: 'pre-line', maxWidth: PROSE_MAX_WIDTH, lineHeight: 1.7 }}>
+                {description}
+              </Typography>
             </Box>
-          </>
-        ) : (
-          <Box sx={{ maxWidth: 720 }}>
-            <Typography sx={{ color: 'text.secondary' }}>
-              Track details for this edition aren&apos;t published yet — send an enquiry and we&apos;ll
-              share them as soon as they&apos;re confirmed.
-            </Typography>
-          </Box>
-        )}
+          )}
 
-        {coursePricing.length > 0 && (
-          <Box sx={{ mt: 6, maxWidth: 900 }}>
-            <Typography variant="h2" component="h2" sx={{ mb: 1 }}>
-              Course pricing
-            </Typography>
-            <Typography sx={{ color: 'text.secondary', mb: 4 }}>
-              Individual course prices within this competition&apos;s curriculum.
-            </Typography>
-            <Box sx={{ display: 'grid', gap: 5 }}>
-              {coursePricing.map((section, i) => (
-                <Box key={section.pathwayId || `ungrouped-${i}`}>
-                  {section.pathwayName && (
-                    <Typography
-                      variant="overline"
-                      sx={{ display: 'block', color: section.pathwayColor || 'primary.dark', fontWeight: 800, letterSpacing: '0.06em', mb: 2 }}
-                    >
-                      {section.pathwayName}
-                    </Typography>
-                  )}
-                  <CoursePricingRoadmap courses={section.courses} accent={section.pathwayColor || undefined} />
-                </Box>
-              ))}
+          {tracks.length > 0 ? (
+            <>
+              <Typography variant="h2" component="h2" sx={{ mb: 1 }}>
+                {tracks.length === 1 ? 'The track' : 'Tracks'}
+              </Typography>
+              <Typography sx={{ color: 'text.secondary', mb: 4, maxWidth: 620 }}>
+                Each learner or team picks one track to enter. Choose the one that fits their age and
+                interests.
+              </Typography>
+              <Box
+                sx={{
+                  display: 'grid',
+                  gap: { xs: 3, md: 3.5 },
+                  gridTemplateColumns: { xs: '1fr', md: tracks.length === 1 ? '1fr' : 'repeat(2, 1fr)' },
+                }}
+              >
+                {tracks.map((t) => (
+                  <TrackCard key={t.id} track={t} competitionName={name} />
+                ))}
+              </Box>
+            </>
+          ) : (
+            <Box sx={{ maxWidth: 720 }}>
+              <Typography sx={{ color: 'text.secondary' }}>
+                Track details for this edition aren&apos;t published yet — send an enquiry and we&apos;ll
+                share them as soon as they&apos;re confirmed.
+              </Typography>
             </Box>
-          </Box>
-        )}
+          )}
+
+          {coursePricing.length > 0 && (
+            <Box sx={{ mt: 6, maxWidth: 900 }}>
+              <Typography variant="h2" component="h2" sx={{ mb: 1 }}>
+                Course pricing
+              </Typography>
+              <Typography sx={{ color: 'text.secondary', mb: 4 }}>
+                Individual course prices within this competition&apos;s curriculum.
+              </Typography>
+              <Box sx={{ display: 'grid', gap: 5 }}>
+                {coursePricing.map((section, i) => (
+                  <Box key={section.pathwayId || `ungrouped-${i}`}>
+                    {section.pathwayName && (
+                      <Typography
+                        variant="overline"
+                        sx={{ display: 'block', color: section.pathwayColor || 'primary.dark', fontWeight: 800, letterSpacing: '0.06em', mb: 2 }}
+                      >
+                        {section.pathwayName}
+                      </Typography>
+                    )}
+                    <CoursePricingRoadmap courses={section.courses} accent={section.pathwayColor || undefined} />
+                  </Box>
+                ))}
+              </Box>
+            </Box>
+          )}
+        </DetailLayout>
       </Section>
+
+      <RelatedCompetitions currentSlug={slug} />
 
       <CTABanner
         heading={`Enter a team for ${name}`}

@@ -1,7 +1,4 @@
 import { Link as RouterLink } from 'react-router-dom';
-import Accordion from '@mui/material/Accordion';
-import AccordionDetails from '@mui/material/AccordionDetails';
-import AccordionSummary from '@mui/material/AccordionSummary';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
@@ -10,7 +7,6 @@ import Typography from '@mui/material/Typography';
 import ArrowDownwardRoundedIcon from '@mui/icons-material/ArrowDownwardRounded';
 import AutoGraphRoundedIcon from '@mui/icons-material/AutoGraphRounded';
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
-import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded';
 import SchoolRoundedIcon from '@mui/icons-material/SchoolRounded';
@@ -19,6 +15,7 @@ import JsonLd, { organizationSchema } from '../components/seo/JsonLd.jsx';
 import Section from '../components/common/Section.jsx';
 import SectionHeading from '../components/common/SectionHeading.jsx';
 import Reveal from '../components/common/Reveal.jsx';
+import FaqList from '../components/common/FaqList.jsx';
 import CTABanner from '../components/home/CTABanner.jsx';
 import { ErrorBlock, EmptyBlock } from '../components/common/StateViews.jsx';
 import PriceCalculator from '../components/homeSchooling/PriceCalculator.jsx';
@@ -305,22 +302,7 @@ function Faq({ packages }) {
       <Box sx={{ display: 'grid', gap: { xs: 4, md: 8 }, gridTemplateColumns: { xs: '1fr', md: '4fr 7fr' }, alignItems: 'start' }}>
         <SectionHeading eyebrow="Questions" title="Good to know" lead="The things parents ask us most. Anything else — just ask." />
         <Box>
-          {faqs.map((faq, i) => (
-            <Accordion
-              key={faq.q}
-              defaultExpanded={i === 0}
-              disableGutters
-              elevation={0}
-              sx={{ bgcolor: 'surface.card', border: '1px solid', borderColor: 'surface.ring', borderRadius: '14px !important', mb: 1.5, '&::before': { display: 'none' } }}
-            >
-              <AccordionSummary expandIcon={<ExpandMoreRoundedIcon />} sx={{ px: 2.5, py: 0.5 }}>
-                <Typography sx={{ fontWeight: 700 }}>{faq.q}</Typography>
-              </AccordionSummary>
-              <AccordionDetails sx={{ px: 2.5, pt: 0, pb: 2.5 }}>
-                <Typography color="text.secondary">{faq.a}</Typography>
-              </AccordionDetails>
-            </Accordion>
-          ))}
+          <FaqList faqs={faqs} />
         </Box>
       </Box>
     </Section>

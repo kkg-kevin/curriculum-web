@@ -3,6 +3,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import EmailIcon from '@mui/icons-material/Email';
 import PhoneIcon from '@mui/icons-material/Phone';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import SeoHead from '../components/seo/SeoHead.jsx';
@@ -10,7 +11,7 @@ import JsonLd, { organizationSchema } from '../components/seo/JsonLd.jsx';
 import PageHeader from '../components/common/PageHeader.jsx';
 import Section from '../components/common/Section.jsx';
 import ContactForm from '../components/forms/ContactForm.jsx';
-import { ORG } from '../config/site.js';
+import { ORG, phoneUrl, whatsAppUrl } from '../config/site.js';
 
 function ContactLine({ icon: Icon, children }) {
   return (
@@ -32,6 +33,8 @@ function ContactLine({ icon: Icon, children }) {
 export default function ContactPage() {
   const [params] = useSearchParams();
   const subject = params.get('subject');
+  const phone = phoneUrl();
+  const whatsApp = whatsAppUrl('Hello Digifunzi, I have a question.');
 
   return (
     <>
@@ -47,8 +50,8 @@ export default function ContactPage() {
       />
 
       <Section>
-        <Box sx={{ display: 'grid', gap: 6, gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' } }}>
-          <Box sx={{ maxWidth: 520 }}>
+        <Box sx={{ display: 'grid', gap: { xs: 6, md: 8 }, gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, maxWidth: 1100, mx: 'auto' }}>
+          <Box>
             <ContactForm
               useLeadsEndpoint={false}
               defaultMessage={subject ? `Re: ${subject}\n\n` : ''}
@@ -72,15 +75,24 @@ export default function ContactPage() {
                 <ContactLine icon={EmailIcon}>
                   <a href={`mailto:${ORG.email}`}>{ORG.email}</a>
                 </ContactLine>
-                <ContactLine icon={PhoneIcon}>{ORG.telephone}</ContactLine>
+                {/* Phone and WhatsApp only appear once real numbers are set in config/site.js. */}
+                {phone && (
+                  <ContactLine icon={PhoneIcon}>
+                    <a href={phone}>{ORG.telephone}</a>
+                  </ContactLine>
+                )}
+                {whatsApp && (
+                  <ContactLine icon={WhatsAppIcon}>
+                    <a href={whatsApp} target="_blank" rel="noopener noreferrer">
+                      Chat with us on WhatsApp
+                    </a>
+                  </ContactLine>
+                )}
                 <ContactLine icon={LocationOnIcon}>
                   {ORG.address.addressLocality}, {ORG.address.addressCountry}
                 </ContactLine>
                 <ContactLine icon={AccessTimeIcon}>We usually reply within one working day.</ContactLine>
               </Box>
-              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-                Contact details are placeholders pending confirmation.
-              </Typography>
             </Box>
 
             <Typography variant="h4" component="h2" gutterBottom>

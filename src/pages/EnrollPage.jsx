@@ -11,7 +11,7 @@ import { LoadingBlock } from '../components/common/StateViews.jsx';
 import { childrenLabel, packageEnquiryNote, priceForPackage } from '../content/homeSchooling.js';
 import { usePublicHomeLearningPackage } from '../hooks/usePublicHomeLearning.js';
 
-const VALID_INTEREST = ['bootcamp', 'project', 'quarky', 'home_schooling', 'general'];
+const VALID_INTEREST = ['pathway', 'bootcamp', 'project', 'quarky', 'home_schooling', 'competition', 'general'];
 
 /**
  * Standalone enroll / purchase-enquiry page. Accepts optional query params so
@@ -95,7 +95,7 @@ export default function EnrollPage() {
       />
 
       <Section>
-        <Box sx={{ maxWidth: isPathwayFlow ? 720 : 640 }}>
+        <Box sx={{ maxWidth: isPathwayFlow ? 720 : 640, mx: 'auto' }}>
           {packageSlug && packageQuery.isLoading ? <LoadingBlock label="Loading package…" /> : <EnrollForm
             key={homeSchoolingPackage?.slug || 'form'}
             variant={isEnquiry ? 'enquiry' : 'enroll'}

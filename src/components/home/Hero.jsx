@@ -11,10 +11,9 @@ import { hero } from '../../content/home.js';
  *
  *  LEFT  — the copy: a status pill, a per-word clip-reveal heading with a
  *          one-time sheen, sub, CTAs and a "what's inside" strip.
- *  RIGHT — a designed "stage": the Digifunzi mascot on a soft pedestal framed
- *          by floating glass UI chips (a live-session badge, a "first program
- *          compiled" note, a project-progress meter). This is what makes it
- *          read as a product, not a flyer.
+ *  RIGHT — the Digifunzi mascot on a soft pedestal. On phones it drops under the copy,
+ *          smaller. No invented "live" figures around it: nothing on this stage claims a
+ *          number the site can't back up.
  *
  * Motion notes: entrance animation is done with the <Reveal> component
  * (IntersectionObserver + CSS transition) and the infinite float/sheen use
@@ -68,7 +67,14 @@ const headingSheen = (t) => ({
   },
 });
 
-const PILLARS = ['Learning pathways', 'Buildable projects', 'Competitions', 'The Quarky robot'];
+const PILLARS = [
+  'Learning pathways',
+  'Holiday bootcamps',
+  'Home schooling',
+  'Buildable projects',
+  'Competitions',
+  'The Quarky robot',
+];
 
 function HeroBackdrop() {
   return (
@@ -118,39 +124,8 @@ function HeroBackdrop() {
   );
 }
 
-// A floating glassy UI chip. `floatDur`/`floatDelay` desync the bobs.
-function GlassChip({ children, sx, floatDur = 7, floatDelay = 0 }) {
-  return (
-    <Box
-      className="df-anim-float"
-      sx={{
-        position: 'absolute',
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 1,
-        px: 1.5,
-        py: 1,
-        borderRadius: 3,
-        border: '1px solid',
-        borderColor: 'surface.ring',
-        backgroundColor: (t) =>
-          t.palette.mode === 'dark' ? 'rgba(20,31,53,0.82)' : 'rgba(255,255,255,0.88)',
-        backdropFilter: 'blur(10px)',
-        WebkitBackdropFilter: 'blur(10px)',
-        boxShadow: 'shadow.lg',
-        fontSize: '0.8rem',
-        fontWeight: 600,
-        color: 'text.primary',
-        animation: `df-float ${floatDur}s ease-in-out ${floatDelay}s infinite`,
-        '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
-        ...sx,
-      }}
-    >
-      {children}
-    </Box>
-  );
-}
-
+// The mascot on its pedestal. Shown at every width — smaller on phones, where it sits under
+// the copy — so the page always has a face, not just text.
 function HeroStage() {
   return (
     <Reveal
@@ -158,8 +133,7 @@ function HeroStage() {
       y={24}
       sx={{
         position: 'relative',
-        display: { xs: 'none', md: 'block' },
-        minHeight: 460,
+        minHeight: { xs: 230, md: 460, xl: 520 },
       }}
     >
       {/* pedestal glow */}
@@ -169,8 +143,8 @@ function HeroStage() {
           position: 'absolute',
           left: '50%',
           top: '52%',
-          width: 420,
-          height: 420,
+          width: { xs: 250, md: 420 },
+          height: { xs: 250, md: 420 },
           transform: 'translate(-50%, -50%)',
           borderRadius: '50%',
           background: (t) =>
@@ -183,9 +157,9 @@ function HeroStage() {
         sx={{
           position: 'absolute',
           left: '50%',
-          bottom: 40,
-          width: 300,
-          height: 44,
+          bottom: { xs: 0, md: 40 },
+          width: { xs: 170, md: 300 },
+          height: { xs: 26, md: 44 },
           transform: 'translateX(-50%)',
           borderRadius: '50%',
           background: (t) =>
@@ -201,7 +175,7 @@ function HeroStage() {
           position: 'absolute',
           left: '50%',
           top: '50%',
-          width: 340,
+          width: { xs: 180, md: 340, xl: 420 },
           transform: 'translate(-50%, -50%)',
         }}
       >
@@ -210,9 +184,12 @@ function HeroStage() {
           component="img"
           src="/logo.png"
           alt=""
+          width={307}
+          height={331}
           sx={{
             display: 'block',
             width: '100%',
+            height: 'auto',
             filter: (t) =>
               t.palette.mode === 'dark'
                 ? 'drop-shadow(0 24px 34px rgba(0,0,0,0.5))'
@@ -222,63 +199,6 @@ function HeroStage() {
           }}
         />
       </Box>
-
-      <GlassChip sx={{ top: 12, left: -4 }} floatDur={6.5}>
-        <Box
-          component="span"
-          sx={{
-            width: 8,
-            height: 8,
-            borderRadius: '50%',
-            backgroundColor: 'success.main',
-            boxShadow: (t) => `0 0 0 4px ${t.palette.success.main}22`,
-          }}
-        />
-        Live session · 12 learners
-      </GlassChip>
-
-      <GlassChip sx={{ top: 96, right: -12 }} floatDur={7.5} floatDelay={-2}>
-        <Box
-          component="svg"
-          viewBox="0 0 24 24"
-          sx={{ width: 16, height: 16, fill: 'none', stroke: 'currentColor', strokeWidth: 2 }}
-        >
-          <path
-            d="M8 6 3 12l5 6M16 6l5 6-5 6M14 4l-4 16"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </Box>
-        First program compiled
-      </GlassChip>
-
-      <GlassChip
-        sx={{ bottom: 60, left: 4, flexDirection: 'column', alignItems: 'flex-start', gap: 0.5 }}
-        floatDur={8}
-        floatDelay={-4}
-      >
-        <Box component="span" sx={{ color: 'text.secondary', fontSize: '0.7rem', fontWeight: 700 }}>
-          PROJECT PROGRESS
-        </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Box
-            sx={{
-              width: 88,
-              height: 6,
-              borderRadius: 3,
-              backgroundColor: 'surface.ring',
-              overflow: 'hidden',
-            }}
-          >
-            <Box
-              sx={{ width: '72%', height: '100%', borderRadius: 3, backgroundColor: 'primary.main' }}
-            />
-          </Box>
-          <Box component="span" sx={{ fontSize: '0.72rem' }}>
-            72%
-          </Box>
-        </Box>
-      </GlassChip>
     </Reveal>
   );
 }
@@ -312,7 +232,7 @@ export default function Hero() {
             alignItems: 'center',
           }}
         >
-          <Box sx={{ maxWidth: { xs: '100%', md: 560 } }}>
+          <Box sx={{ maxWidth: { xs: '100%', md: 560, xl: 640 } }}>
             <Reveal
               as="span"
               delay={40}

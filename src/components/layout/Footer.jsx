@@ -4,7 +4,9 @@ import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Link from '@mui/material/Link';
 import Logo from '../common/Logo.jsx';
-import { ORG } from '../../config/site.js';
+import { ORG, phoneUrl, whatsAppUrl } from '../../config/site.js';
+
+const contactLinkSx = { color: 'surface.inverseTextDim', '&:hover': { color: 'surface.inverseText' } };
 
 const COLUMNS = [
   {
@@ -14,6 +16,7 @@ const COLUMNS = [
       { label: 'Projects', to: '/projects' },
       { label: 'Bootcamps', to: '/bootcamps' },
       { label: 'Competitions', to: '/competitions' },
+      { label: 'Home Schooling', to: '/home-schooling' },
       { label: 'Store', to: '/store' },
     ],
   },
@@ -27,6 +30,11 @@ const COLUMNS = [
   },
 ];
 
+const LEGAL_LINKS = [
+  { label: 'Privacy Policy', to: '/privacy' },
+  { label: 'Terms of Use', to: '/terms' },
+];
+
 /**
  * Footer sits on the `surface.inverse` band — intentionally dark in both light
  * and dark mode (a common landing-page pattern). All colours come from the
@@ -34,6 +42,8 @@ const COLUMNS = [
  */
 export default function Footer() {
   const year = new Date().getFullYear();
+  const phone = phoneUrl();
+  const whatsApp = whatsAppUrl('Hello Digifunzi, I have a question.');
   return (
     <Box
       component="footer"
@@ -45,8 +55,16 @@ export default function Footer() {
       }}
     >
       <Container maxWidth="lg">
-        <Box sx={{ display: 'grid', gap: 4, gridTemplateColumns: { xs: '1fr', sm: '2fr 1fr 1fr' } }}>
-          <Box>
+        {/* Four columns across a wide page — brand, two link lists, how to reach us — so the
+            footer is filled edge to edge instead of leaving a blank band in the middle. */}
+        <Box
+          sx={{
+            display: 'grid',
+            gap: { xs: 4, md: 6 },
+            gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1.6fr 1fr 1fr 1.2fr' },
+          }}
+        >
+          <Box sx={{ gridColumn: { sm: '1 / -1', md: 'auto' } }}>
             <Box sx={{ color: 'surface.inverseText', mb: 1 }}>
               <Logo />
             </Box>
@@ -78,6 +96,31 @@ export default function Footer() {
               </Box>
             </Box>
           ))}
+
+          <Box>
+            <Typography variant="subtitle2" sx={{ mb: 1.5, color: 'surface.inverseTextDim' }}>
+              Get in touch
+            </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Link href={`mailto:${ORG.email}`} underline="hover" sx={contactLinkSx}>
+                {ORG.email}
+              </Link>
+              {/* Phone and WhatsApp appear once real numbers are set in config/site.js. */}
+              {phone && (
+                <Link href={phone} underline="hover" sx={contactLinkSx}>
+                  {ORG.telephone}
+                </Link>
+              )}
+              {whatsApp && (
+                <Link href={whatsApp} target="_blank" rel="noopener noreferrer" underline="hover" sx={contactLinkSx}>
+                  Chat on WhatsApp
+                </Link>
+              )}
+              <Link component={RouterLink} to="/contact" underline="hover" sx={contactLinkSx}>
+                Send us a message
+              </Link>
+            </Box>
+          </Box>
         </Box>
 
         <Box
@@ -95,9 +138,23 @@ export default function Footer() {
           <Typography variant="body2" sx={{ color: 'surface.inverseTextDim' }}>
             © {year} {ORG.name}. All rights reserved.
           </Typography>
-          <Typography variant="body2" sx={{ color: 'surface.inverseTextDim' }}>
-            {ORG.address.addressLocality}, {ORG.address.addressCountry}
-          </Typography>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', columnGap: 2.5, rowGap: 0.5 }}>
+            {LEGAL_LINKS.map((l) => (
+              <Link
+                key={l.to}
+                component={RouterLink}
+                to={l.to}
+                underline="hover"
+                variant="body2"
+                sx={{ color: 'surface.inverseTextDim', '&:hover': { color: 'surface.inverseText' } }}
+              >
+                {l.label}
+              </Link>
+            ))}
+            <Typography variant="body2" sx={{ color: 'surface.inverseTextDim' }}>
+              {ORG.address.addressLocality}, {ORG.address.addressCountry}
+            </Typography>
+          </Box>
         </Box>
       </Container>
     </Box>

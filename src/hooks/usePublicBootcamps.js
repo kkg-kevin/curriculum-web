@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { publicApi } from '../services/api.js';
+import { byUpcomingFirst } from '../utils/dates.js';
 
 /**
  * The Bootcamps section (`/bootcamps`) reads `GET /api/public/bootcamps` — the designated
@@ -15,7 +16,8 @@ import { publicApi } from '../services/api.js';
  * are assigned or offerable right now).
  *
  * Defence-in-depth: a misconfigured backend could in theory return odd rows — drop anything
- * with no slug, de-dupe by slug, stable-sort by name so card order doesn't jump between fetches.
+ * with no slug, de-dupe by slug. Order: what's still on or coming first (soonest start first), then
+ * runs that have ended — see byUpcomingFirst.
  */
 function normalise(list) {
   if (!Array.isArray(list)) return [];
@@ -24,7 +26,7 @@ function normalise(list) {
     if (!b?.slug || !b?.name) continue;
     if (!bySlug.has(b.slug)) bySlug.set(b.slug, b);
   }
-  return [...bySlug.values()].sort((a, b) => a.name.localeCompare(b.name));
+  return [...bySlug.values()].sort((a, b) => byUpcomingFirst(a, b));
 }
 
 /** GET /api/public/bootcamps — the for-sale bootcamps listing. */

@@ -21,6 +21,9 @@ import { usePublicProject } from '../hooks/usePublicProjects.js';
 import { formatPrice, ageLabel } from '../utils/format.js';
 import { resolveMediaUrl } from '../utils/media.js';
 import { titleWithKind } from '../utils/seo.js';
+import { PROSE_MAX_WIDTH } from '../theme/layout.js';
+import DetailLayout from '../components/common/DetailLayout.jsx';
+import { RelatedProjects } from '../components/common/Related.jsx';
 
 const LEVEL_LABEL = { beginner: 'Beginner', intermediate: 'Intermediate', advanced: 'Advanced' };
 
@@ -54,7 +57,7 @@ function BuildStep({ index, total, step }) {
           {step.name}
         </Typography>
         {step.description && (
-          <Typography sx={{ color: 'text.secondary', mt: 0.5, whiteSpace: 'pre-line' }}>
+          <Typography sx={{ color: 'text.secondary', mt: 0.5, whiteSpace: 'pre-line', maxWidth: PROSE_MAX_WIDTH }}>
             {step.description}
           </Typography>
         )}
@@ -247,134 +250,138 @@ export default function ProjectDetailPage() {
       </Box>
 
       <Section>
-        {(description || overview) && (
-          <Box sx={{ maxWidth: 760, mb: 6 }}>
-            <Typography variant="h2" component="h2" sx={{ mb: 2 }}>
-              About this project
-            </Typography>
-            {description && (
-              <Typography sx={{ color: 'text.secondary', whiteSpace: 'pre-line', lineHeight: 1.7 }}>
-                {description}
-              </Typography>
-            )}
-            {overview && (
-              <Typography
-                sx={{ color: 'text.secondary', whiteSpace: 'pre-line', lineHeight: 1.7, mt: 2 }}
+        <DetailLayout
+          aside={
+            <Box>
+              <Box
+                sx={{
+                  p: 3,
+                  borderRadius: 2,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  bgcolor: 'background.paper',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 2,
+                  boxShadow: 'shadow.md',
+                }}
               >
-                {overview}
-              </Typography>
-            )}
-          </Box>
-        )}
-
-        {milestones.length > 0 && (
-          <Box sx={{ maxWidth: 820, mb: 6 }}>
-            <Typography variant="h2" component="h2" sx={{ mb: 1 }}>
-              The build, step by step
-            </Typography>
-            <Typography sx={{ color: 'text.secondary', mb: 4, maxWidth: 640 }}>
-              Worked through in order — each step builds on the last, and ends with something
-              working.
-            </Typography>
-            {milestones.map((m, i) => (
-              <BuildStep key={`${m.name}-${i}`} index={i} total={milestones.length} step={m} />
-            ))}
-          </Box>
-        )}
-
-        <Box
-          sx={{
-            display: 'grid',
-            gap: 4,
-            gridTemplateColumns: { xs: '1fr', md: deliverables.length && requirements.length ? '1fr 1fr' : '1fr' },
-            maxWidth: 900,
-          }}
+                <Box>
+                  <Typography variant="h4" component="p" gutterBottom>
+                    Get {name} for your learner
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {priceLabel}
+                    {price?.note ? ` · ${price.note}` : ''}
+                  </Typography>
+                </Box>
+                <Button component={RouterLink} to={enquireTo} variant="contained" size="large">
+                  Enquire to buy
+                </Button>
+              </Box>
+            </Box>
+          }
         >
-          {deliverables.length > 0 && (
-            <Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                <BuildCircleIcon sx={{ color: 'primary.main' }} />
-                <Typography variant="h4" component="h2">
-                  What you&apos;ll build
+          {(description || overview) && (
+            <Box sx={{ maxWidth: 760, mb: 6 }}>
+              <Typography variant="h2" component="h2" sx={{ mb: 2 }}>
+                About this project
+              </Typography>
+              {description && (
+                <Typography sx={{ color: 'text.secondary', whiteSpace: 'pre-line', maxWidth: PROSE_MAX_WIDTH, lineHeight: 1.7 }}>
+                  {description}
                 </Typography>
-              </Box>
-              <Box component="ul" sx={{ m: 0, p: 0, listStyle: 'none', display: 'grid', gap: 1.5 }}>
-                {deliverables.map((d, i) => (
-                  <Box component="li" key={`${d.name}-${i}`} sx={{ display: 'flex', gap: 1.25 }}>
-                    <CheckCircleIcon sx={{ fontSize: 20, color: 'success.main', flexShrink: 0, mt: 0.25 }} />
-                    <Box>
-                      <Typography sx={{ fontWeight: 600 }}>{d.name}</Typography>
-                      {d.description && (
-                        <Typography variant="body2" color="text.secondary">
-                          {d.description}
-                        </Typography>
-                      )}
-                    </Box>
-                  </Box>
-                ))}
-              </Box>
+              )}
+              {overview && (
+                <Typography
+                  sx={{ color: 'text.secondary', whiteSpace: 'pre-line', maxWidth: PROSE_MAX_WIDTH, lineHeight: 1.7, mt: 2 }}
+                >
+                  {overview}
+                </Typography>
+              )}
             </Box>
           )}
 
-          {requirements.length > 0 && (
-            <Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                <Inventory2Icon sx={{ color: 'primary.main' }} />
-                <Typography variant="h4" component="h2">
-                  What you&apos;ll need
-                </Typography>
-              </Box>
-              <Box component="ul" sx={{ m: 0, p: 0, listStyle: 'none', display: 'grid', gap: 1 }}>
-                {requirements.map((r, i) => (
-                  <Box component="li" key={`${r}-${i}`} sx={{ display: 'flex', gap: 1.25 }}>
-                    <CheckCircleIcon sx={{ fontSize: 20, color: 'text.disabled', flexShrink: 0, mt: 0.25 }} />
-                    <Typography>{r}</Typography>
-                  </Box>
-                ))}
-              </Box>
-              <Button
-                component={RouterLink}
-                to="/store"
-                variant="text"
-                size="small"
-                sx={{ mt: 1.5 }}
-              >
-                Browse robots & kits →
-              </Button>
+          {milestones.length > 0 && (
+            <Box sx={{ maxWidth: 820, mb: 6 }}>
+              <Typography variant="h2" component="h2" sx={{ mb: 1 }}>
+                The build, step by step
+              </Typography>
+              <Typography sx={{ color: 'text.secondary', mb: 4, maxWidth: 640 }}>
+                Worked through in order — each step builds on the last, and ends with something
+                working.
+              </Typography>
+              {milestones.map((m, i) => (
+                <BuildStep key={`${m.name}-${i}`} index={i} total={milestones.length} step={m} />
+              ))}
             </Box>
           )}
-        </Box>
 
-        <Box sx={{ mt: 6, maxWidth: 900 }}>
           <Box
             sx={{
-              p: 3,
-              borderRadius: 2,
-              border: '1px solid',
-              borderColor: 'divider',
-              bgcolor: 'background.paper',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: 2,
-              flexWrap: 'wrap',
+              display: 'grid',
+              gap: 4,
+              gridTemplateColumns: { xs: '1fr', md: deliverables.length && requirements.length ? '1fr 1fr' : '1fr' },
             }}
           >
-            <Box>
-              <Typography variant="h4" component="p" gutterBottom>
-                Get {name} for your learner
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {priceLabel}
-                {price?.note ? ` · ${price.note}` : ''}
-              </Typography>
-            </Box>
-            <Button component={RouterLink} to={enquireTo} variant="contained" size="large">
-              Enquire to buy
-            </Button>
+            {deliverables.length > 0 && (
+              <Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                  <BuildCircleIcon sx={{ color: 'primary.main' }} />
+                  <Typography variant="h4" component="h2">
+                    What you&apos;ll build
+                  </Typography>
+                </Box>
+                <Box component="ul" sx={{ m: 0, p: 0, listStyle: 'none', display: 'grid', gap: 1.5 }}>
+                  {deliverables.map((d, i) => (
+                    <Box component="li" key={`${d.name}-${i}`} sx={{ display: 'flex', gap: 1.25 }}>
+                      <CheckCircleIcon sx={{ fontSize: 20, color: 'success.main', flexShrink: 0, mt: 0.25 }} />
+                      <Box>
+                        <Typography sx={{ fontWeight: 600 }}>{d.name}</Typography>
+                        {d.description && (
+                          <Typography variant="body2" color="text.secondary">
+                            {d.description}
+                          </Typography>
+                        )}
+                      </Box>
+                    </Box>
+                  ))}
+                </Box>
+              </Box>
+            )}
+
+            {requirements.length > 0 && (
+              <Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                  <Inventory2Icon sx={{ color: 'primary.main' }} />
+                  <Typography variant="h4" component="h2">
+                    What you&apos;ll need
+                  </Typography>
+                </Box>
+                <Box component="ul" sx={{ m: 0, p: 0, listStyle: 'none', display: 'grid', gap: 1 }}>
+                  {requirements.map((r, i) => (
+                    <Box component="li" key={`${r}-${i}`} sx={{ display: 'flex', gap: 1.25 }}>
+                      <CheckCircleIcon sx={{ fontSize: 20, color: 'text.disabled', flexShrink: 0, mt: 0.25 }} />
+                      <Typography>{r}</Typography>
+                    </Box>
+                  ))}
+                </Box>
+                <Button
+                  component={RouterLink}
+                  to="/store"
+                  variant="text"
+                  size="small"
+                  sx={{ mt: 1.5 }}
+                >
+                  Browse robots & kits →
+                </Button>
+              </Box>
+            )}
           </Box>
-        </Box>
+        </DetailLayout>
       </Section>
+
+      <RelatedProjects currentSlug={slug} />
 
       <CTABanner
         heading="Buying projects for a class?"

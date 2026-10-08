@@ -27,6 +27,7 @@ import { groupAmenities, PRICING_MODEL_LABEL } from '../components/hubs/amenitie
 import { usePublicHub } from '../hooks/usePublicHubs.js';
 import { usePublicBootcamp } from '../hooks/usePublicBootcamps.js';
 import { formatDateRange } from '../utils/dates.js';
+import { PROSE_MAX_WIDTH } from '../theme/layout.js';
 
 const RUN_STATUS_LABEL = { upcoming: 'Upcoming', active: 'Running now' };
 
@@ -139,7 +140,7 @@ export default function HubDetailPage() {
       <Section>
         <Box sx={{ display: 'flex', gap: { xs: 5, md: 6 }, alignItems: 'flex-start', flexWrap: 'wrap' }}>
           {/* main column */}
-          <Box sx={{ flex: '1 1 480px', minWidth: 0, maxWidth: 760 }}>
+          <Box sx={{ flex: '1 1 480px', minWidth: 0 }}>
             {/* photo gallery */}
             {gallery.length > 0 ? (
               <Box sx={{ display: 'flex', gap: '4px', width: '100%', aspectRatio: '16 / 9', overflow: 'hidden', borderRadius: 2, mb: 4 }}>
@@ -182,7 +183,7 @@ export default function HubDetailPage() {
                 <Typography variant="h2" component="h2" sx={{ mb: 2 }}>
                   About this hub
                 </Typography>
-                <Typography sx={{ color: 'text.secondary', whiteSpace: 'pre-line', lineHeight: 1.7 }}>
+                <Typography sx={{ color: 'text.secondary', whiteSpace: 'pre-line', maxWidth: PROSE_MAX_WIDTH, lineHeight: 1.7 }}>
                   {hub.description}
                 </Typography>
               </Box>

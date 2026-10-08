@@ -10,7 +10,7 @@ import EventIcon from '@mui/icons-material/Event';
 import HourglassTopIcon from '@mui/icons-material/HourglassTop';
 import SmartImage from '../common/SmartImage.jsx';
 import { formatPrice, ageLabel } from '../../utils/format.js';
-import { formatDateRange, formatDate } from '../../utils/dates.js';
+import { formatDateRange, formatDate, hasEnded, todayStr } from '../../utils/dates.js';
 import { GameIcon, gamesSummary } from '../bootcamp/BootcampGames.jsx';
 
 export const FORMAT_LABEL = {
@@ -19,10 +19,6 @@ export const FORMAT_LABEL = {
   after_school: 'After school',
   online: 'Online',
 };
-
-// Dates are plain "YYYY-MM-DD" strings — lexicographic comparison against today is safe and
-// matches the convention public-bootcamp.service.js's deploymentStatus already uses server-side.
-const todayStr = () => new Date().toISOString().slice(0, 10);
 
 // Registration always shows on the card when either date is set — a bootcamp whose window
 // hasn't opened yet (the common case right after an admin schedules a new run) is exactly the
@@ -69,7 +65,11 @@ export default function BootcampCard({ bootcamp }) {
   const kicker = ['Bootcamp', format && FORMAT_LABEL[format]].filter(Boolean).join(' · ').toUpperCase();
   const metaLine = [duration, age].filter(Boolean).join(' · ') || 'A short, intensive build';
   const dateRange = formatDateRange(startDate, endDate);
-  const registration = registrationStatus(registrationOpenDate, registrationCloseDate);
+  // A run whose last day has passed says so, whatever its registration dates (or lack of them).
+  const ended = hasEnded(endDate);
+  const registration = ended
+    ? { state: 'closed' }
+    : registrationStatus(registrationOpenDate, registrationCloseDate);
 
   return (
     <Card
@@ -303,7 +303,7 @@ export default function BootcampCard({ bootcamp }) {
                         : 'success.dark',
                   }}
                 >
-                  {registration.state === 'closed' && 'Registration closed'}
+                  {registration.state === 'closed' && (ended ? 'This run has ended' : 'Registration closed')}
                   {registration.state === 'upcoming' && `Registration opens ${formatDate(registration.date)}`}
                   {registration.state === 'open' &&
                     `Registration ${registration.closingSoon ? 'closes' : 'open until'} ${formatDate(registration.date)}`}

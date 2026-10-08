@@ -6,11 +6,16 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import SmartImage from '../common/SmartImage.jsx';
-import { formatDateRange } from '../../utils/dates.js';
+import { formatDateRange, hasEnded } from '../../utils/dates.js';
 
 export const FORMAT_LABEL = { individual: 'Individual', pairs: 'Pairs', team: 'Team' };
 export const CADENCE_LABEL = { one_off: 'One-off', annual: 'Annual', termly: 'Termly' };
 const STATUS_LABEL = { open: 'Registration open', closed: 'Registration closed' };
+
+// A competition left "Open" in the portal after its last day would otherwise still say
+// "Registration open" here — the dates win.
+export const competitionStatusLabel = (status, endDate) =>
+  hasEnded(endDate) ? 'Ended' : STATUS_LABEL[status] || '';
 
 /**
  * One card in the Competitions grid (`/competitions`). A competition is a `competitions` record
@@ -24,6 +29,7 @@ export default function CompetitionCard({ competition }) {
 
   const kicker = ['Competition', edition].filter(Boolean).join(' · ').toUpperCase();
   const dates = formatDateRange(startDate, endDate);
+  const ended = hasEnded(endDate);
   const metaLine =
     [
       level,
@@ -144,11 +150,12 @@ export default function CompetitionCard({ competition }) {
               sx={{
                 fontSize: '0.9rem',
                 fontWeight: 800,
-                color: (t) => (t.palette.mode === 'dark' ? t.palette.primary.light : t.palette.primary.dark),
+                color: (t) =>
+                  ended ? t.palette.text.secondary : t.palette.mode === 'dark' ? t.palette.primary.light : t.palette.primary.dark,
                 lineHeight: 1.2,
               }}
             >
-              {STATUS_LABEL[status] || 'View details'}
+              {competitionStatusLabel(status, endDate) || 'View details'}
             </Typography>
             <Box
               sx={{

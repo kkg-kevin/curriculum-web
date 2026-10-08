@@ -12,11 +12,12 @@ import CTABanner from '../components/home/CTABanner.jsx';
 import { ErrorBlock, EmptyBlock } from '../components/common/StateViews.jsx';
 import ProjectCard from '../components/cards/ProjectCard.jsx';
 import { usePublicProjects } from '../hooks/usePublicProjects.js';
+import { CARD_GRID_COLUMNS, shortListSx } from '../theme/layout.js';
 
 const GRID_SX = {
   display: 'grid',
   gap: { xs: 2.5, md: 3 },
-  gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
+  gridTemplateColumns: CARD_GRID_COLUMNS,
 };
 
 const LEVELS = [
@@ -188,7 +189,7 @@ export default function ProjectsListPage() {
                 body="Try another level, or get in touch and tell us what your learner is ready for."
               />
             ) : (
-              <Box sx={GRID_SX}>
+              <Box sx={{ ...GRID_SX, ...shortListSx(list.length) }}>
                 {list.map((p) => (
                   <ProjectCard key={p.id} project={p} />
                 ))}

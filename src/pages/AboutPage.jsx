@@ -33,7 +33,7 @@ export default function AboutPage() {
       <PageHeader title={about.heading} lead={about.lead} />
 
       <Section>
-        <Box sx={{ maxWidth: 760 }}>
+        <Box sx={{ maxWidth: 760, mx: 'auto' }}>
           {about.story.map((p) => (
             <Typography key={p} sx={{ mb: 2, color: 'text.secondary' }}>
               {p}
