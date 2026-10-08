@@ -21,6 +21,7 @@ import { useSubmitBootcampEnrollment } from '../../hooks/useBootcampEnrollment.j
 import { usePublicBootcamp } from '../../hooks/usePublicBootcamps.js';
 import { APP_URL } from '../../config/env.js';
 import FormStatus from './FormStatus.jsx';
+import PrivacyNote from './PrivacyNote.jsx';
 import Honeypot, { HONEYPOT_DEFAULT, isBot } from './Honeypot.jsx';
 
 /** One selectable "Running at" hub card for the hub-choice step. */
@@ -223,7 +224,7 @@ export default function BootcampEnrollForm({
         }}
       >
         <Typography variant="h5" component="h2" sx={{ fontWeight: 800, mb: 0.5 }}>
-          You're enrolled in {bootcampName}!
+          You’re enrolled in {bootcampName}!
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5 }}>
           Your account is ready — log in with the username and password you just chose.
@@ -265,8 +266,8 @@ export default function BootcampEnrollForm({
                 enrollment signs you up for the whole bootcamp, not a single course. */}
             {hasPrice && payment.mode === 'by_course' && (
               <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-                This total combines this bootcamp's individually priced courses/modules — see the
-                "Pathway courses" section on the bootcamp page for the breakdown.
+                This total combines this bootcamp’s individually priced courses/modules — see the
+                “Pathway courses” section on the bootcamp page for the breakdown.
               </Typography>
             )}
           </Box>
@@ -274,7 +275,7 @@ export default function BootcampEnrollForm({
 
         <Alert severity="info" sx={{ mb: 2.5 }}>
           Your account can log in right away, but stays view-only until your payment is
-          confirmed. Once that's done, you'll have full access.
+          confirmed. Once that’s done, you’ll have full access.
         </Alert>
 
         <Button
@@ -294,7 +295,7 @@ export default function BootcampEnrollForm({
   if (spamBlocked) {
     return (
       <Box sx={{ p: { xs: 2.5, md: 3.5 }, borderRadius: 4, border: '1px solid', borderColor: 'divider', bgcolor: 'surface.subtle' }}>
-        <Alert severity="success">Thanks! We'll be in touch shortly.</Alert>
+        <Alert severity="success">Thanks! We’ll be in touch shortly.</Alert>
       </Box>
     );
   }
@@ -358,8 +359,8 @@ export default function BootcampEnrollForm({
           Enroll in {bootcampName}
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-          We'll set up an account right away so you can get started. You can pay by cash — your
-          account unlocks fully as soon as that's confirmed.
+          We’ll set up an account right away so you can get started. You can pay by cash — your
+          account unlocks fully as soon as that’s confirmed.
         </Typography>
       </Box>
 
@@ -466,9 +467,7 @@ export default function BootcampEnrollForm({
       <Button type="submit" variant="contained" size="large" disabled={isSubmitting || mutation.isPending}>
         {isSubmitting || mutation.isPending ? 'Setting up your account…' : 'Enroll now'}
       </Button>
-      <Typography variant="caption" color="text.secondary">
-        We use your details only to set up and manage this account.
-      </Typography>
+      <PrivacyNote>We use your details only to set up and manage this account. See our</PrivacyNote>
     </Box>
   );
 }

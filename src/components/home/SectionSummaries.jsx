@@ -52,6 +52,18 @@ const ACCENTS = {
       </>
     ),
   },
+  '/home-schooling': {
+    color: 'primary.main',
+    tint: (t) => t.palette.primary.main,
+    // a house
+    motif: (
+      <>
+        <path d="M12 28 32 12l20 16" />
+        <path d="M18 24v24h28V24" />
+        <path d="M28 48V36h8v12" />
+      </>
+    ),
+  },
   '/store': {
     color: 'warning.main',
     tint: (t) => t.palette.warning.main,

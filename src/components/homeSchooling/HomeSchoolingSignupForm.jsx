@@ -26,6 +26,7 @@ import VisibilityOffRoundedIcon from '@mui/icons-material/VisibilityOffRounded';
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import ChildIcons from './ChildIcons.jsx';
 import Honeypot, { HONEYPOT_DEFAULT, isBot } from '../forms/Honeypot.jsx';
+import PrivacyNote from '../forms/PrivacyNote.jsx';
 import { homeSchoolingSignupSchema } from '../forms/schemas.js';
 import { useHomeLearningSignup } from '../../hooks/usePublicHomeLearning.js';
 import { APP_URL } from '../../config/env.js';
@@ -432,6 +433,7 @@ export default function HomeSchoolingSignupForm({ packages, initialSlug, initial
             )}
           />
           {errors.consent && <Typography variant="body2" color="error">{errors.consent.message}</Typography>}
+          <PrivacyNote sx={{ display: 'block' }}>How we use and protect these details is set out in our</PrivacyNote>
 
           {signup.isError && (
             <Alert severity="error">

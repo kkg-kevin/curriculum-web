@@ -4,8 +4,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
 import { contactSchema } from './schemas.js';
+import PrivacyNote from './PrivacyNote.jsx';
 import { useContactSubmission, useLeadSubmission } from '../../hooks/useLeadSubmission.js';
 import FormStatus from './FormStatus.jsx';
 import Honeypot, { HONEYPOT_DEFAULT, isBot } from './Honeypot.jsx';
@@ -113,9 +113,7 @@ export default function ContactForm({ useLeadsEndpoint = false, defaultMessage =
       <Button type="submit" variant="contained" size="large" disabled={isSubmitting || mutation.isPending}>
         {isSubmitting || mutation.isPending ? 'Sending…' : 'Send message'}
       </Button>
-      <Typography variant="caption" color="text.secondary">
-        We use your details only to reply to your enquiry.
-      </Typography>
+      <PrivacyNote>We use your details only to reply to your enquiry. See our</PrivacyNote>
     </Box>
   );
 }

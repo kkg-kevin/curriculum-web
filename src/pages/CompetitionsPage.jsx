@@ -9,11 +9,13 @@ import CTABanner from '../components/home/CTABanner.jsx';
 import { ErrorBlock, EmptyBlock } from '../components/common/StateViews.jsx';
 import CompetitionCard from '../components/cards/CompetitionCard.jsx';
 import { usePublicCompetitions } from '../hooks/usePublicCompetitions.js';
+import { hasEnded } from '../utils/dates.js';
+import { CARD_GRID_COLUMNS, shortListSx } from '../theme/layout.js';
 
 const GRID_SX = {
   display: 'grid',
   gap: { xs: 2.5, md: 3 },
-  gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
+  gridTemplateColumns: CARD_GRID_COLUMNS,
 };
 
 function CardSkeleton() {
@@ -40,6 +42,8 @@ function CardSkeleton() {
 export default function CompetitionsPage() {
   const { data, isLoading, isError, error, refetch } = usePublicCompetitions();
   const count = data?.length || 0;
+  // "On now" only counts competitions whose last day hasn't passed.
+  const liveCount = (data || []).filter((c) => !hasEnded(c.endDate)).length;
 
   return (
     <>
@@ -61,7 +65,7 @@ export default function CompetitionsPage() {
         title="Competitions"
         lead="We run friendly, skills-building competitions that give learners a real goal to build towards — and a stage to show what they have made. Pick a track, build with your team, and present it to judges."
       >
-        {!isLoading && !isError && count > 0 && (
+        {!isLoading && !isError && liveCount > 0 && (
           <Box
             sx={{
               mt: 3,
@@ -78,7 +82,7 @@ export default function CompetitionsPage() {
           >
             <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'success.main' }} />
             <Typography variant="body2" sx={{ fontWeight: 600 }}>
-              {count} {count === 1 ? 'competition' : 'competitions'} on now
+              {liveCount} {liveCount === 1 ? 'competition' : 'competitions'} on now
             </Typography>
           </Box>
         )}
@@ -114,7 +118,7 @@ export default function CompetitionsPage() {
         )}
 
         {!isLoading && !isError && count > 0 && (
-          <Box sx={GRID_SX}>
+          <Box sx={{ ...GRID_SX, ...shortListSx(data.length) }}>
             {data.map((c) => (
               <CompetitionCard key={c.id} competition={c} />
             ))}

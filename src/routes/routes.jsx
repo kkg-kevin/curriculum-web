@@ -30,6 +30,8 @@ const EnrollPage = lazy(() => import('../pages/EnrollPage.jsx'));
 const ContactPage = lazy(() => import('../pages/ContactPage.jsx'));
 const AboutPage = lazy(() => import('../pages/AboutPage.jsx'));
 const NotFoundPage = lazy(() => import('../pages/NotFoundPage.jsx'));
+// The page and its two documents (content/legal.js) travel together, off the main bundle.
+const LegalPage = lazy(() => import('../pages/LegalPage.jsx'));
 
 export const routes = [
   {
@@ -59,6 +61,8 @@ export const routes = [
       { path: 'enroll', element: <EnrollPage /> },
       { path: 'contact', element: <ContactPage /> },
       { path: 'about', element: <AboutPage /> },
+      { path: 'privacy', element: <LegalPage doc="privacy" /> },
+      { path: 'terms', element: <LegalPage doc="terms" /> },
       { path: '*', element: <NotFoundPage /> },
     ],
   },

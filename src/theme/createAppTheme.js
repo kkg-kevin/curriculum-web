@@ -1,5 +1,6 @@
 import { createTheme } from '@mui/material/styles';
 import { buildPalette } from './palette.js';
+import { PAGE_MAX_WIDTH, PAGE_GUTTER } from './layout.js';
 
 /**
  * Builds the full MUI theme for a given colour mode. Same typography, shape and
@@ -135,7 +136,25 @@ export default function createAppTheme(mode) {
         },
       },
 
-      MuiContainer: { defaultProps: { maxWidth: 'lg' } },
+      // The standard ("lg") container fills the screen instead of stopping at 1200px, inside a
+      // gutter that widens with it — see theme/layout.js. Narrow containers (sm / md, used for
+      // forms and the diagnostic) keep their own widths.
+      MuiContainer: {
+        defaultProps: { maxWidth: 'lg' },
+        styleOverrides: {
+          maxWidthLg: {
+            '@media (min-width:1200px)': {
+              maxWidth: PAGE_MAX_WIDTH,
+              paddingLeft: PAGE_GUTTER.lg * 8,
+              paddingRight: PAGE_GUTTER.lg * 8,
+            },
+            '@media (min-width:1536px)': {
+              paddingLeft: PAGE_GUTTER.xl * 8,
+              paddingRight: PAGE_GUTTER.xl * 8,
+            },
+          },
+        },
+      },
 
       // Cards / outlined boxes: the "outlined" look should read on both grounds,
       // and depth comes from a layered shadow, not just a border.

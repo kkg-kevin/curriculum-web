@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { publicApi } from '../services/api.js';
+import { byUpcomingFirst } from '../utils/dates.js';
 
 /**
  * The Competitions section (`/competitions`) reads `GET /api/public/competitions` — the
@@ -10,7 +11,8 @@ import { publicApi } from '../services/api.js';
  * The detail endpoint adds `description` (plain text) and `tracks[]`, each:
  *   { id, name, subtitle, description, highlights[], registerUrl, knowMoreUrl }
  *
- * Defence-in-depth: drop anything with no slug/name, de-dupe by slug, stable-sort by name.
+ * Defence-in-depth: drop anything with no slug/name, de-dupe by slug. Order: what's still on or
+ * coming first, then competitions that have ended — see byUpcomingFirst.
  */
 function normalise(list) {
   if (!Array.isArray(list)) return [];
@@ -19,7 +21,7 @@ function normalise(list) {
     if (!c?.slug || !c?.name) continue;
     if (!bySlug.has(c.slug)) bySlug.set(c.slug, c);
   }
-  return [...bySlug.values()].sort((a, b) => a.name.localeCompare(b.name));
+  return [...bySlug.values()].sort((a, b) => byUpcomingFirst(a, b));
 }
 
 /** GET /api/public/competitions — the public competitions listing. */

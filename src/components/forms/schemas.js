@@ -12,12 +12,12 @@ const phone = z
 // bot check happens in the form's onSubmit (see Honeypot.jsx).
 const honeypot = { [HONEYPOT_FIELD]: z.string().optional() };
 
-// The lead API's `interestedIn` enum (WEBSITE_INTEGRATION_CONTRACT §4.1). The
-// form renders a <select> bound to this, so it must be part of the schema —
-// z.object() strips keys it doesn't know about. `referenceId` is still set by
-// the page, not the user.
+// What the form's "Interested in" <select> can hold: the lead API's `interestedIn` enum
+// (WEBSITE_INTEGRATION_CONTRACT §4.1) plus 'pathway' and 'competition', which EnrollForm sends
+// as 'general' with the choice in the note. It must be part of the schema — z.object() strips
+// keys it doesn't know about. `referenceId` is still set by the page, not the user.
 const interestedIn = z
-  .enum(['bootcamp', 'project', 'quarky', 'home_schooling', 'general'])
+  .enum(['bootcamp', 'project', 'quarky', 'home_schooling', 'general', 'pathway', 'competition'])
   .optional()
   .default('general');
 

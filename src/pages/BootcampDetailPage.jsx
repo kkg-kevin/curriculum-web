@@ -31,6 +31,8 @@ import { formatPrice, ageLabel } from '../utils/format.js';
 import { formatDateRange } from '../utils/dates.js';
 import { resolveMediaUrl } from '../utils/media.js';
 import { titleWithKind } from '../utils/seo.js';
+import { PROSE_MAX_WIDTH } from '../theme/layout.js';
+import { RelatedBootcamps } from '../components/common/Related.jsx';
 
 const RUN_STATUS_LABEL = { upcoming: 'Upcoming', active: 'Running now' };
 
@@ -246,14 +248,14 @@ export default function BootcampDetailPage() {
       <Section>
         <Box sx={{ display: 'flex', gap: { xs: 0, md: 6 }, alignItems: 'flex-start', flexWrap: 'wrap' }}>
           {/* main column */}
-          <Box sx={{ flex: '1 1 480px', minWidth: 0, maxWidth: 760 }}>
+          <Box sx={{ flex: '1 1 480px', minWidth: 0 }}>
             {description && (
               <Box sx={{ mb: 7 }}>
                 <SectionHeading>About this bootcamp</SectionHeading>
                 <Typography
                   sx={{
                     color: 'text.secondary',
-                    whiteSpace: 'pre-line',
+                    whiteSpace: 'pre-line', maxWidth: PROSE_MAX_WIDTH,
                     lineHeight: 1.7,
                     ...(descriptionExpanded
                       ? {}
@@ -603,7 +605,7 @@ export default function BootcampDetailPage() {
           {/* sticky booking sidebar — price, what's included, and the ONE "Enquire to book" CTA
               on the page, always in view instead of requiring a scroll back up or down to find
               it (previously duplicated in the header AND a "Book" card at the very bottom). */}
-          <Box sx={{ flex: '1 1 300px', minWidth: 280, maxWidth: { xs: '100%', md: 340 }, position: { md: 'sticky' }, top: { md: 24 } }}>
+          <Box sx={{ flex: '1 1 300px', minWidth: 280, maxWidth: { xs: '100%', md: 340 }, position: { md: 'sticky' }, top: { md: 96 } }}>
             {selectedHubRun && (
               <HubPreviewCard
                 hubId={selectedHubRun.hub.id}
@@ -665,6 +667,8 @@ export default function BootcampDetailPage() {
           </Box>
         </Box>
       </Section>
+
+      <RelatedBootcamps currentSlug={slug} />
 
       <CTABanner
         heading="Booking for a school or club?"

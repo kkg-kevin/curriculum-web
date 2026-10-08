@@ -1,6 +1,6 @@
 import { Helmet } from 'react-helmet-async';
 import { SITE_URL } from '../../config/env.js';
-import { ORG } from '../../config/site.js';
+import { ORG, isPlaceholderPhone } from '../../config/site.js';
 import { pageUrl } from '../../utils/seo.js';
 
 /**
@@ -23,7 +23,6 @@ export default function JsonLd({ data }) {
 // site.js still carries placeholder contact details (a "TODO Street" address, an all-zero phone
 // number) until the real ones are confirmed. Publishing those as structured data is worse than
 // leaving them out, so each is only emitted once it looks real.
-const isPlaceholderPhone = (tel) => /^(254)?0*$/.test(String(tel || '').replace(/\D/g, ''));
 const isPlaceholderText = (v) => !v || /\bTODO\b/i.test(v);
 
 export function organizationSchema() {

@@ -59,6 +59,8 @@ function QuoteMark({ sx }) {
 }
 
 export default function Testimonials() {
+  // No real quotes yet (content/home.js) — no section, rather than an empty "Proof" heading.
+  if (testimonials.length === 0) return null;
   const [feature, ...rest] = testimonials;
 
   return (

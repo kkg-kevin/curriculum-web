@@ -16,6 +16,7 @@ import { ErrorBlock, LoadingBlock } from '../components/common/StateViews.jsx';
 import { usePathway } from '../hooks/usePathways.js';
 import { usePublicBootcamp } from '../hooks/usePublicBootcamps.js';
 import { useDiagnostic, useSubmitDiagnostic } from '../hooks/useDiagnostic.js';
+import PrivacyNote from '../components/forms/PrivacyNote.jsx';
 import { diagnosticAgeSchema, diagnosticContactSchema } from '../components/forms/schemas.js';
 import { whatsAppUrl } from '../config/site.js';
 import FormStatus from '../components/forms/FormStatus.jsx';
@@ -275,6 +276,9 @@ export default function DiagnosticPage() {
                   >
                     {submitMutation.isPending ? 'Grading…' : 'Submit & see my report'}
                   </Button>
+                  <PrivacyNote sx={{ display: 'block', mt: 1.5 }}>
+                    We use your name and phone number to follow up on this diagnostic. See our
+                  </PrivacyNote>
                 </Box>
               </Box>
             )}
