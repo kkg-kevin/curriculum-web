@@ -4,6 +4,7 @@ import Box from '@mui/material/Box';
 import Header from '../components/layout/Header.jsx';
 import Footer from '../components/layout/Footer.jsx';
 import ThemeColorMeta from '../components/common/ThemeColorMeta.jsx';
+import WhatsAppButton from '../components/common/WhatsAppButton.jsx';
 import { LoadingBlock } from '../components/common/StateViews.jsx';
 
 /** Header + Footer + routed content. Also resets scroll on navigation. */
@@ -28,6 +29,7 @@ export default function MainLayout() {
         </Suspense>
       </Box>
       <Footer />
+      <WhatsAppButton />
     </Box>
   );
 }
