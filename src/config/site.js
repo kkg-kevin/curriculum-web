@@ -11,7 +11,7 @@
  * the apex digifunzi.com is used by another system for now)
  *
  * TODO before launch (spec §9):
- *  - Fill in real address, phone, email and social links.
+ *  - Confirm the WhatsApp number.
  *  - logoPath points at /logo.png (the mascot cropped from the brand
  *    illustration). Swap for a proper logo mark / wordmark SVG when ready.
  */
@@ -21,24 +21,24 @@ export const ORG = {
   legalName: 'Digifunzi',
   description:
     'Digifunzi is an impact-driven digital literacy programme. We foster creativity, collaboration and leadership in kids aged 5–17 and give them the skills to compete for opportunities in the digital economy.',
-  email: 'hello@digifunzi.com', // TODO confirm
-  telephone: '+254-000-000000', // TODO confirm
+  email: 'info@digifunzi.com',
+  telephone: '+254 790 252 523',
   // Digits only, full international format, no "+" or spaces — used to build wa.me links
   // ("Speak to a mentor" on the diagnostic report). TODO: confirm the real WhatsApp line.
   whatsappNumber: '254000000000',
   address: {
-    // TODO: real registered address for structured data (spec §9 item 2).
-    streetAddress: 'TODO Street',
-    addressLocality: 'Nairobi',
-    addressRegion: 'Nairobi County',
-    postalCode: '00100',
+    streetAddress: 'Thika Gateway Plaza, 4th Floor',
+    addressLocality: 'Thika',
+    addressRegion: 'Kiambu County',
     addressCountry: 'KE',
   },
-  sameAs: [
-    // TODO: real social profile URLs.
-    'https://www.facebook.com/digifunzi',
-    'https://www.instagram.com/digifunzi',
-    'https://www.linkedin.com/company/digifunzi',
+  // Shown as icons in the footer, in this order; `key` picks the icon there.
+  social: [
+    { key: 'facebook', label: 'Facebook', url: 'https://www.facebook.com/digifunzi' },
+    { key: 'linkedin', label: 'LinkedIn', url: 'https://www.linkedin.com/company/digifunzi/' },
+    { key: 'youtube', label: 'YouTube', url: 'https://www.youtube.com/@digifunzi' },
+    { key: 'instagram', label: 'Instagram', url: 'https://www.instagram.com/digifunzi/' },
+    { key: 'tiktok', label: 'TikTok', url: 'https://www.tiktok.com/@digifunzi' },
   ],
   // Relative to the site root; callers prefix with the base URL.
   logoPath: '/logo.png',

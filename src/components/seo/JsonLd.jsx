@@ -41,10 +41,10 @@ export function organizationSchema() {
       ...(isPlaceholderText(address.streetAddress) ? {} : { streetAddress: address.streetAddress }),
       addressLocality: address.addressLocality,
       addressRegion: address.addressRegion,
-      postalCode: address.postalCode,
+      ...(address.postalCode ? { postalCode: address.postalCode } : {}),
       addressCountry: address.addressCountry,
     },
-    sameAs: ORG.sameAs,
+    sameAs: ORG.social.map((x) => x.url),
   };
 }
 
