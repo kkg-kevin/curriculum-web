@@ -24,8 +24,9 @@ export const ORG = {
   email: 'info@digifunzi.com',
   telephone: '+254 790 252 523',
   // Digits only, full international format, no "+" or spaces — used to build wa.me links
-  // ("Speak to a mentor" on the diagnostic report). TODO: confirm the real WhatsApp line.
-  whatsappNumber: '254000000000',
+  // (the floating button on every page, "Speak to a mentor" on the diagnostic report). Set to
+  // the office line above. TODO: confirm that line is on WhatsApp.
+  whatsappNumber: '254790252523',
   address: {
     streetAddress: 'Thika Gateway Plaza, 4th Floor',
     addressLocality: 'Thika',
