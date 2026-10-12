@@ -19,12 +19,13 @@ export const NAV_LINKS = [
   { label: 'Bootcamps', to: '/bootcamps' },
   { label: 'Competitions', to: '/competitions' },
   { label: 'Home Schooling', to: '/home-schooling' },
+  { label: 'Schools', to: '/schools' },
   { label: 'Store', to: '/store' },
   { label: 'About', to: '/about' },
 ];
 
 // Below this the full row of links no longer fits on one line, so the menu button takes over.
-const FULL_NAV_MIN_WIDTH = 1100;
+const FULL_NAV_MIN_WIDTH = 1280;
 
 // Tighter than the theme's pill buttons, and never wrapping — "Home Schooling" used to break
 // onto two lines.

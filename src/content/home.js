@@ -3,9 +3,9 @@
  */
 
 export const hero = {
-  eyebrow: 'Robotics · Coding · STEM for kids',
-  heading: 'Where Kenya’s young makers learn to build',
-  sub: 'Digifunzi teaches children to design, code and build real things — through structured pathways, competitions, guided projects you buy and keep, and the Quarky robot.',
+  eyebrow: 'Robotics · AI · Coding for ages 5–17',
+  heading: 'Digital skills for Africa’s next generation',
+  sub: 'Digifunzi is an impact-driven digital literacy programme. We foster creativity, collaboration and leadership in kids aged 5–17, and give them the skills to compete for opportunities in the digital economy.',
   primaryCta: { label: 'Enroll a learner', to: '/enroll' },
   secondaryCta: { label: 'Browse pathways', to: '/pathways' },
 };
@@ -70,7 +70,7 @@ export const sectionSummaries = [
 export const faqs = [
   {
     q: 'What ages do you teach?',
-    a: 'Most of our programmes are for children and teenagers from about 5 to 18. Every pathway, bootcamp and competition shows its own age range on its page.',
+    a: 'Our programmes are for children and teenagers aged 5 to 17. Every pathway, bootcamp and competition shows its own age range on its page.',
   },
   {
     q: 'My child has never coded before. Where do we start?',
@@ -90,7 +90,7 @@ export const faqs = [
   },
   {
     q: 'Do you work with schools?',
-    a: 'Yes. Schools bring Digifunzi programmes into their classrooms, buy kits for a class and enter teams in our competitions. Tell us about your learners on the Contact page and we will put a plan and a quote together.',
+    a: 'Yes. Our Robotics, AI & Coding for Schools programme brings a full curriculum, the Quarky robot, teacher training and technical mentor support into primary and secondary schools, and schools enter teams in our competitions. The Schools page explains how it works; tell us about your learners on the Contact page and we will put a plan and a quote together.',
   },
 ];
 

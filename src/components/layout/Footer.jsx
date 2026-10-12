@@ -17,6 +17,7 @@ const COLUMNS = [
       { label: 'Bootcamps', to: '/bootcamps' },
       { label: 'Competitions', to: '/competitions' },
       { label: 'Home Schooling', to: '/home-schooling' },
+      { label: 'Schools', to: '/schools' },
       { label: 'Store', to: '/store' },
     ],
   },

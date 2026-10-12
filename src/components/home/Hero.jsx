@@ -3,17 +3,19 @@ import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
+import { alpha } from '@mui/material/styles';
 import Reveal from '../common/Reveal.jsx';
 import { hero } from '../../content/home.js';
+import { purpose } from '../../content/organisation.js';
+import { PURPOSE_ICONS, PURPOSE_ACCENTS } from './Purpose.jsx';
 
 /**
  * Premium hero. Two-column on desktop, stacked on mobile:
  *
  *  LEFT  — the copy: a status pill, a per-word clip-reveal heading with a
  *          one-time sheen, sub, CTAs and a "what's inside" strip.
- *  RIGHT — the Digifunzi mascot on a soft pedestal. On phones it drops under the copy,
- *          smaller. No invented "live" figures around it: nothing on this stage claims a
- *          number the site can't back up.
+ *  RIGHT — the vision, mission and 2030 goal as three stacked cards. On phones they drop
+ *          under the copy.
  *
  * Motion notes: entrance animation is done with the <Reveal> component
  * (IntersectionObserver + CSS transition) and the infinite float/sheen use
@@ -71,6 +73,7 @@ const PILLARS = [
   'Learning pathways',
   'Holiday bootcamps',
   'Home schooling',
+  'Schools programme',
   'Buildable projects',
   'Competitions',
   'The Quarky robot',
@@ -124,82 +127,107 @@ function HeroBackdrop() {
   );
 }
 
-// The mascot on its pedestal. Shown at every width — smaller on phones, where it sits under
-// the copy — so the page always has a face, not just text.
-function HeroStage() {
+// Vision, mission and 2030 goal, stacked beside the copy (under it on phones). The cards are
+// lightly see-through so the illustration behind the hero (HeroStudents) reads through them.
+// The two Digifunzi students, faded, behind the whole hero: the girl ends up behind the copy and
+// the boy behind the cards. The drawing only fills the middle three-quarters of its file, so the
+// image is set wider than the frame to bring the pair out to its edges. On phones it sits behind
+// the cards at the bottom instead, where the pair would otherwise be too small to make out.
+function HeroStudents() {
   return (
-    <Reveal
-      delay={220}
-      y={24}
+    <Box
+      aria-hidden
       sx={{
-        position: 'relative',
-        minHeight: { xs: 230, md: 460, xl: 520 },
+        position: 'absolute',
+        left: '50%',
+        top: { xs: 'auto', md: '50%' },
+        bottom: { xs: 40, md: 'auto' },
+        width: { xs: '150%', md: '134%' },
+        transform: { xs: 'translateX(-50%)', md: 'translate(-50%, -50%)' },
+        opacity: (t) => (t.palette.mode === 'dark' ? 0.3 : 0.24),
+        pointerEvents: 'none',
+        // Fainter on the left, where the girl sits behind running text.
+        maskImage: { md: 'linear-gradient(90deg, rgba(0,0,0,0.5) 25%, #000 60%)' },
+        WebkitMaskImage: { md: 'linear-gradient(90deg, rgba(0,0,0,0.5) 25%, #000 60%)' },
       }}
     >
-      {/* pedestal glow */}
       <Box
-        aria-hidden
+        className="df-anim-float"
+        component="img"
+        src="/hero-students.png"
+        alt=""
+        width={1366}
+        height={768}
         sx={{
-          position: 'absolute',
-          left: '50%',
-          top: '52%',
-          width: { xs: 250, md: 420 },
-          height: { xs: 250, md: 420 },
-          transform: 'translate(-50%, -50%)',
-          borderRadius: '50%',
-          background: (t) =>
-            `radial-gradient(circle at 50% 45%, ${t.palette.primary.main}22 0%, transparent 62%)`,
+          display: 'block',
+          width: '100%',
+          height: 'auto',
+          animation: 'df-float-lg 8s ease-in-out infinite',
+          '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
         }}
       />
-      {/* ground disc */}
-      <Box
-        aria-hidden
-        sx={{
-          position: 'absolute',
-          left: '50%',
-          bottom: { xs: 0, md: 40 },
-          width: { xs: 170, md: 300 },
-          height: { xs: 26, md: 44 },
-          transform: 'translateX(-50%)',
-          borderRadius: '50%',
-          background: (t) =>
-            `radial-gradient(ellipse at center, ${
-              t.palette.mode === 'dark' ? 'rgba(0,0,0,0.5)' : 'rgba(28,25,20,0.14)'
-            } 0%, transparent 70%)`,
-        }}
-      />
-      {/* mascot: wrapper centres, inner img bobs */}
-      <Box
-        aria-hidden
-        sx={{
-          position: 'absolute',
-          left: '50%',
-          top: '50%',
-          width: { xs: 180, md: 340, xl: 420 },
-          transform: 'translate(-50%, -50%)',
-        }}
-      >
-        <Box
-          className="df-anim-float"
-          component="img"
-          src="/logo.png"
-          alt=""
-          width={307}
-          height={331}
-          sx={{
-            display: 'block',
-            width: '100%',
-            height: 'auto',
-            filter: (t) =>
-              t.palette.mode === 'dark'
-                ? 'drop-shadow(0 24px 34px rgba(0,0,0,0.5))'
-                : 'drop-shadow(0 24px 30px rgba(28,25,20,0.22))',
-            animation: 'df-float-lg 8s ease-in-out infinite',
-            '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
-          }}
-        />
-      </Box>
-    </Reveal>
+    </Box>
+  );
+}
+
+function HeroPurpose() {
+  return (
+    <Box
+      sx={{
+        position: 'relative',
+        display: 'grid',
+        gap: { xs: 2, md: 2.5 },
+        width: '100%',
+        maxWidth: { md: 480 },
+        justifySelf: { md: 'end' },
+      }}
+    >
+      {purpose.map((p, i) => {
+        const Icon = PURPOSE_ICONS[p.key];
+        const accent = PURPOSE_ACCENTS[p.key];
+        return (
+          <Reveal key={p.key} delay={220 + i * 110} y={20} sx={{ position: 'relative' }}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: { xs: 2, sm: 2.5 },
+                p: { xs: 2.5, md: 3 },
+                borderRadius: 4,
+                backgroundColor: (t) => alpha(t.palette.surface.card, 0.78),
+                backdropFilter: 'blur(3px)',
+                border: '1px solid',
+                borderColor: 'surface.ring',
+                boxShadow: 'shadow.md',
+              }}
+            >
+              <Box
+                aria-hidden
+                sx={{
+                  flexShrink: 0,
+                  width: 56,
+                  height: 56,
+                  borderRadius: '50%',
+                  display: 'grid',
+                  placeItems: 'center',
+                  color: accent,
+                  background: (t) =>
+                    `linear-gradient(150deg, ${t.palette.primary.main}22, ${t.palette.secondary.main}1f)`,
+                }}
+              >
+                <Icon sx={{ fontSize: 28 }} />
+              </Box>
+              <Box>
+                <Typography variant="h4" component="h2" sx={{ mb: 0.5 }}>
+                  {p.title}
+                </Typography>
+                <Typography color="text.secondary">{p.body}</Typography>
+              </Box>
+            </Box>
+          </Reveal>
+        );
+      })}
+    </Box>
   );
 }
 
@@ -226,13 +254,15 @@ export default function Hero() {
       <Container maxWidth="lg" sx={{ py: { xs: 8, md: 14 }, position: 'relative', zIndex: 1 }}>
         <Box
           sx={{
+            position: 'relative',
             display: 'grid',
             gridTemplateColumns: { xs: '1fr', md: '1.05fr 0.95fr' },
             gap: { xs: 6, md: 5 },
             alignItems: 'center',
           }}
         >
-          <Box sx={{ maxWidth: { xs: '100%', md: 560, xl: 640 } }}>
+          <HeroStudents />
+          <Box sx={{ position: 'relative', maxWidth: { xs: '100%', md: 560, xl: 640 } }}>
             <Reveal
               as="span"
               delay={40}
@@ -334,7 +364,7 @@ export default function Hero() {
             </Reveal>
           </Box>
 
-          <HeroStage />
+          <HeroPurpose />
         </Box>
       </Container>
     </Box>
