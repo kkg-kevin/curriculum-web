@@ -18,16 +18,18 @@ export const purpose = [
 ];
 
 /**
- * Schools and organisations Digifunzi has worked with. Shown by name; to show a logo instead,
- * put the file in public/clients/ and add `logo: '/clients/<file>'` to the entry.
+ * Schools and organisations Digifunzi has worked with. Each shows its own logo above its name
+ * (files in public/clients/, taken from each school's official website). One without a `logo`
+ * yet shows an icon for its `kind` instead (school, media, club or organisation) — add the file
+ * to public/clients/ and a `logo: '/clients/<file>'` here to replace it.
  */
 export const clients = [
-  { name: 'Braeburn Schools' },
-  { name: 'Rosslyn Academy' },
-  { name: 'Woodcreek School' },
-  { name: 'Arya Vedic Academy' },
-  { name: 'Nation' },
-  { name: 'Parklands Sports Club' },
-  { name: 'GrandStart' },
-  { name: 'Foresight Academy' },
+  { name: 'Braeburn Schools', kind: 'school', logo: '/clients/braeburn-schools.svg' },
+  { name: 'Rosslyn Academy', kind: 'school', logo: '/clients/rosslyn-academy.png' },
+  { name: 'Woodcreek School', kind: 'school', logo: '/clients/woodcreek-school.png' },
+  { name: 'Arya Vedic Academy', kind: 'school', logo: '/clients/arya-vedic-academy.jpg' },
+  { name: 'Nation', kind: 'media' },
+  { name: 'Parklands Sports Club', kind: 'club' },
+  { name: 'GrandStart', kind: 'organisation' },
+  { name: 'Foresight Academy', kind: 'school' },
 ];
