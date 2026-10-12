@@ -1,13 +1,49 @@
 import Box from '@mui/material/Box';
+import { GraduationCap, Newspaper, Trophy, Building2 } from 'lucide-react';
 import Section from '../common/Section.jsx';
 import SectionHeading from '../common/SectionHeading.jsx';
 import Reveal from '../common/Reveal.jsx';
 import { clients } from '../../content/organisation.js';
 
 /**
- * "Some of our clients" — the schools and organisations Digifunzi has worked with. Each shows
- * its logo when the entry has one (content/organisation.js) and its name otherwise.
+ * "Some of our clients" — the schools and organisations Digifunzi has worked with. Each card is
+ * a white plate with the client's own logo on it and the name underneath; a client with no logo
+ * file yet (content/organisation.js) gets an icon for the kind of organisation it is.
  */
+const KIND_ICONS = { school: GraduationCap, media: Newspaper, club: Trophy, organisation: Building2 };
+
+// White in both colour modes: the logos are drawn for a white page (dark marks, a JPEG with a
+// white ground), and would be lost on the dark theme's cards.
+function ClientPlate({ client }) {
+  const Icon = KIND_ICONS[client.kind] || Building2;
+  return (
+    <Box
+      sx={{
+        height: { xs: 84, md: 104 },
+        px: 2,
+        py: 1.5,
+        display: 'grid',
+        placeItems: 'center',
+        borderRadius: 2.5,
+        backgroundColor: '#fff',
+        color: (t) => t.palette.brand.blue[500],
+      }}
+    >
+      {client.logo ? (
+        <Box
+          component="img"
+          src={client.logo}
+          alt=""
+          loading="lazy"
+          sx={{ display: 'block', maxWidth: '100%', maxHeight: { xs: 60, md: 76 }, objectFit: 'contain' }}
+        />
+      ) : (
+        <Icon aria-hidden size={40} strokeWidth={1.5} />
+      )}
+    </Box>
+  );
+}
+
 export default function Clients({ tone = 'default' }) {
   if (clients.length === 0) return null;
   return (
@@ -36,33 +72,28 @@ export default function Clients({ tone = 'default' }) {
             <Box
               sx={{
                 height: '100%',
-                minHeight: { xs: 72, md: 92 },
-                px: 2,
-                py: 1.5,
-                display: 'grid',
-                placeItems: 'center',
-                textAlign: 'center',
+                p: 1.25,
                 borderRadius: 3,
                 backgroundColor: 'surface.card',
                 border: '1px solid',
                 borderColor: 'surface.ring',
-                fontWeight: 700,
-                fontSize: { xs: '0.95rem', md: '1.05rem' },
-                lineHeight: 1.3,
-                color: 'text.primary',
               }}
             >
-              {c.logo ? (
-                <Box
-                  component="img"
-                  src={c.logo}
-                  alt={c.name}
-                  loading="lazy"
-                  sx={{ display: 'block', maxWidth: '100%', maxHeight: 56, objectFit: 'contain' }}
-                />
-              ) : (
-                c.name
-              )}
+              <ClientPlate client={c} />
+              <Box
+                sx={{
+                  pt: 1.25,
+                  pb: 0.5,
+                  px: 0.5,
+                  textAlign: 'center',
+                  fontWeight: 700,
+                  fontSize: { xs: '0.88rem', md: '0.98rem' },
+                  lineHeight: 1.3,
+                  color: 'text.primary',
+                }}
+              >
+                {c.name}
+              </Box>
             </Box>
           </Reveal>
         ))}
