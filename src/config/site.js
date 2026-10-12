@@ -20,7 +20,7 @@ export const ORG = {
   name: 'Digifunzi',
   legalName: 'Digifunzi',
   description:
-    'Digifunzi teaches robotics, coding and STEM to children across Kenya through structured learning pathways, competitions, buildable projects and the Quarky robot.',
+    'Digifunzi is an impact-driven digital literacy programme. We foster creativity, collaboration and leadership in kids aged 5–17 and give them the skills to compete for opportunities in the digital economy.',
   email: 'hello@digifunzi.com', // TODO confirm
   telephone: '+254-000-000000', // TODO confirm
   // Digits only, full international format, no "+" or spaces — used to build wa.me links
@@ -66,6 +66,7 @@ export const STATIC_ROUTES = [
   { path: '/bootcamps', changefreq: 'monthly', priority: 0.6 },
   { path: '/competitions', changefreq: 'monthly', priority: 0.7 },
   { path: '/home-schooling', changefreq: 'monthly', priority: 0.8 },
+  { path: '/schools', changefreq: 'monthly', priority: 0.8 },
   { path: '/store', changefreq: 'weekly', priority: 0.9 },
   { path: '/about', changefreq: 'monthly', priority: 0.6 },
   { path: '/enroll', sitemap: false }, // noindex — see EnrollPage

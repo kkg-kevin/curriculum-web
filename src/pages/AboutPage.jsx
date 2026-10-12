@@ -8,16 +8,19 @@ import CodeIcon from '@mui/icons-material/Code';
 import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 import RouteIcon from '@mui/icons-material/Route';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import SchoolIcon from '@mui/icons-material/School';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import SeoHead from '../components/seo/SeoHead.jsx';
 import JsonLd, { organizationSchema } from '../components/seo/JsonLd.jsx';
 import PageHeader from '../components/common/PageHeader.jsx';
 import Section from '../components/common/Section.jsx';
 import CTABanner from '../components/home/CTABanner.jsx';
+import Purpose from '../components/home/Purpose.jsx';
+import Clients from '../components/home/Clients.jsx';
 import { about } from '../content/about.js';
 
 const VALUE_ICONS = { build: Build, diversity: Diversity3, support: SupportAgent };
-const PROGRAMME_ICONS = { code: CodeIcon, rocket: RocketLaunchIcon, route: RouteIcon, trophy: EmojiEventsIcon };
+const PROGRAMME_ICONS = { code: CodeIcon, rocket: RocketLaunchIcon, route: RouteIcon, trophy: EmojiEventsIcon, school: SchoolIcon };
 
 const hasStats = about.stats.some((s) => s.value);
 
@@ -26,7 +29,7 @@ export default function AboutPage() {
     <>
       <SeoHead
         title="About Us"
-        description="Digifunzi is a Kenyan STEM education company teaching children to build with technology through hands-on robotics, coding and electronics."
+        description="Digifunzi is an impact-driven digital literacy programme. Our mission: empower the youth in Africa with skills for the digital economy."
       />
       <JsonLd data={organizationSchema()} />
 
@@ -42,12 +45,11 @@ export default function AboutPage() {
         </Box>
       </Section>
 
-      <Section tone="subtle">
-        <Typography variant="h2" component="h2" sx={{ mb: 2 }}>
-          Our mission
-        </Typography>
-        <Typography variant="h3" component="p" sx={{ fontWeight: 400, color: 'text.secondary', maxWidth: 760, mb: 6 }}>
-          {about.mission}
+      <Purpose tone="subtle" eyebrow="What drives us" title="Our vision, mission and 2030 goal" />
+
+      <Section>
+        <Typography variant="h2" component="h2" sx={{ mb: 5 }}>
+          How we work
         </Typography>
 
         <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' } }}>
@@ -86,14 +88,14 @@ export default function AboutPage() {
         </Box>
       </Section>
 
-      <Section>
+      <Section tone="subtle">
         <Typography variant="h2" component="h2" sx={{ mb: 1 }}>
           What we run
         </Typography>
         <Typography color="text.secondary" sx={{ mb: 5, maxWidth: 620 }}>
-          Four ways to get involved, from a single weekly course to a full multi-year track.
+          Five ways to get involved, from a single weekly course to a programme for a whole school.
         </Typography>
-        <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(4, 1fr)' } }}>
+        <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(3, 1fr)', lg: 'repeat(5, 1fr)' } }}>
           {about.programmes.map((p) => {
             const ProgIcon = PROGRAMME_ICONS[p.icon];
             return (
@@ -145,6 +147,8 @@ export default function AboutPage() {
           </Box>
         )}
       </Section>
+
+      <Clients />
 
       <CTABanner />
     </>

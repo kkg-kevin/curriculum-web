@@ -1,17 +1,18 @@
+import { whoWeAre } from './organisation.js';
+
 /**
- * Static copy for the About page (spec §5 — good for SEO + trust signals).
- * TODO: replace with the real company story, founding year, team and partners.
+ * Static copy for the About page (spec §5 — good for SEO + trust signals). The vision, mission
+ * and 2030 goal shown on the page come from content/organisation.js.
+ * TODO: founding year, team and partners once confirmed.
  */
 export const about = {
   heading: 'About Digifunzi',
-  lead: 'We are a Kenyan STEM education company on a simple mission: give every child the chance to build with technology, not just consume it.',
+  lead: whoWeAre,
   story: [
-    'Digifunzi started with a small set of after-school robotics clubs and a belief that children learn engineering best by making real things they care about.',
-    'Today we run structured learning pathways and competitions, sell buildable projects and kits, and build the Quarky robot that ties the hands-on parts of our curriculum together.',
-    'We work with families directly and partner with schools to bring structured, well-supported STEM programmes into classrooms across the country.',
+    'We believe young people in Africa should be building with technology, not only using it. So we teach robotics, artificial intelligence and coding through an engaging, hands-on approach that develops problem-solving, critical thinking and creativity from an early age.',
+    'We work with families directly, through learning pathways, holiday bootcamps, home schooling, buildable projects and competitions, and we partner with schools through our Robotics, AI & Coding for Schools programme, which trains teachers and supports each school until it can run the programme on its own.',
+    'The hands-on side of our curriculum is taught with Quarky, an AI-powered educational robot learners program in Scratch and Python. Learners also take part in global coding and robotics competitions, with Digifunzi as the Country Partner for Codeavour.',
   ],
-  mission:
-    'To make hands-on robotics, coding and STEM learning normal, joyful and accessible for children across Kenya.',
   values: [
     { title: 'Make it real', body: 'If a learner can hold it, run it or show it, they understand it.', icon: 'build' },
     {
@@ -35,6 +36,7 @@ export const about = {
   ],
   programmes: [
     { title: 'Pathways', body: 'Structured multi-course tracks.', to: '/pathways', icon: 'route' },
+    { title: 'Schools', body: 'Robotics, AI and coding in your school.', to: '/schools', icon: 'school' },
     { title: 'Projects', body: 'Guided builds you buy and keep.', to: '/projects', icon: 'code' },
     { title: 'Competitions', body: 'Team-based, mentor-supported.', to: '/competitions', icon: 'trophy' },
     { title: 'Store', body: 'The Quarky robot, kits and bundles.', to: '/store', icon: 'rocket' },
