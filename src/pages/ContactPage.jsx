@@ -89,7 +89,7 @@ export default function ContactPage() {
                   </ContactLine>
                 )}
                 <ContactLine icon={LocationOnIcon}>
-                  {ORG.address.addressLocality}, {ORG.address.addressCountry}
+                  {ORG.address.streetAddress}, {ORG.address.addressLocality}, Kenya
                 </ContactLine>
                 <ContactLine icon={AccessTimeIcon}>We usually reply within one working day.</ContactLine>
               </Box>

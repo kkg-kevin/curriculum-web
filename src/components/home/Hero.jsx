@@ -7,7 +7,7 @@ import { alpha } from '@mui/material/styles';
 import Reveal from '../common/Reveal.jsx';
 import { hero } from '../../content/home.js';
 import { purpose } from '../../content/organisation.js';
-import { PURPOSE_ICONS, PURPOSE_ACCENTS } from './Purpose.jsx';
+import { PurposeIcon } from './Purpose.jsx';
 
 /**
  * Premium hero. Two-column on desktop, stacked on mobile:
@@ -183,8 +183,6 @@ function HeroPurpose() {
       }}
     >
       {purpose.map((p, i) => {
-        const Icon = PURPOSE_ICONS[p.key];
-        const accent = PURPOSE_ACCENTS[p.key];
         return (
           <Reveal key={p.key} delay={220 + i * 110} y={20} sx={{ position: 'relative' }}>
             <Box
@@ -201,22 +199,7 @@ function HeroPurpose() {
                 boxShadow: 'shadow.md',
               }}
             >
-              <Box
-                aria-hidden
-                sx={{
-                  flexShrink: 0,
-                  width: 56,
-                  height: 56,
-                  borderRadius: '50%',
-                  display: 'grid',
-                  placeItems: 'center',
-                  color: accent,
-                  background: (t) =>
-                    `linear-gradient(150deg, ${t.palette.primary.main}22, ${t.palette.secondary.main}1f)`,
-                }}
-              >
-                <Icon sx={{ fontSize: 28 }} />
-              </Box>
+              <PurposeIcon name={p.key} size={60} />
               <Box>
                 <Typography variant="h4" component="h2" sx={{ mb: 0.5 }}>
                   {p.title}
