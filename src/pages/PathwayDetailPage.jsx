@@ -21,7 +21,7 @@ import { RelatedPathways } from '../components/common/Related.jsx';
 
 const FALLBACK_ACCENT = '#25476a';
 
-function PathwayStep({ index, total, course, accent }) {
+function PathwayStep({ index, total, course, accent, headingLevel = 'h3' }) {
   const isFirst = index === 0;
   const isLast = index === total - 1;
   const age = ageLabel(course.ageMin, course.ageMax);
@@ -67,7 +67,7 @@ function PathwayStep({ index, total, course, accent }) {
             </Box>
           )}
           <Box sx={{ flex: 1, minWidth: 200 }}>
-            <Typography variant="h4" component="h3" gutterBottom>
+            <Typography variant="h4" component={headingLevel} gutterBottom>
               {course.name}
             </Typography>
             {age && <Chip size="small" variant="outlined" label={age} sx={{ mb: 1 }} />}
@@ -135,6 +135,9 @@ export default function PathwayDetailPage() {
 
   const { name, description, color, courses = [] } = data;
   const accent = color || FALLBACK_ACCENT;
+  // The pathway's courses grouped by developmental stage (age group), youngest first. An older
+  // backend sends only the flat `courses` list — shown as one unnamed group.
+  const stages = data.stages?.length ? data.stages : [{ name: null, courses }];
   const enrollTo = `/enroll?flow=pathway&referenceId=${encodeURIComponent(slug)}`;
 
   return (
@@ -258,17 +261,33 @@ export default function PathwayDetailPage() {
               : ' A learner starts at the beginning, or our team places them further along based on their age and experience.'}
           </Typography>
 
-          <Box>
-            {courses.map((course, i) => (
-              <PathwayStep
-                key={`${course.name}-${i}`}
-                index={i}
-                total={courses.length}
-                course={course}
-                accent={accent}
-              />
-            ))}
-          </Box>
+          {stages.map((stage, s) => {
+            const stageAge = ageLabel(stage.minAge, stage.maxAge);
+            return (
+              <Box key={`${stage.name}-${s}`} sx={{ mb: s === stages.length - 1 ? 0 : 6 }}>
+                {stage.name && (
+                  <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', flexWrap: 'wrap', mb: 3 }}>
+                    <Typography variant="h3" component="h3">
+                      {stage.name}
+                    </Typography>
+                    {stageAge && (
+                      <Chip label={stageAge} sx={{ bgcolor: `${accent}1A`, color: 'text.primary', fontWeight: 600 }} />
+                    )}
+                  </Box>
+                )}
+                {stage.courses.map((course, i) => (
+                  <PathwayStep
+                    key={`${course.name}-${i}`}
+                    index={i}
+                    total={stage.courses.length}
+                    course={course}
+                    accent={accent}
+                    headingLevel={stage.name ? 'h4' : 'h3'}
+                  />
+                ))}
+              </Box>
+            );
+          })}
         </DetailLayout>
       </Section>
 
