@@ -19,6 +19,7 @@ import { useDiagnostic, useSubmitDiagnostic } from '../hooks/useDiagnostic.js';
 import PrivacyNote from '../components/forms/PrivacyNote.jsx';
 import { diagnosticAgeSchema, diagnosticContactSchema } from '../components/forms/schemas.js';
 import { whatsAppUrl } from '../config/site.js';
+import { ageLabel } from '../utils/format.js';
 import FormStatus from '../components/forms/FormStatus.jsx';
 import DiagnosticQuestions from '../components/diagnostic/DiagnosticQuestions.jsx';
 import DiagnosticReport from '../components/diagnostic/DiagnosticReport.jsx';
@@ -37,24 +38,38 @@ import NextStepsPanel from '../components/diagnostic/NextStepsPanel.jsx';
 // instead of the generic pathway /enroll lead form.
 const STEP = { AGE: 'age', QUESTIONS: 'questions', REPORT: 'report' };
 
-function AgeStep({ onSubmit, minAge, maxAge }) {
+// A pathway has one diagnostic per age group (developmental stage). `groups` are the ones on offer
+// — [{ name, minAge, maxAge }] — and the learner's age decides which one they take.
+const groupForAge = (groups, age) =>
+  Number.isFinite(age) ? groups.find((g) => age >= g.minAge && age <= g.maxAge) || null : null;
+
+const groupLabel = (g) => [g.name, ageLabel(g.minAge, g.maxAge)].filter(Boolean).join(' · ');
+
+// The visitor only ever gives an age — which age group's diagnostic that means is worked out
+// from it, never chosen.
+function AgeStep({ onSubmit, minAge, maxAge, groups, defaultAge }) {
   const hasRange = Number.isFinite(minAge) && Number.isFinite(maxAge);
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors },
-  } = useForm({ resolver: zodResolver(diagnosticAgeSchema), defaultValues: { age: '' } });
+  } = useForm({ resolver: zodResolver(diagnosticAgeSchema), defaultValues: { age: defaultAge ?? '' } });
 
   return (
     <Box
       component="form"
-      onSubmit={handleSubmit((values) => onSubmit(values.age))}
+      onSubmit={handleSubmit((values) => {
+        if (groups.length > 0 && !groupForAge(groups, values.age)) {
+          setError('age', { message: 'There is no diagnostic for that age yet.' });
+          return;
+        }
+        onSubmit(values.age);
+      })}
       sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 420 }}
     >
       <Typography color="text.secondary">
-        {hasRange
-          ? `This diagnostic is for ages ${minAge}–${maxAge}. Enter the learner’s age to begin.`
-          : 'Enter the learner’s age so we can show the right diagnostic questions.'}
+        Enter the learner’s age and we’ll give them the diagnostic for their age.
       </Typography>
       <TextField
         label="Learner's age"
@@ -62,10 +77,7 @@ function AgeStep({ onSubmit, minAge, maxAge }) {
         inputProps={{ min: hasRange ? minAge : 3, max: hasRange ? maxAge : 19 }}
         {...register('age')}
         error={!!errors.age}
-        helperText={
-          errors.age?.message ||
-          (hasRange ? `Enter an age between ${minAge} and ${maxAge}` : undefined)
-        }
+        helperText={errors.age?.message}
       />
       <Button type="submit" variant="contained" size="large">
         Continue
@@ -81,6 +93,8 @@ export default function DiagnosticPage() {
   const { data: pathway, isLoading: pathwayLoading } = usePathway(slug);
   const { data: bootcamp } = usePublicBootcamp(bootcampSlug);
 
+  // `?age=` (from an age group's own button on the pathway page) pre-fills the age step.
+  const presetAge = Number.parseInt(searchParams.get('age') ?? '', 10);
   const [step, setStep] = useState(STEP.AGE);
   const [age, setAge] = useState(null);
   const [answers, setAnswers] = useState([]);
@@ -131,6 +145,14 @@ export default function DiagnosticPage() {
   const pathwayName = pathway?.name || 'this pathway';
   const diagMinAge = pathway?.diagnostic?.minAge ?? null;
   const diagMaxAge = pathway?.diagnostic?.maxAge ?? null;
+  const diagGroups = (pathway?.stages || [])
+    .filter((s) => s.diagnostic?.available)
+    .map((s) => ({ name: s.name, minAge: s.diagnostic.minAge, maxAge: s.diagnostic.maxAge }));
+  const ageGroup = groupForAge(diagGroups, age);
+  const changeAge = () => {
+    setAnswers([]);
+    setStep(STEP.AGE);
+  };
 
   // "Speak to a mentor" → WhatsApp, pre-filled with the pathway + the learner's name if given.
   // whatsAppUrl returns null until a real number is set in src/config/site.js — until then the
@@ -188,11 +210,26 @@ export default function DiagnosticPage() {
 
       <Section maxWidth={isReport ? 'xl' : 'md'}>
         {step === STEP.AGE && (
-          <AgeStep onSubmit={handleAgeSubmit} minAge={diagMinAge} maxAge={diagMaxAge} />
+          <AgeStep
+            onSubmit={handleAgeSubmit}
+            minAge={diagMinAge}
+            maxAge={diagMaxAge}
+            groups={diagGroups}
+            defaultAge={Number.isFinite(age) ? age : Number.isFinite(presetAge) ? presetAge : undefined}
+          />
         )}
 
         {step === STEP.QUESTIONS && (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', flexWrap: 'wrap' }}>
+              <Typography sx={{ fontWeight: 600 }}>
+                {ageGroup ? `${groupLabel(ageGroup)} diagnostic` : 'Diagnostic'} — for a learner aged {age}
+              </Typography>
+              <Button size="small" onClick={changeAge}>
+                Change age
+              </Button>
+            </Box>
+
             {diagnosticQuery.isLoading && <LoadingBlock label="Loading questions…" />}
 
             {diagnosticQuery.isError && (
