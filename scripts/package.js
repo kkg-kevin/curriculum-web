@@ -1,5 +1,5 @@
 /**
- * Zip dist/ into Guide/digifunzi-africa-dist.zip for upload to cPanel.
+ * Zip dist/ into Guide/digifunzi-co-ke-dist.zip for upload to cPanel (digifunzi.co.ke).
  *
  * Why a script and not `Compress-Archive`: PowerShell's Compress-Archive writes
  * entry paths with backslashes, which Linux `unzip` (what cPanel's Extract uses)
@@ -14,7 +14,7 @@ import { execFileSync } from 'node:child_process';
 import { DIST, ROOT, ensureDist } from './_shared.js';
 
 const OUT_DIR = path.join(ROOT, 'Guide');
-const OUT = path.join(OUT_DIR, 'africa-digifunzi-com-dist.zip');
+const OUT = path.join(OUT_DIR, 'digifunzi-co-ke-dist.zip');
 
 ensureDist();
 fs.mkdirSync(OUT_DIR, { recursive: true });
@@ -35,5 +35,5 @@ try {
 const kb = (fs.statSync(OUT).size / 1024).toFixed(0);
 console.log(
   `[package] wrote ${path.relative(ROOT, OUT)} (${kb} KB).\n` +
-    `          Upload it to the africa.digifunzi.com document root in cPanel and Extract.`,
+    `          Upload it to the digifunzi.co.ke document root in cPanel and Extract.`,
 );
