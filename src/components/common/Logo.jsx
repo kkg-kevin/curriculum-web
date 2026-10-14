@@ -3,18 +3,15 @@ import Box from '@mui/material/Box';
 
 /**
  * Brand logo: the Digifunzi mascot (public/logo.png — cropped from the brand
- * illustration) plus the wordmark. The mascot is a figure, not a wordmark, so
- * the "Digifunzi" text is always shown alongside it for legibility at small
- * sizes.
+ * illustration) plus the "digifunzi" wordmark image (public/wordmark.png — the
+ * same file the portal uses, dark letters on transparent).
  *
- * The wordmark inherits `color` from its context (dark text on the light
- * header, light text in the footer). The mascot is a raster image and does not
- * invert — it reads on both the light header and the dark footer band.
- *
- * TODO (spec §9 item 5): replace public/logo.png with a proper logo mark /
- * wordmark SVG when the brand asset is ready, and drop the text fallback.
+ * The wordmark's letters are dark, so wherever the logo sits on a dark
+ * background — the footer band (pass `onDark`), and the header and menu in dark
+ * mode — it is shown white. The mascot is drawn in colour and reads on both, so
+ * it is never changed.
  */
-export default function Logo({ onClick }) {
+export default function Logo({ onClick, onDark = false }) {
   return (
     <Box
       component={RouterLink}
@@ -47,7 +44,20 @@ export default function Logo({ onClick }) {
           flexShrink: 0,
         }}
       />
-      Digifunzi
+      <Box
+        component="img"
+        src="/wordmark.png"
+        alt="Digifunzi"
+        width={2335}
+        height={753}
+        sx={{
+          height: 26,
+          width: 'auto',
+          display: 'block',
+          flexShrink: 0,
+          filter: (t) => (onDark || t.palette.mode === 'dark' ? 'brightness(0) invert(1)' : 'none'),
+        }}
+      />
     </Box>
   );
 }
