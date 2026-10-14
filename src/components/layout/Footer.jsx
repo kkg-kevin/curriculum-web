@@ -89,7 +89,7 @@ export default function Footer() {
         >
           <Box sx={{ gridColumn: { sm: '1 / -1', md: 'auto' } }}>
             <Box sx={{ color: 'surface.inverseText', mb: 1 }}>
-              <Logo />
+              <Logo onDark />
             </Box>
             <Typography variant="body2" sx={{ color: 'surface.inverseTextDim', maxWidth: 360 }}>
               {ORG.description}
