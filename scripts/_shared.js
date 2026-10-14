@@ -45,7 +45,7 @@ export function loadEnv(mode = resolveMode()) {
 export function getConfig() {
   const mode = resolveMode();
   const env = loadEnv(mode);
-  const siteUrl = (env.VITE_SITE_URL || 'https://africa.digifunzi.com').replace(/\/$/, '');
+  const siteUrl = (env.VITE_SITE_URL || 'https://digifunzi.co.ke').replace(/\/$/, '');
   const apiUrl = (env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '');
   const useMock = env.VITE_USE_MOCK === 'true';
   return { mode, siteUrl, apiUrl, useMock, env };

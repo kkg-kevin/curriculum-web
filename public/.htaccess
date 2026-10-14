@@ -1,5 +1,5 @@
 # Apache / cPanel (Truehost) static hosting for the Digifunzi landing SPA.
-# Domain: https://africa.digifunzi.com
+# Domain: https://digifunzi.co.ke (previously africa.digifunzi.com)
 # Vite copies this file verbatim from public/ into dist/. Upload it with the rest.
 #
 # Relies on two files scripts/prerender.js writes into dist/: 200.html (the bare SPA shell) and

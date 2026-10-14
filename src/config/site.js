@@ -7,8 +7,8 @@
  * The public base URL is resolved separately via src/config/env.js (app) or
  * process.env (scripts).
  *
- * Domain: https://africa.digifunzi.com  (subdomain of digifunzi.com on Truehost;
- * the apex digifunzi.com is used by another system for now)
+ * Domain: https://digifunzi.co.ke  (moved from africa.digifunzi.com, a subdomain of
+ * digifunzi.com on Truehost, in Oct 2026)
  *
  * TODO before launch (spec §9):
  *  - Confirm the WhatsApp number.
@@ -77,7 +77,7 @@ export const STATIC_ROUTES = [
 ];
 
 /** Fallback base URL if none is provided by env (e.g. a script run without .env). */
-export const FALLBACK_SITE_URL = 'https://africa.digifunzi.com';
+export const FALLBACK_SITE_URL = 'https://digifunzi.co.ke';
 
 /** True while ORG.telephone is still the all-zero stand-in — nothing should show or publish it. */
 export const isPlaceholderPhone = (tel) => /^(254)?0*$/.test(String(tel || '').replace(/\D/g, ''));

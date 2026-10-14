@@ -1,5 +1,9 @@
 /**
- * Zip dist/ into Guide/digifunzi-africa-dist.zip for upload to cPanel.
+ * Zip dist/ for upload to cPanel. The zip is named after the site the build is for, so the two
+ * websites can't be confused:
+ *   --mode production (npm run deploy:build)     → Guide/digifunzi-co-ke-dist.zip       (Live data)
+ *   --mode dev        (npm run deploy:build:dev) → Guide/africa-digifunzi-com-dist.zip  (Dev data)
+ * Any other mode → Guide/<mode>-dist.zip.
  *
  * Why a script and not `Compress-Archive`: PowerShell's Compress-Archive writes
  * entry paths with backslashes, which Linux `unzip` (what cPanel's Extract uses)
@@ -11,10 +15,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { DIST, ROOT, ensureDist } from './_shared.js';
+import { DIST, ROOT, ensureDist, getConfig } from './_shared.js';
 
+const ZIP_NAMES = { production: 'digifunzi-co-ke-dist.zip', dev: 'africa-digifunzi-com-dist.zip' };
+const { mode, siteUrl } = getConfig();
 const OUT_DIR = path.join(ROOT, 'Guide');
-const OUT = path.join(OUT_DIR, 'africa-digifunzi-com-dist.zip');
+const OUT = path.join(OUT_DIR, ZIP_NAMES[mode] || `${mode}-dist.zip`);
 
 ensureDist();
 fs.mkdirSync(OUT_DIR, { recursive: true });
@@ -35,5 +41,5 @@ try {
 const kb = (fs.statSync(OUT).size / 1024).toFixed(0);
 console.log(
   `[package] wrote ${path.relative(ROOT, OUT)} (${kb} KB).\n` +
-    `          Upload it to the africa.digifunzi.com document root in cPanel and Extract.`,
+    `          Upload it to the ${new URL(siteUrl).host} document root in cPanel and Extract.`,
 );
