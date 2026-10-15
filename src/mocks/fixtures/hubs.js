@@ -72,6 +72,31 @@ export function hubList(type) {
   return type ? raw.filter((h) => h.hubType === type) : raw;
 }
 
+/**
+ * GET /api/public/hubs/:id for a hub in the list above — the profile shape the real endpoint
+ * returns (public-bootcamp.service.js getHub), filled from the list entry, for the Estate Tech
+ * Clubs pages in an offline build.
+ */
+export function hubProfile(id) {
+  const h = raw.find((x) => x.id === id);
+  if (!h) return null;
+  return {
+    id: h.id,
+    name: h.name,
+    description: `${h.name} is a Digifunzi ${h.hubTypeLabel.toLowerCase()} where young learners build robots, games and apps.`,
+    address: h.isVirtual ? '' : h.town,
+    phone: '',
+    email: '',
+    contactPerson: '',
+    mapLink: '',
+    photo: null,
+    photos: [],
+    amenities: ['wifi', 'desks', 'whiteboard'],
+    operatingHours: h.schedule,
+    spaces: [],
+  };
+}
+
 export function hubTypeList() {
   return Object.keys(TYPE_LABELS).map((type) => ({
     type,

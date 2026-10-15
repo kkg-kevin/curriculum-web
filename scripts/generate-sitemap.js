@@ -28,6 +28,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { DIST, ensureDist, getConfig } from './_shared.js';
 import { STATIC_ROUTES } from '../src/config/site.js';
+import { slugify } from '../src/utils/slugify.js';
 
 const { siteUrl, useMock, env } = getConfig();
 const siteNoindex = env.SITE_NOINDEX === 'true';
@@ -43,10 +44,12 @@ function prerenderedSlugs(section) {
     .sort();
 }
 
-async function getSectionSlugs(section, mockFixture, mockExport) {
+// A learning hub (an Estate Tech Club) has no slug of its own — its address is made from its
+// name, as in prerender.js and src/utils/clubs.js.
+async function getSectionSlugs(section, mockFixture, mockExport, toSlug = (x) => x.slug) {
   if (useMock) {
     const mod = await import(mockFixture);
-    return (mod[mockExport] || []).map((x) => x.slug).filter(Boolean);
+    return (mod[mockExport] || []).map(toSlug).filter(Boolean);
   }
   const slugs = prerenderedSlugs(section);
   if (slugs.length === 0) {
@@ -102,12 +105,13 @@ function addNoindexHeader() {
 async function main() {
   ensureDist();
 
-  const [pathwaySlugs, projectSlugs, storeSlugs, bootcampSlugs, competitionSlugs] = await Promise.all([
+  const [pathwaySlugs, projectSlugs, storeSlugs, bootcampSlugs, competitionSlugs, clubSlugs] = await Promise.all([
     getSectionSlugs('pathways', '../src/mocks/fixtures/pathways.js', 'pathways'),
     getSectionSlugs('projects', '../src/mocks/fixtures/projects.js', 'projects'),
     getSectionSlugs('store', '../src/mocks/fixtures/store.js', 'storeList'),
     getSectionSlugs('bootcamps', '../src/mocks/fixtures/bootcamps.js', 'bootcampList'),
     getSectionSlugs('competitions', '../src/mocks/fixtures/competitions.js', 'competitionList'),
+    getSectionSlugs('estate-tech-clubs', '../src/mocks/fixtures/hubs.js', 'hubs', (x) => slugify(x.name)),
   ]);
 
   // `sitemap: false` routes (deliberately noindex, e.g. /enroll) are prerendered but not listed.
@@ -118,6 +122,7 @@ async function main() {
     ...storeSlugs.map((s) => `/store/${s}`),
     ...bootcampSlugs.map((s) => `/bootcamps/${s}`),
     ...competitionSlugs.map((s) => `/competitions/${s}`),
+    ...clubSlugs.map((s) => `/estate-tech-clubs/${s}`),
   ];
   const skipped = routes.filter((r) => isNoindex(r));
   const entries = routes.filter((r) => !skipped.includes(r)).map((r) => urlEntry(pageUrl(r)));
@@ -141,6 +146,7 @@ Sitemap: ${siteUrl}/sitemap.xml
   console.log(
     `[sitemap] wrote ${entries.length} URLs (${pathwaySlugs.length} pathways, ${projectSlugs.length} projects, ` +
       `${storeSlugs.length} store items, ${bootcampSlugs.length} bootcamps, ${competitionSlugs.length} competitions, ` +
+      `${clubSlugs.length} estate tech clubs, ` +
       `the rest static) + robots.txt`,
   );
   if (skipped.length > 0) console.log(`[sitemap] left out as noindex: ${skipped.join(', ')}`);

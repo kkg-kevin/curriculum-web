@@ -211,3 +211,41 @@ export function faqSchema(faqs) {
     })),
   };
 }
+
+/**
+ * One Estate Tech Club (a learning hub's profile from GET /api/public/hubs/:id) as a local place
+ * of learning run by Digifunzi — address, map link, opening hours, photo. An online club
+ * (`isVirtual`, from the hubs list) is only an EducationalOrganization, never a LocalBusiness,
+ * even when the portal has an address on it.
+ */
+export function clubSchema(hub, path) {
+  const hours = hub.operatingHours || {};
+  const days = (hours.days || []).filter(Boolean);
+  const image = hub.photos?.[0] || hub.photo;
+  const place = Boolean(hub.address) && !hub.isVirtual;
+  return {
+    '@context': 'https://schema.org',
+    '@type': place ? ['EducationalOrganization', 'LocalBusiness'] : 'EducationalOrganization',
+    name: hub.name,
+    url: pageUrl(path),
+    ...(hub.description ? { description: hub.description } : {}),
+    ...(image ? { image } : {}),
+    ...(place ? { address: { '@type': 'PostalAddress', streetAddress: hub.address, addressCountry: 'KE' } } : {}),
+    ...(hub.phone ? { telephone: hub.phone } : {}),
+    ...(hub.email ? { email: hub.email } : {}),
+    ...(hub.mapLink ? { hasMap: hub.mapLink } : {}),
+    ...(place && hours.opensAt && hours.closesAt && days.length > 0
+      ? {
+          openingHoursSpecification: [
+            {
+              '@type': 'OpeningHoursSpecification',
+              dayOfWeek: days.map((d) => `https://schema.org/${d}`),
+              opens: hours.opensAt,
+              closes: hours.closesAt,
+            },
+          ],
+        }
+      : {}),
+    parentOrganization: { '@type': 'Organization', name: ORG.name, url: pageUrl('/') },
+  };
+}

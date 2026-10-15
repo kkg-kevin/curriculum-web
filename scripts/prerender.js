@@ -31,6 +31,7 @@ import path from 'node:path';
 import http from 'node:http';
 import { DIST, ensureDist, getConfig } from './_shared.js';
 import { STATIC_ROUTES } from '../src/config/site.js';
+import { slugify } from '../src/utils/slugify.js';
 
 const { apiUrl, useMock } = getConfig();
 const PORT = 4199;
@@ -46,16 +47,21 @@ const NOT_FOUND_ROUTE = '/__prerender-not-found__';
 // reachable, otherwise we'd bake a "couldn't load" / empty page into static HTML.
 // Skipped routes still work as a normal client-rendered SPA via the index.html
 // fallback.
-const DATA_DRIVEN_STATIC = new Set(['/pathways', '/projects', '/store', '/bootcamps', '/competitions', '/home-schooling']);
+const DATA_DRIVEN_STATIC = new Set(['/pathways', '/projects', '/store', '/bootcamps', '/competitions', '/home-schooling', '/estate-tech-clubs']);
+
+// Most sections' items carry a slug; a learning hub doesn't, so an Estate Tech Club's address is
+// made from its name — the same rule as src/utils/clubs.js's clubSlug.
+const bySlug = (x) => x.slug;
+const byNameSlug = (x) => slugify(x.name);
 
 let apiReachable = useMock; // mock adapter always "reachable"
 
 // Generic "list the slugs for an API-backed section" — used for pathways,
 // projects and the store, all of which return a bare array of { slug }.
-async function getApiSlugs(endpoint, mockFixture, mockExport) {
+async function getApiSlugs(endpoint, mockFixture, mockExport, toSlug = bySlug) {
   if (useMock) {
     const mod = await import(mockFixture);
-    return (mod[mockExport] || []).map((x) => x.slug).filter(Boolean);
+    return (mod[mockExport] || []).map(toSlug).filter(Boolean);
   }
   // Node's global fetch can flake on the first cold connection to some hosts (undici/TLS
   // race) — a plain retry with a short backoff clears it. Three tries before giving up and
@@ -67,7 +73,7 @@ async function getApiSlugs(endpoint, mockFixture, mockExport) {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const list = await res.json();
       apiReachable = true;
-      return (Array.isArray(list) ? list : []).map((x) => x.slug).filter(Boolean);
+      return [...new Set((Array.isArray(list) ? list : []).map(toSlug).filter(Boolean))];
     } catch (err) {
       lastErr = err;
       if (attempt < 3) {
@@ -186,12 +192,13 @@ async function main() {
     return;
   }
 
-  const [pathwaySlugs, projectSlugs, storeSlugs, bootcampSlugs, competitionSlugs] = await Promise.all([
+  const [pathwaySlugs, projectSlugs, storeSlugs, bootcampSlugs, competitionSlugs, clubSlugs] = await Promise.all([
     getApiSlugs('/api/public/pathways', '../src/mocks/fixtures/pathways.js', 'pathways'),
     getApiSlugs('/api/public/projects', '../src/mocks/fixtures/projects.js', 'projects'),
     getApiSlugs('/api/public/store', '../src/mocks/fixtures/store.js', 'storeList'),
     getApiSlugs('/api/public/bootcamps', '../src/mocks/fixtures/bootcamps.js', 'bootcampList'),
     getApiSlugs('/api/public/competitions', '../src/mocks/fixtures/competitions.js', 'competitionList'),
+    getApiSlugs('/api/public/hubs', '../src/mocks/fixtures/hubs.js', 'hubs', byNameSlug),
   ]);
 
   // Static routes: prerender all, except the data-driven ones when the API is
@@ -208,6 +215,7 @@ async function main() {
     '/store': storeSlugs,
     '/bootcamps': bootcampSlugs,
     '/competitions': competitionSlugs,
+    '/estate-tech-clubs': clubSlugs,
   };
 
   const routes = [
@@ -217,6 +225,7 @@ async function main() {
     ...storeSlugs.map((s) => `/store/${s}`),
     ...bootcampSlugs.map((s) => `/bootcamps/${s}`),
     ...competitionSlugs.map((s) => `/competitions/${s}`),
+    ...clubSlugs.map((s) => `/estate-tech-clubs/${s}`),
     NOT_FOUND_ROUTE,
   ];
 

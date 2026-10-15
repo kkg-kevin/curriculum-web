@@ -19,6 +19,12 @@ import SeoHead from '../components/seo/SeoHead.jsx';
 import JsonLd, { organizationSchema, breadcrumbSchema, eventSchema } from '../components/seo/JsonLd.jsx';
 import Section from '../components/common/Section.jsx';
 import SmartImage from '../components/common/SmartImage.jsx';
+import ExpandableText from '../components/common/ExpandableText.jsx';
+import MediaGallery from '../components/media/MediaGallery.jsx';
+import FactPills from '../components/common/FactPills.jsx';
+import PlaceIcon from '@mui/icons-material/Place';
+import PaymentsIcon from '@mui/icons-material/Payments';
+import ScheduleIcon from '@mui/icons-material/Schedule';
 import CTABanner from '../components/home/CTABanner.jsx';
 import { ErrorBlock } from '../components/common/StateViews.jsx';
 import { FORMAT_LABEL } from '../components/cards/BootcampCard.jsx';
@@ -97,7 +103,8 @@ export default function BootcampDetailPage() {
   }
 
   const {
-    name, tagline, description, format, duration, ageMin, ageMax, coverImage, price,
+    name, tagline, description, format, duration, ageMin, ageMax, coverImage, images = [], price,
+    startDate, endDate,
     highlights = [], upcomingRuns = [], coursePricing = [], priceNotes = [], curriculum, pathwayDiagnostics = [],
     // Games and play that come with the bootcamp — absent on an older API, which reads as none.
     games = [], gamesNote = '',
@@ -205,12 +212,13 @@ export default function BootcampDetailPage() {
           <Box
             sx={{
               display: 'flex',
-              gap: { xs: 3, md: 5 },
+              gap: { xs: 4, md: 6 },
               flexWrap: { xs: 'wrap', md: 'nowrap' },
-              alignItems: 'center',
+              // Top-aligned: centred against a tall image, the title floated in empty space.
+              alignItems: 'flex-start',
             }}
           >
-            <Box sx={{ flex: 1, minWidth: 260 }}>
+            <Box sx={{ flex: 1, minWidth: 260, pt: { md: 1 } }}>
               <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
                 {format && (
                   <Chip
@@ -222,30 +230,55 @@ export default function BootcampDetailPage() {
                 {age && <Chip variant="outlined" label={age} sx={{ fontWeight: 600 }} />}
               </Box>
 
-              <Typography variant="h1" component="h1" sx={{ mb: 1.5 }}>
+              <Typography variant="h1" component="h1" sx={{ mb: 1.5, fontSize: { xs: '2rem', md: '2.9rem' } }}>
                 {name}
               </Typography>
               {tagline && (
                 <Typography
                   variant="h4"
                   component="p"
-                  sx={{ fontWeight: 400, color: 'text.secondary', maxWidth: 620 }}
+                  sx={{ fontWeight: 400, color: 'text.secondary', maxWidth: 620, lineHeight: 1.5 }}
                 >
                   {tagline}
                 </Typography>
               )}
+
+              {/* The facts a parent decides on, and the one action, up front — they used to appear
+                  only in the sidebar further down. */}
+              <FactPills
+                sx={{ mt: 3 }}
+                items={[
+                  { key: 'dates', Icon: ScheduleIcon, label: formatDateRange(startDate, endDate) },
+                  {
+                    key: 'where',
+                    Icon: PlaceIcon,
+                    label:
+                      upcomingRuns.length === 1
+                        ? upcomingRuns[0].hub?.name
+                        : upcomingRuns.length > 1
+                          ? `${upcomingRuns.length} locations`
+                          : '',
+                  },
+                  { key: 'price', Icon: PaymentsIcon, label: priceLabel },
+                ]}
+              />
+              <Button component={RouterLink} to={enquireTo} variant="contained" size="large" sx={{ mt: 3 }}>
+                Enquire to book
+              </Button>
             </Box>
 
-            {coverImage && (
-              <Box sx={{ width: { xs: '100%', md: 340 }, flexShrink: 0 }}>
-                <SmartImage src={coverImage} alt={name} ratio="4 / 3" />
+            {/* The right half: the cover, then the bootcamp's other images (up to 3) — each shown
+                whole, with ‹ ›, thumbnails and a full-screen view when there's more than one. */}
+            {(coverImage || images.length > 0) && (
+              <Box sx={{ width: { xs: '100%', md: '50%' }, flexShrink: 0 }}>
+                <MediaGallery images={[coverImage, ...images]} alt={name} />
               </Box>
             )}
           </Box>
         </Container>
       </Box>
 
-      <Section>
+      <Section py={{ xs: 5, md: 7 }}>
         <Box sx={{ display: 'flex', gap: { xs: 0, md: 6 }, alignItems: 'flex-start', flexWrap: 'wrap' }}>
           {/* main column */}
           <Box sx={{ flex: '1 1 480px', minWidth: 0 }}>
@@ -521,20 +554,9 @@ export default function BootcampDetailPage() {
                   </Typography>
                 </Box>
                 {curriculum.description && (
-                  <Typography
-                    color="text.secondary"
-                    sx={{
-                      lineHeight: 1.7,
-                      mb: 3,
-                      maxWidth: 680,
-                      display: '-webkit-box',
-                      WebkitLineClamp: 3,
-                      WebkitBoxOrient: 'vertical',
-                      overflow: 'hidden',
-                    }}
-                  >
+                  <ExpandableText color="text.secondary" lines={3} sx={{ lineHeight: 1.7, mb: 3, maxWidth: 680, whiteSpace: 'pre-line' }}>
                     {curriculum.description}
-                  </Typography>
+                  </ExpandableText>
                 )}
 
                 {curriculum.competencies.length > 0 && (

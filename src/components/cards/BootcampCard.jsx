@@ -8,7 +8,8 @@ import Box from '@mui/material/Box';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import EventIcon from '@mui/icons-material/Event';
 import HourglassTopIcon from '@mui/icons-material/HourglassTop';
-import SmartImage from '../common/SmartImage.jsx';
+import FramedImage from '../media/FramedImage.jsx';
+import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 import { formatPrice, ageLabel } from '../../utils/format.js';
 import { formatDateRange, formatDate, hasEnded, todayStr } from '../../utils/dates.js';
 import { GameIcon, gamesSummary } from '../bootcamp/BootcampGames.jsx';
@@ -99,89 +100,50 @@ export default function BootcampCard({ bootcamp }) {
           '&:hover': { backgroundColor: 'transparent' },
         }}
       >
-        {/* header — the cover photo if there is one, else the brand band */}
-        {coverImage ? (
-          <Box sx={{ position: 'relative', width: '100%', flexShrink: 0 }}>
-            <SmartImage src={coverImage} alt={name} ratio="16 / 10" rounded={false} />
-            <Box
-              sx={{
-                position: 'absolute',
-                inset: 0,
-                background:
-                  'linear-gradient(180deg, rgba(15,37,69,0) 45%, rgba(15,37,69,0.78) 100%)',
-              }}
-            />
-            <Box sx={{ position: 'absolute', left: 20, right: 20, bottom: 14, color: '#fff' }}>
-              <Typography
-                component="span"
-                sx={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.08em', color: 'rgba(255,255,255,0.85)' }}
-              >
-                {kicker}
-              </Typography>
-              <Typography
-                component="h3"
+        {/* The cover, clean — no title printed over it, since covers are as often a logo or a
+            poster with words of their own as a photo. Shown whole (FramedImage). No cover: the
+            brand panel, the same shape, so a row of cards lines up. */}
+        <Box sx={{ position: 'relative', width: '100%', flexShrink: 0 }}>
+          <FramedImage
+            src={coverImage}
+            alt={name}
+            ratio="16 / 10"
+            fallback={
+              <Box
+                aria-hidden
                 sx={{
-                  fontSize: '1.2rem', fontWeight: 800, lineHeight: 1.25, mt: 0.5,
-                  display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+                  aspectRatio: '16 / 10',
+                  display: 'grid',
+                  placeItems: 'center',
+                  overflow: 'hidden',
+                  background: (t) => `linear-gradient(150deg, ${t.palette.primary.dark} 0%, ${t.palette.primary.main} 100%)`,
                 }}
               >
-                {name}
-              </Typography>
-            </Box>
-          </Box>
-        ) : (
-          <Box
-            sx={{
-              position: 'relative',
-              height: 138,
-              flexShrink: 0,
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'flex-end',
-              p: 2.5,
-              overflow: 'hidden',
-              color: '#fff',
-              background: (t) =>
-                `linear-gradient(150deg, ${t.palette.primary.dark} 0%, ${t.palette.primary.main} 100%)`,
-            }}
-          >
-            <Box
-              aria-hidden
-              sx={{
-                position: 'absolute',
-                right: '-20%',
-                top: '-55%',
-                width: '80%',
-                paddingBottom: '80%',
-                borderRadius: '50%',
-                background: 'radial-gradient(circle, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0) 70%)',
-              }}
-            />
-            <Typography
-              component="span"
-              sx={{
-                position: 'relative', fontSize: 11, fontWeight: 800, letterSpacing: '0.09em',
-                color: 'rgba(255,255,255,0.82)', mb: 0.75,
-              }}
-            >
-              {kicker}
-            </Typography>
-            <Typography
-              component="h3"
-              sx={{
-                position: 'relative', fontSize: '1.2rem', fontWeight: 800, lineHeight: 1.25,
-                display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
-              }}
-            >
-              {name}
-            </Typography>
-          </Box>
-        )}
+                <RocketLaunchIcon sx={{ fontSize: 56, color: 'rgba(255,255,255,0.85)' }} />
+              </Box>
+            }
+          />
+        </Box>
 
         {/* body */}
         <CardContent
           sx={{ flexGrow: 1, width: '100%', display: 'flex', flexDirection: 'column', p: 3 }}
         >
+          <Typography
+            component="span"
+            sx={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.08em', color: 'primary.main' }}
+          >
+            {kicker}
+          </Typography>
+          <Typography
+            component="h3"
+            sx={{
+              fontSize: '1.2rem', fontWeight: 800, lineHeight: 1.25, mt: 0.5, mb: 1,
+              display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+            }}
+          >
+            {name}
+          </Typography>
           <Typography
             variant="body2"
             color="text.secondary"

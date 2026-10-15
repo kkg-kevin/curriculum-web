@@ -28,6 +28,8 @@ const VALID_INTEREST = ['pathway', 'bootcamp', 'project', 'quarky', 'home_school
  *                               looked up from the curriculum system and sent as referenceId
  *   - children                — how many children the family has (the Home Schooling price
  *                               calculator); ignored unless the package can take that many
+ *   - club                    — an Estate Tech Club's name (its page's Enquire button): shown as
+ *                               what the enquiry is about and pre-filled in the message
  */
 export default function EnrollPage() {
   const [params] = useSearchParams();
@@ -46,6 +48,7 @@ export default function EnrollPage() {
     ? childrenParam
     : null;
   const isPathwayFlow = params.get('flow') === 'pathway';
+  const clubName = (params.get('club') || '').trim().slice(0, 120);
 
   // A project / store reference (or an explicit ?enquiry=1) switches to the lighter enquiry
   // variant — buying isn't always about one named child. A pathway enrol (`flow=pathway`) is
@@ -64,7 +67,7 @@ export default function EnrollPage() {
     ? catalogItem.name
     : suggestedCourse
       ? `${suggestedCourse} (suggested starting course)`
-      : undefined;
+      : clubName || undefined;
 
   return (
     <>
@@ -110,7 +113,9 @@ export default function EnrollPage() {
                 ? packageEnquiryNote(homeSchoolingPackage, familyChildren)
                 : isHomeSchooling
                   ? 'I am interested in Home Schooling. Please contact me to discuss package options.'
-                  : suggestedCourse ? `Suggested starting course based on age: ${suggestedCourse}` : undefined
+                  : suggestedCourse
+                    ? `Suggested starting course based on age: ${suggestedCourse}`
+                    : clubName ? `I'm interested in the ${clubName}.` : undefined
             }
           />}
           <Typography variant="body2" color="text.secondary" sx={{ mt: 4 }}>
