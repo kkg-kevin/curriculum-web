@@ -11,13 +11,26 @@
  * it skipped those pages, they must not be in the sitemap either (a sitemap URL
  * pointing at an un-prerendered SPA shell is worse than an absent one). Under
  * VITE_USE_MOCK the fixtures' slugs are used instead, matching what prerender does.
+ *
+ * Any page whose prerendered HTML says noindex (an empty Store, say) is left out too: listing a
+ * URL you've asked search engines not to index is a contradictory signal.
+ *
+ * Entries carry only <loc>. Google ignores <changefreq> and <priority>, and trusts <lastmod> only
+ * when it is a real change date — the build date stamped on every URL is not, and the public API
+ * has no per-page change date to offer (a pathway changes whenever any of its courses does).
+ *
+ * With SITE_NOINDEX=true (the Dev site — .env.dev) it also appends an X-Robots-Tag: noindex header
+ * to dist/.htaccess, so no page or file of that site appears in search results. robots.txt stays
+ * open on purpose: a crawler that robots.txt blocks never fetches a page, so it never sees the
+ * noindex that drops the page from the index.
  */
 import fs from 'node:fs';
 import path from 'node:path';
 import { DIST, ensureDist, getConfig } from './_shared.js';
 import { STATIC_ROUTES } from '../src/config/site.js';
 
-const { siteUrl, useMock } = getConfig();
+const { siteUrl, useMock, env } = getConfig();
+const siteNoindex = env.SITE_NOINDEX === 'true';
 
 /** Slugs prerender.js actually wrote HTML for — dist/<section>/<slug>/index.html. */
 function prerenderedSlugs(section) {
@@ -46,6 +59,13 @@ async function getSectionSlugs(section, mockFixture, mockExport) {
   return slugs;
 }
 
+/** True when the prerendered page for this route asks not to be indexed. */
+function isNoindex(routePath) {
+  const file = path.join(DIST, routePath, 'index.html');
+  if (!fs.existsSync(file)) return false;
+  return /<meta[^>]+name="robots"[^>]+noindex/i.test(fs.readFileSync(file, 'utf8'));
+}
+
 /**
  * Absolute URL in the trailing-slash form the host serves (dist/<route>/index.html makes it 301
  * `/x` → `/x/`) — same rule as pageUrl() in src/utils/seo.js, which the canonical tags use, so
@@ -56,37 +76,31 @@ function pageUrl(routePath) {
   return clean ? `${siteUrl}${clean}/` : `${siteUrl}/`;
 }
 
-function urlEntry({ loc, changefreq, priority, lastmod }) {
-  return [
-    '  <url>',
-    `    <loc>${loc}</loc>`,
-    lastmod ? `    <lastmod>${lastmod}</lastmod>` : '',
-    changefreq ? `    <changefreq>${changefreq}</changefreq>` : '',
-    priority != null ? `    <priority>${priority.toFixed(1)}</priority>` : '',
-    '  </url>',
-  ]
-    .filter(Boolean)
-    .join('\n');
+function urlEntry(loc) {
+  return `  <url>\n    <loc>${loc}</loc>\n  </url>`;
+}
+
+const HTACCESS_NOINDEX_MARK = '# SITE_NOINDEX';
+
+/** Appends the site-wide noindex header to dist/.htaccess, once (a re-run must not add it twice). */
+function addNoindexHeader() {
+  const file = path.join(DIST, '.htaccess');
+  const current = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : '';
+  if (current.includes(HTACCESS_NOINDEX_MARK)) return;
+  const block = [
+    '',
+    `${HTACCESS_NOINDEX_MARK} — added by scripts/generate-sitemap.js: this build is not the public`,
+    '# website, so no page or file of it may appear in search results.',
+    '<IfModule mod_headers.c>',
+    '  Header always set X-Robots-Tag "noindex, nofollow"',
+    '</IfModule>',
+    '',
+  ].join('\n');
+  fs.writeFileSync(file, current + block, 'utf8');
 }
 
 async function main() {
   ensureDist();
-
-  const today = new Date().toISOString().slice(0, 10);
-  const entries = [];
-
-  // `sitemap: false` routes (deliberately noindex, e.g. /enroll) are prerendered but not listed.
-  const sitemapRoutes = STATIC_ROUTES.filter((r) => r.sitemap !== false);
-  for (const r of sitemapRoutes) {
-    entries.push(
-      urlEntry({
-        loc: pageUrl(r.path),
-        changefreq: r.changefreq,
-        priority: r.priority,
-        lastmod: today,
-      }),
-    );
-  }
 
   const [pathwaySlugs, projectSlugs, storeSlugs, bootcampSlugs, competitionSlugs] = await Promise.all([
     getSectionSlugs('pathways', '../src/mocks/fixtures/pathways.js', 'pathways'),
@@ -96,21 +110,17 @@ async function main() {
     getSectionSlugs('competitions', '../src/mocks/fixtures/competitions.js', 'competitionList'),
   ]);
 
-  for (const slug of pathwaySlugs) {
-    entries.push(urlEntry({ loc: pageUrl(`/pathways/${slug}`), changefreq: 'monthly', priority: 0.7, lastmod: today }));
-  }
-  for (const slug of projectSlugs) {
-    entries.push(urlEntry({ loc: pageUrl(`/projects/${slug}`), changefreq: 'monthly', priority: 0.7, lastmod: today }));
-  }
-  for (const slug of storeSlugs) {
-    entries.push(urlEntry({ loc: pageUrl(`/store/${slug}`), changefreq: 'monthly', priority: 0.7, lastmod: today }));
-  }
-  for (const slug of bootcampSlugs) {
-    entries.push(urlEntry({ loc: pageUrl(`/bootcamps/${slug}`), changefreq: 'monthly', priority: 0.7, lastmod: today }));
-  }
-  for (const slug of competitionSlugs) {
-    entries.push(urlEntry({ loc: pageUrl(`/competitions/${slug}`), changefreq: 'monthly', priority: 0.7, lastmod: today }));
-  }
+  // `sitemap: false` routes (deliberately noindex, e.g. /enroll) are prerendered but not listed.
+  const routes = [
+    ...STATIC_ROUTES.filter((r) => r.sitemap !== false).map((r) => r.path),
+    ...pathwaySlugs.map((s) => `/pathways/${s}`),
+    ...projectSlugs.map((s) => `/projects/${s}`),
+    ...storeSlugs.map((s) => `/store/${s}`),
+    ...bootcampSlugs.map((s) => `/bootcamps/${s}`),
+    ...competitionSlugs.map((s) => `/competitions/${s}`),
+  ];
+  const skipped = routes.filter((r) => isNoindex(r));
+  const entries = routes.filter((r) => !skipped.includes(r)).map((r) => urlEntry(pageUrl(r)));
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -126,12 +136,15 @@ Allow: /
 Sitemap: ${siteUrl}/sitemap.xml
 `;
   fs.writeFileSync(path.join(DIST, 'robots.txt'), robots, 'utf8');
+  if (siteNoindex) addNoindexHeader();
 
   console.log(
-    `[sitemap] wrote ${entries.length} URLs (${sitemapRoutes.length} static, ${pathwaySlugs.length} pathways, ` +
-      `${projectSlugs.length} projects, ${storeSlugs.length} store items, ${bootcampSlugs.length} bootcamps, ` +
-      `${competitionSlugs.length} competitions) + robots.txt`,
+    `[sitemap] wrote ${entries.length} URLs (${pathwaySlugs.length} pathways, ${projectSlugs.length} projects, ` +
+      `${storeSlugs.length} store items, ${bootcampSlugs.length} bootcamps, ${competitionSlugs.length} competitions, ` +
+      `the rest static) + robots.txt`,
   );
+  if (skipped.length > 0) console.log(`[sitemap] left out as noindex: ${skipped.join(', ')}`);
+  if (siteNoindex) console.log('[sitemap] SITE_NOINDEX=true — every response carries X-Robots-Tag: noindex');
 }
 
 main().catch((err) => {
