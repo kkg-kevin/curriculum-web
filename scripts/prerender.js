@@ -152,6 +152,28 @@ function saveSpaShell() {
   }
 }
 
+// A page the API has content for must not snapshot as "not found" (noindex) or as an empty list.
+// That happens when Node can reach the API but the headless browser can't — the API's CORS list
+// (PUBLIC_SITE_URL) is missing this script's origin, http://localhost:4199 (PORT). Shipping such a
+// build tells Google every pathway and bootcamp page doesn't exist, so the build fails instead.
+// `sections` maps a list route ('/pathways') to the slugs the API listed for it.
+function brokenSnapshot(route, html, sections) {
+  // ErrorBlock (src/components/common/StateViews.jsx) — some API call on the page failed.
+  if (html.includes('We couldn’t load this')) return 'shows "We couldn’t load this" (an API call failed)';
+  const section = Object.keys(sections).find((s) => route.startsWith(`${s}/`));
+  if (section) {
+    if (/<meta[^>]+name="robots"[^>]+noindex/i.test(html) || /<title[^>]*>[^<]*not found/i.test(html)) {
+      return 'rendered as "not found" (noindex)';
+    }
+    return null;
+  }
+  const slugs = sections[route] || [];
+  if (slugs.length > 0 && !slugs.some((slug) => html.includes(`href="${route}/${slug}`))) {
+    return `lists none of the ${slugs.length} item(s) the API returned`;
+  }
+  return null;
+}
+
 async function main() {
   ensureDist();
   saveSpaShell();
@@ -180,6 +202,14 @@ async function main() {
     return false;
   });
 
+  const sections = {
+    '/pathways': pathwaySlugs,
+    '/projects': projectSlugs,
+    '/store': storeSlugs,
+    '/bootcamps': bootcampSlugs,
+    '/competitions': competitionSlugs,
+  };
+
   const routes = [
     ...staticRoutes,
     ...pathwaySlugs.map((s) => `/pathways/${s}`),
@@ -202,6 +232,7 @@ async function main() {
   const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-dev-shm-usage'] });
 
   let ok = 0;
+  const broken = [];
   try {
     for (const route of routes) {
       const page = await browser.newPage();
@@ -216,18 +247,28 @@ async function main() {
       await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
 
       // Wait for the app to signal it has mounted and settled all data fetches
-      // (window.__APP_READY__, set in src/utils/prerenderSignal.js).
-      const ready = await page
-        .waitForFunction(() => window.__APP_READY__ === true, { timeout: READY_TIMEOUT_MS, polling: 100 })
-        .then(() => true)
-        .catch(() => false);
+      // (window.__APP_READY__, set in src/utils/prerenderSignal.js) — and for it to STAY settled
+      // through the settle wait. The flag can flash true in the moment between a page chunk
+      // rendering and its first query starting; a snapshot taken then is the loading skeleton.
+      const deadline = Date.now() + READY_TIMEOUT_MS;
+      let ready = false;
+      while (!ready && Date.now() < deadline) {
+        const reached = await page
+          .waitForFunction(() => window.__APP_READY__ === true, { timeout: Math.max(deadline - Date.now(), 1), polling: 100 })
+          .then(() => true)
+          .catch(() => false);
+        if (!reached) break;
+        await new Promise((r) => setTimeout(r, SETTLE_WAIT_MS));
+        ready = await page.evaluate(() => window.__APP_READY__ === true);
+      }
       if (!ready) {
         console.warn(`[prerender] ${route}: __APP_READY__ not reached in ${READY_TIMEOUT_MS}ms — snapshotting anyway`);
       }
-      await new Promise((r) => setTimeout(r, SETTLE_WAIT_MS));
       await page.evaluate(dedupeHeadTags);
 
       const html = await page.content();
+      const problem = brokenSnapshot(route, html, sections);
+      if (problem) broken.push(`${route}: ${problem}`);
       let outFile;
       if (route === NOT_FOUND_ROUTE) outFile = path.join(DIST, '404.html');
       else outFile = path.join(route === '/' ? DIST : path.join(DIST, route), 'index.html');
@@ -243,6 +284,18 @@ async function main() {
   }
 
   console.log(`[prerender] done — ${ok}/${routes.length} routes written`);
+
+  if (broken.length > 0) {
+    console.error(
+      `[prerender] ${broken.length} page(s) came out without their content:\n` +
+        broken.map((b) => `  - ${b}`).join('\n') +
+        `\n[prerender] The API answered this script but not the browser it drives. Most likely its ` +
+        `PUBLIC_SITE_URL setting is missing http://localhost:${PORT} (cPanel → Setup Node.js App → ` +
+        `${apiUrl} → Environment variables). Add it, restart the app and build again. ` +
+        `Do not upload this build: search engines would read these pages as missing.`,
+    );
+    process.exit(1);
+  }
 }
 
 main().catch((err) => {

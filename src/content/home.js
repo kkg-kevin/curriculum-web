@@ -2,9 +2,11 @@
  * Static copy for the Home page (spec §1.1).
  */
 
+// The heading is the page's <h1> — the strongest on-page search signal after the title — so it
+// names what parents search for (robotics, AI, coding, kids, Kenya). The brand line rides above it.
 export const hero = {
-  eyebrow: 'Robotics · AI · Coding for ages 5–17',
-  heading: 'Digital skills for Africa’s next generation',
+  eyebrow: 'Digital skills for Africa’s next generation',
+  heading: 'Robotics, AI & coding for kids in Kenya',
   sub: 'Digifunzi is an impact-driven digital literacy programme. We foster creativity, collaboration and leadership in kids aged 5–17, and give them the skills to compete for opportunities in the digital economy.',
   primaryCta: { label: 'Enroll a learner', to: '/enroll' },
   secondaryCta: { label: 'Browse pathways', to: '/pathways' },

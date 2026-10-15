@@ -33,6 +33,12 @@ export const ORG = {
     addressRegion: 'Kiambu County',
     addressCountry: 'KE',
   },
+  // The Thika office on a map, and when it is open — both go into the LocalBusiness structured data
+  // (JsonLd.jsx) and must match the Google Business Profile exactly. Left unset until confirmed:
+  // TODO geo: { latitude: -1.0xxx, longitude: 37.0xxx } from the office's pin in Google Maps.
+  // TODO openingHours in schema.org form, e.g. ['Mo-Fr 08:00-17:00', 'Sa 09:00-13:00'].
+  geo: null,
+  openingHours: [],
   // Shown as icons in the footer, in this order; `key` picks the icon there.
   social: [
     { key: 'facebook', label: 'Facebook', url: 'https://www.facebook.com/digifunzi' },
@@ -56,24 +62,24 @@ export const ORG = {
  * scripts — all three discovered from live API data (/api/public/*) at build
  * time, or from src/mocks/fixtures/* under VITE_USE_MOCK.
  *
- * changefreq / priority are advisory hints for sitemap.xml. `sitemap: false` keeps a route
- * prerendered but out of sitemap.xml — for pages that are deliberately noindex (listing a URL
- * you've asked search engines not to index is a contradictory signal).
+ * `sitemap: false` keeps a route prerendered but out of sitemap.xml — for pages that are
+ * deliberately noindex (listing a URL you've asked search engines not to index is a contradictory
+ * signal). scripts/generate-sitemap.js also drops any page that came out noindex at build time.
  */
 export const STATIC_ROUTES = [
-  { path: '/', changefreq: 'weekly', priority: 1.0 },
-  { path: '/pathways', changefreq: 'weekly', priority: 0.9 },
-  { path: '/projects', changefreq: 'weekly', priority: 0.9 },
-  { path: '/bootcamps', changefreq: 'monthly', priority: 0.6 },
-  { path: '/competitions', changefreq: 'monthly', priority: 0.7 },
-  { path: '/home-schooling', changefreq: 'monthly', priority: 0.8 },
-  { path: '/schools', changefreq: 'monthly', priority: 0.8 },
-  { path: '/store', changefreq: 'weekly', priority: 0.9 },
-  { path: '/about', changefreq: 'monthly', priority: 0.6 },
+  { path: '/' },
+  { path: '/pathways' },
+  { path: '/projects' },
+  { path: '/bootcamps' },
+  { path: '/competitions' },
+  { path: '/home-schooling' },
+  { path: '/schools' },
+  { path: '/store' },
+  { path: '/about' },
   { path: '/enroll', sitemap: false }, // noindex — see EnrollPage
-  { path: '/contact', changefreq: 'yearly', priority: 0.5 },
-  { path: '/privacy', changefreq: 'yearly', priority: 0.3 },
-  { path: '/terms', changefreq: 'yearly', priority: 0.3 },
+  { path: '/contact' },
+  { path: '/privacy' },
+  { path: '/terms' },
 ];
 
 /** Fallback base URL if none is provided by env (e.g. a script run without .env). */

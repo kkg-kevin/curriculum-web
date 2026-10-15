@@ -91,6 +91,9 @@ export default function ProjectsListPage() {
     <>
       <SeoHead
         title="Guided Build Projects for Kids"
+        // Nothing for sale yet → an empty page; keep it out of search until there is (sitemap.xml
+        // drops any noindex page too — scripts/generate-sitemap.js).
+        noindex={!isLoading && !isError && count === 0}
         description="Guided build projects a child works through at their own pace — robotics, coding, data and automation. Bought once, yours for life."
       />
       <JsonLd

@@ -91,6 +91,9 @@ export default function StoreListPage() {
     <>
       <SeoHead
         title="Quarky Robot, Kits & Bundles — Store"
+        // Nothing for sale yet → an empty page; keep it out of search until there is (sitemap.xml
+        // drops any noindex page too — scripts/generate-sitemap.js).
+        noindex={!isLoading && !isError && count === 0}
         description="Buy the Quarky learning robot, classroom bundles and accessories from Digifunzi. Looking for a guided build project instead? Those are in the Projects section."
       />
       <JsonLd

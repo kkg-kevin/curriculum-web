@@ -25,17 +25,25 @@ export default function JsonLd({ data }) {
 // leaving them out, so each is only emitted once it looks real.
 const isPlaceholderText = (v) => !v || /\bTODO\b/i.test(v);
 
+// Both an EducationalOrganization (what Digifunzi is) and a LocalBusiness (a place in Thika parents
+// can call or visit) — the second is what ties the site to the Google Business Profile and to
+// "near me" searches. geo and opening hours are only added once site.js has the real ones.
 export function organizationSchema() {
   const { address } = ORG;
   return {
     '@context': 'https://schema.org',
-    '@type': 'Organization',
+    '@type': ['EducationalOrganization', 'LocalBusiness'],
     name: ORG.name,
     legalName: ORG.legalName,
+    description: ORG.description,
     url: pageUrl('/'),
     logo: `${SITE_URL}${ORG.logoPath}`,
+    image: `${SITE_URL}${ORG.ogImagePath}`,
     email: ORG.email,
+    areaServed: { '@type': 'Country', name: 'Kenya' },
     ...(isPlaceholderPhone(ORG.telephone) ? {} : { telephone: ORG.telephone }),
+    ...(ORG.geo ? { geo: { '@type': 'GeoCoordinates', latitude: ORG.geo.latitude, longitude: ORG.geo.longitude } } : {}),
+    ...(ORG.openingHours?.length ? { openingHours: ORG.openingHours } : {}),
     address: {
       '@type': 'PostalAddress',
       ...(isPlaceholderText(address.streetAddress) ? {} : { streetAddress: address.streetAddress }),
