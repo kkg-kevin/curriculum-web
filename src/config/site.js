@@ -72,6 +72,7 @@ export const STATIC_ROUTES = [
   { path: '/projects' },
   { path: '/bootcamps' },
   { path: '/competitions' },
+  { path: '/estate-tech-clubs' },
   { path: '/home-schooling' },
   { path: '/schools' },
   { path: '/store' },

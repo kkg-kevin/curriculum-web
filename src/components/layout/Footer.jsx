@@ -9,7 +9,7 @@ import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import YouTubeIcon from '@mui/icons-material/YouTube';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import Logo from '../common/Logo.jsx';
-import { ORG, phoneUrl, whatsAppUrl } from '../../config/site.js';
+import { ORG, phoneUrl } from '../../config/site.js';
 
 const contactLinkSx = { color: 'surface.inverseTextDim', '&:hover': { color: 'surface.inverseText' } };
 
@@ -30,22 +30,24 @@ const SOCIAL_ICONS = {
   tiktok: TikTokIcon,
 };
 
+// Programmes = the header's links; More = everything else on the site, Enroll included.
 const COLUMNS = [
   {
-    heading: 'Explore',
+    heading: 'Programmes',
     links: [
-      { label: 'Pathways', to: '/pathways' },
-      { label: 'Projects', to: '/projects' },
       { label: 'Bootcamps', to: '/bootcamps' },
-      { label: 'Competitions', to: '/competitions' },
       { label: 'Home Schooling', to: '/home-schooling' },
+      { label: 'Estate Tech Clubs', to: '/estate-tech-clubs' },
       { label: 'Schools', to: '/schools' },
-      { label: 'Store', to: '/store' },
+      { label: 'Pathways', to: '/pathways' },
     ],
   },
   {
-    heading: 'Company',
+    heading: 'More',
     links: [
+      { label: 'Projects', to: '/projects' },
+      { label: 'Competitions', to: '/competitions' },
+      { label: 'Store', to: '/store' },
       { label: 'About', to: '/about' },
       { label: 'Contact', to: '/contact' },
       { label: 'Enroll', to: '/enroll' },
@@ -66,7 +68,6 @@ const LEGAL_LINKS = [
 export default function Footer() {
   const year = new Date().getFullYear();
   const phone = phoneUrl();
-  const whatsApp = whatsAppUrl('Hello Digifunzi, I have a question.');
   return (
     <Box
       component="footer"
@@ -145,15 +146,11 @@ export default function Footer() {
               <Link href={`mailto:${ORG.email}`} underline="hover" sx={contactLinkSx}>
                 {ORG.email}
               </Link>
-              {/* Phone and WhatsApp appear once real numbers are set in config/site.js. */}
+              {/* The phone appears once a real number is set in config/site.js. WhatsApp isn't
+                  repeated here — the floating button on every page (WhatsAppButton) covers it. */}
               {phone && (
                 <Link href={phone} underline="hover" sx={contactLinkSx}>
                   {ORG.telephone}
-                </Link>
-              )}
-              {whatsApp && (
-                <Link href={whatsApp} target="_blank" rel="noopener noreferrer" underline="hover" sx={contactLinkSx}>
-                  Chat on WhatsApp
                 </Link>
               )}
               <Link component={RouterLink} to="/contact" underline="hover" sx={contactLinkSx}>

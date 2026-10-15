@@ -43,7 +43,7 @@ export const privacyPolicy = {
     {
       heading: 'What we do not collect',
       paragraphs: [
-        'This website does not use advertising or analytics cookies, and it does not track you across other sites. It keeps two small things in your own browser: whether you chose the light or dark theme, and how you first reached this website (the first page you opened, the site that linked you here, and any campaign tag on that link). The second is sent to us only with a form you submit, so we know which of our pages and posts help families find us. A visit more than 30 days later starts it afresh. We do not take card or mobile-money details on this site.',
+        'This website does not use advertising or analytics cookies, and it does not track you across other sites. It keeps two small things in your own browser: whether you chose the light or dark theme, and how you first reached this website (the first page you opened, the site that linked you here, and any campaign tag on that link). The second is sent to us only with a form you submit, so we know which of our pages and posts help families find us. A visit more than 30 days later starts it afresh. Club pages show a map from Google Maps; when it loads, Google may set its own cookies under Google’s privacy policy. We do not take card or mobile-money details on this site.',
       ],
     },
     {

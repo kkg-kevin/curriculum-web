@@ -14,28 +14,31 @@ import MobileMenu from './MobileMenu.jsx';
 import { PAGE_MAX_WIDTH, PAGE_GUTTER } from '../../theme/layout.js';
 
 export const NAV_LINKS = [
-  { label: 'Pathways', to: '/pathways' },
-  { label: 'Projects', to: '/projects' },
   { label: 'Bootcamps', to: '/bootcamps' },
-  { label: 'Competitions', to: '/competitions' },
   { label: 'Home Schooling', to: '/home-schooling' },
+  { label: 'Estate Tech Clubs', to: '/estate-tech-clubs' },
   { label: 'Schools', to: '/schools' },
-  { label: 'Store', to: '/store' },
-  { label: 'About', to: '/about' },
+  { label: 'Pathways', to: '/pathways' },
 ];
 
 // Below this the full row of links no longer fits on one line, so the menu button takes over.
-const FULL_NAV_MIN_WIDTH = 1280;
+const FULL_NAV_MIN_WIDTH = 1024;
 
 // Tighter than the theme's pill buttons, and never wrapping — "Home Schooling" used to break
 // onto two lines.
 const navLinkSx = {
   color: 'text.primary',
-  px: 1.25,
+  px: { xs: 1.25, lg: 1.75 },
+  py: 0.75,
   minWidth: 0,
+  fontWeight: 600,
   whiteSpace: 'nowrap',
   '&.active': { color: 'primary.main', fontWeight: 700 },
 };
+
+// The Enroll call to action — a compact pill the same height as a link's hover area, so it stands
+// out by colour rather than filling the whole bar.
+const enrollSx = { whiteSpace: 'nowrap', minHeight: 40, py: 0.75, px: 2.75, fontSize: '0.92rem' };
 
 export default function Header() {
   const theme = useTheme();
@@ -61,10 +64,13 @@ export default function Header() {
           display: 'grid',
           gridTemplateColumns: isMobile ? '1fr auto' : '1fr auto 1fr',
           alignItems: 'center',
-          columnGap: 2,
+          columnGap: { xs: 2, lg: 4 },
+          minHeight: { xs: 60, md: 72 },
         }}
       >
-        <Box sx={{ justifySelf: 'start' }}>
+        {/* A flex box, not a plain block: as inline content the logo picked up line-height space
+            below it and sat higher than the links and icons. */}
+        <Box sx={{ justifySelf: 'start', display: 'flex', alignItems: 'center' }}>
           <Logo />
         </Box>
 
@@ -73,22 +79,19 @@ export default function Header() {
             component="nav"
             aria-label="Primary"
             // The links spread out as the bar gets wider.
-            sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.25, lg: 1, xl: 2 } }}
+            sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, lg: 1.5, xl: 2.5 } }}
           >
             {NAV_LINKS.map((link) => (
               <Button key={link.to} component={NavLink} to={link.to} sx={navLinkSx}>
                 {link.label}
               </Button>
             ))}
-            <Button component={NavLink} to="/contact" variant="text" sx={navLinkSx}>
-              Contact
-            </Button>
           </Box>
         )}
 
-        <Box sx={{ justifySelf: 'end', display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box sx={{ justifySelf: 'end', display: 'flex', alignItems: 'center', gap: { xs: 0.5, md: 1.5 } }}>
           {!isMobile && (
-            <Button component={NavLink} to="/enroll" variant="contained" sx={{ whiteSpace: 'nowrap' }}>
+            <Button component={NavLink} to="/enroll" variant="contained" sx={enrollSx}>
               Enroll
             </Button>
           )}

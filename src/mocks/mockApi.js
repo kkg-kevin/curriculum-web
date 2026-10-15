@@ -13,7 +13,7 @@ import { storeList, storeItemDetail } from './fixtures/store.js';
 import { homeLearningPackages, homeLearningPackageDetail } from './fixtures/homeLearning.js';
 import { bootcampList, bootcampDetail } from './fixtures/bootcamps.js';
 import { competitionList, competitionDetail } from './fixtures/competitions.js';
-import { hubList, hubTypeList } from './fixtures/hubs.js';
+import { hubList, hubTypeList, hubProfile } from './fixtures/hubs.js';
 import { pathways, pathwayDetail } from './fixtures/pathways.js';
 import { HONEYPOT_FIELD } from '../components/forms/Honeypot.jsx';
 import {
@@ -151,7 +151,10 @@ export async function mockAdapter(config) {
     const run = bootcampList
       .flatMap((b) => bootcampDetail(b.slug)?.upcomingRuns || [])
       .find((r) => r.hub?.id === hubId);
-    return run ? ok(run.hub, config) : fail(404, 'Hub not found', config);
+    if (run) return ok(run.hub, config);
+    // A hub from the list (the Estate Tech Clubs pages), not only one a bootcamp runs at.
+    const profile = hubProfile(hubId);
+    return profile ? ok(profile, config) : fail(404, 'Hub not found', config);
   }
 
   // ---- GET /api/public/pathways ----

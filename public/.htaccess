@@ -46,10 +46,10 @@
   RewriteRule ^ - [R=404,L]
 
   # 4. Routes the client router can render but that weren't prerendered — a pathway/project/
-  #    store item/bootcamp/competition added since the last build, the diagnostic and report
+  #    store item/bootcamp/competition/estate tech club added since the last build, the diagnostic and report
   #    pages, hub pages, sign-up — get the bare SPA shell (200.html), never the prerendered home
   #    page. A slug that turns out not to exist renders the NotFound page (noindex) client-side.
-  RewriteRule ^(pathways|projects|store|bootcamps|competitions)(/.*)?$ /200.html [L]
+  RewriteRule ^(pathways|projects|store|bootcamps|competitions|estate-tech-clubs)(/.*)?$ /200.html [L]
   RewriteRule ^home-schooling(/signup)?/?$ /200.html [L]
   RewriteRule ^(about|contact|enroll|privacy|terms)/?$ /200.html [L]
 

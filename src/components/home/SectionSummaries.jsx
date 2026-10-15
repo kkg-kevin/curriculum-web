@@ -75,6 +75,29 @@ const ACCENTS = {
       </>
     ),
   },
+  '/estate-tech-clubs': {
+    color: 'success.main',
+    tint: (t) => t.palette.success.main,
+    // a map pin — a club near you
+    motif: (
+      <>
+        <path d="M32 50s-14-13-14-24a14 14 0 0 1 28 0c0 11-14 24-14 24Z" />
+        <circle cx="32" cy="26" r="5" />
+      </>
+    ),
+  },
+  '/schools': {
+    color: 'primary.dark',
+    tint: (t) => t.palette.primary.dark,
+    // a graduation cap
+    motif: (
+      <>
+        <path d="M8 22 32 12l24 10-24 10L8 22Z" />
+        <path d="M18 27v10c0 3 6 7 14 7s14-4 14-7V27" />
+        <path d="M56 22v12" />
+      </>
+    ),
+  },
   '/pathways': {
     color: 'info.main',
     tint: (t) => t.palette.info.main,
@@ -94,7 +117,7 @@ export default function SectionSummaries() {
       <SectionHeading
         eyebrow="Programmes"
         title="Ways to learn with us"
-        lead="Structured pathways, guided projects you buy and keep, holiday bootcamps, team competitions, and the robots to build with — designed to fit together into one path."
+        lead="Holiday bootcamps, home schooling, estate tech clubs, school programmes, structured pathways and the robots to build with — designed to fit together into one path."
         sx={{ mb: { xs: 5, md: 7 } }}
       />
 

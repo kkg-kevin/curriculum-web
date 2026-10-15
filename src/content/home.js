@@ -31,31 +31,33 @@ export const valueProps = [
   },
 ];
 
+// "Ways to learn with us" on the home page, in this order — the header's programmes first, then
+// Store. Projects and Competitions aren't cards here; they're in the footer's "More" column.
 export const sectionSummaries = [
-  {
-    title: 'Pathways',
-    to: '/pathways',
-    blurb: 'Structured, multi-course tracks that take a learner from first steps to job-ready in one area, at their own pace.',
-  },
-  {
-    title: 'Projects',
-    to: '/projects',
-    blurb: 'Guided build projects you buy once and keep for life — lessons, checkpoints and a finished thing to show.',
-  },
   {
     title: 'Bootcamps',
     to: '/bootcamps',
     blurb: 'Short, intensive holiday programmes — a full robotics or coding build packed into a week or two, with a showcase at the end.',
   },
   {
-    title: 'Competitions',
-    to: '/competitions',
-    blurb: 'Friendly, team-based challenges that give learners a real goal to build towards and a stage to present on.',
-  },
-  {
     title: 'Home Schooling',
     to: '/home-schooling',
     blurb: 'A Digifunzi educator teaches your children at home, each at their own level, on a simple monthly family package.',
+  },
+  {
+    title: 'Estate Tech Clubs',
+    to: '/estate-tech-clubs',
+    blurb: 'Coding, robotics and AI clubs run in estates and community spaces, so children can learn close to home.',
+  },
+  {
+    title: 'Schools',
+    to: '/schools',
+    blurb: 'Robotics, AI and coding for primary and secondary schools — a full curriculum, the Quarky robot, teacher training and mentor support.',
+  },
+  {
+    title: 'Pathways',
+    to: '/pathways',
+    blurb: 'Structured, multi-course tracks that take a learner from first steps to job-ready in one area, at their own pace.',
   },
   {
     title: 'Store',

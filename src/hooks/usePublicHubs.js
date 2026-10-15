@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQueries, useQuery } from '@tanstack/react-query';
 import { publicApi } from '../services/api.js';
 
 /**
@@ -39,6 +39,38 @@ export function useHubsByType(type) {
     enabled: Boolean(type),
     staleTime: 5 * 60 * 1000,
     select: (list) => (Array.isArray(list) ? list : []),
+  });
+}
+
+/**
+ * GET /api/public/hubs — every active, non-school hub, any type: the Estate Tech Clubs page
+ * (/estate-tech-clubs) and each club's own page, which finds its hub here by name (utils/clubs.js).
+ * Same cache entry as useHubsByType with no type.
+ */
+export function usePublicHubList() {
+  return useQuery({
+    queryKey: ['public-hubs', 'all'],
+    queryFn: () => publicApi.listHubs(),
+    staleTime: 5 * 60 * 1000,
+    select: (list) => (Array.isArray(list) ? list : []),
+  });
+}
+
+/**
+ * GET /api/public/hubs/:id for several hubs at once — the Estate Tech Clubs cards show each
+ * club's photo and address, which only the full profile carries. Shares usePublicHub's cache, so
+ * opening a club afterwards is instant. Returns { [id]: profile } for the ones loaded so far.
+ */
+export function usePublicHubProfiles(ids) {
+  return useQueries({
+    queries: (ids || []).map((id) => ({
+      queryKey: ['public-hub', id],
+      queryFn: () => publicApi.getHub(id),
+      staleTime: 5 * 60 * 1000,
+      retry: (count, err) => err?.status !== 404 && count < 2,
+    })),
+    combine: (results) =>
+      Object.fromEntries((ids || []).map((id, i) => [id, results[i]?.data]).filter(([, profile]) => profile)),
   });
 }
 

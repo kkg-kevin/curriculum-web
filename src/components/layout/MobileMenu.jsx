@@ -34,9 +34,6 @@ export default function MobileMenu({ open, onClose, links }) {
               <ListItemText primary={link.label} />
             </ListItemButton>
           ))}
-          <ListItemButton component={NavLink} to="/contact" onClick={onClose}>
-            <ListItemText primary="Contact" />
-          </ListItemButton>
         </List>
       </Box>
 
