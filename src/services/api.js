@@ -9,6 +9,7 @@
 import axios from 'axios';
 import { API_URL, USE_MOCK } from '../config/env.js';
 import { mockAdapter } from '../mocks/mockApi.js';
+import { visitSourceHeader } from '../utils/visitSource.js';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -24,6 +25,19 @@ if (USE_MOCK) {
       'backend and set VITE_USE_MOCK=false to use live data. See SYSTEM_INTEGRATION.md.',
   );
 }
+
+/**
+ * Every form this site posts (enquiry, contact, diagnostic, bootcamp enrolment, home-schooling
+ * sign-up) carries how the visitor first found the site — utils/visitSource.js. The API stores it
+ * on the lead it creates; reads never carry it.
+ */
+api.interceptors.request.use((config) => {
+  if (config.method === 'post') {
+    const visit = visitSourceHeader();
+    if (visit) config.headers['X-Visit-Source'] = visit;
+  }
+  return config;
+});
 
 /**
  * Normalise errors so UI code has one shape to handle.

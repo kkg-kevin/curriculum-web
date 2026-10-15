@@ -16,7 +16,7 @@ const UPDATED = '8 October 2026';
 export const privacyPolicy = {
   title: 'Privacy Policy',
   description: 'What personal information Digifunzi collects on this website, why, who sees it, and how to see, correct or delete it.',
-  updated: UPDATED,
+  updated: '15 October 2026', // how a visitor first found the site (utils/visitSource.js)
   intro:
     'This page explains what Digifunzi collects when you use this website, what we do with it, and the choices you have. Most of what we collect is about children, given to us by a parent or guardian, so we try to ask for as little as we need.',
   sections: [
@@ -43,7 +43,7 @@ export const privacyPolicy = {
     {
       heading: 'What we do not collect',
       paragraphs: [
-        'This website does not use advertising or analytics cookies, and it does not track you across other sites. It keeps one small setting in your own browser: whether you chose the light or dark theme. We do not take card or mobile-money details on this site.',
+        'This website does not use advertising or analytics cookies, and it does not track you across other sites. It keeps two small things in your own browser: whether you chose the light or dark theme, and how you first reached this website (the first page you opened, the site that linked you here, and any campaign tag on that link). The second is sent to us only with a form you submit, so we know which of our pages and posts help families find us. A visit more than 30 days later starts it afresh. We do not take card or mobile-money details on this site.',
       ],
     },
     {

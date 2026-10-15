@@ -13,6 +13,7 @@ import './styles/global.css';
 import App from './App.jsx';
 import { ColorModeProvider } from './theme/ColorModeProvider.jsx';
 import { installPrerenderSignal } from './utils/prerenderSignal.js';
+import { captureVisitSource } from './utils/visitSource.js';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -25,6 +26,7 @@ const queryClient = new QueryClient({
 });
 
 installPrerenderSignal(queryClient);
+captureVisitSource();
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
