@@ -97,7 +97,7 @@ export default function Header() {
           )}
           <ColorModeToggle />
           {isMobile && (
-            <IconButton edge="end" aria-label="Open menu" onClick={() => setMenuOpen(true)}>
+            <IconButton edge="end" aria-label="Open menu" aria-haspopup="dialog" aria-expanded={menuOpen} onClick={() => setMenuOpen(true)}>
               <MenuIcon />
             </IconButton>
           )}

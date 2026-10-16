@@ -4,10 +4,9 @@ import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import Button from '@mui/material/Button';
-import Breadcrumbs from '@mui/material/Breadcrumbs';
-import Link from '@mui/material/Link';
 import Skeleton from '@mui/material/Skeleton';
 import SeoHead from '../components/seo/SeoHead.jsx';
+import DetailHero from '../components/common/DetailHero.jsx';
 import JsonLd, { organizationSchema, pathwayCourseSchema, breadcrumbSchema } from '../components/seo/JsonLd.jsx';
 import Section from '../components/common/Section.jsx';
 import SmartImage from '../components/common/SmartImage.jsx';
@@ -18,6 +17,7 @@ import { ageLabel } from '../utils/format.js';
 import { PROSE_MAX_WIDTH } from '../theme/layout.js';
 import DetailLayout from '../components/common/DetailLayout.jsx';
 import { RelatedPathways } from '../components/common/Related.jsx';
+import { actionRowSx } from '../components/common/ActionRow.jsx';
 
 const FALLBACK_ACCENT = '#25476a';
 
@@ -156,26 +156,7 @@ export default function PathwayDetailPage() {
       />
 
       {/* header band with the pathway's colour accent */}
-      <Box
-        sx={{
-          backgroundColor: 'surface.subtle',
-          borderBottom: '1px solid',
-          borderColor: 'divider',
-          borderTop: '4px solid',
-          borderTopColor: accent,
-          py: { xs: 4, md: 6 },
-        }}
-      >
-        <Container maxWidth="lg">
-          <Breadcrumbs sx={{ mb: 2 }}>
-            <Link component={RouterLink} to="/" underline="hover" color="inherit">
-              Home
-            </Link>
-            <Link component={RouterLink} to="/pathways" underline="hover" color="inherit">
-              Pathways
-            </Link>
-            <Typography color="text.primary">{name}</Typography>
-          </Breadcrumbs>
+      <DetailHero accent={accent} crumbs={[{ label: 'Home', to: '/' }, { label: 'Pathways', to: '/pathways' }, { label: name }]}>
 
           <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
             <Chip
@@ -195,7 +176,7 @@ export default function PathwayDetailPage() {
             {description}
           </Typography>
 
-          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mt: 3 }}>
+          <Box sx={{ ...actionRowSx, mt: 3 }}>
             <Button component={RouterLink} to={enrollTo} variant="contained" size="large">
               Enroll in this pathway
             </Button>
@@ -210,8 +191,7 @@ export default function PathwayDetailPage() {
               </Button>
             )}
           </Box>
-        </Container>
-      </Box>
+      </DetailHero>
 
       <Section>
         <DetailLayout

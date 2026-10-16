@@ -5,11 +5,15 @@ import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import Button from '@mui/material/Button';
-import Breadcrumbs from '@mui/material/Breadcrumbs';
-import Link from '@mui/material/Link';
 import Skeleton from '@mui/material/Skeleton';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import SeoHead from '../components/seo/SeoHead.jsx';
+import DetailHero from '../components/common/DetailHero.jsx';
+import { DetailHeading } from '../components/common/DetailSection.jsx';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import Inventory2Icon from '@mui/icons-material/Inventory2';
+import TuneIcon from '@mui/icons-material/Tune';
 import JsonLd, { organizationSchema, productSchema, breadcrumbSchema } from '../components/seo/JsonLd.jsx';
 import { resolveMediaUrl } from '../utils/media.js';
 import Section from '../components/common/Section.jsx';
@@ -106,26 +110,7 @@ export default function StoreItemPage() {
       />
 
       {/* header band */}
-      <Box
-        sx={{
-          backgroundColor: 'surface.subtle',
-          borderBottom: '1px solid',
-          borderColor: 'divider',
-          borderTop: '4px solid',
-          borderTopColor: 'primary.dark',
-          py: { xs: 4, md: 6 },
-        }}
-      >
-        <Container maxWidth="lg">
-          <Breadcrumbs sx={{ mb: 2 }}>
-            <Link component={RouterLink} to="/" underline="hover" color="inherit">
-              Home
-            </Link>
-            <Link component={RouterLink} to="/store" underline="hover" color="inherit">
-              Store
-            </Link>
-            <Typography color="text.primary">{name}</Typography>
-          </Breadcrumbs>
+      <DetailHero crumbs={[{ label: 'Home', to: '/' }, { label: 'Store', to: '/store' }, { label: name }]}>
 
           <Box
             sx={{
@@ -223,8 +208,7 @@ export default function StoreItemPage() {
               </Box>
             )}
           </Box>
-        </Container>
-      </Box>
+      </DetailHero>
 
       <Section>
         <DetailLayout
@@ -263,9 +247,7 @@ export default function StoreItemPage() {
         >
           {description && (
             <Box sx={{ maxWidth: 760, mb: 6 }}>
-              <Typography variant="h2" component="h2" sx={{ mb: 2 }}>
-                About this{storeCategory === 'bundle' ? ' bundle' : ''}
-              </Typography>
+              <DetailHeading title={`About this${storeCategory === 'bundle' ? ' bundle' : ''}`} icon={<InfoOutlinedIcon />} />
               <Typography sx={{ color: 'text.secondary', whiteSpace: 'pre-line', maxWidth: PROSE_MAX_WIDTH, lineHeight: 1.7 }}>
                 {description}
               </Typography>
@@ -274,9 +256,7 @@ export default function StoreItemPage() {
 
           {highlights.length > 0 && (
             <Box sx={{ maxWidth: 760, mb: 6 }}>
-              <Typography variant="h4" component="h2" sx={{ mb: 2 }}>
-                Highlights
-              </Typography>
+              <DetailHeading title="Highlights" icon={<AutoAwesomeIcon />} />
               <Box sx={{ display: 'grid', gap: 1.25 }}>
                 {highlights.map((h, i) => (
                   <Box key={`${h}-${i}`} sx={{ display: 'flex', gap: 1.25, alignItems: 'flex-start' }}>
@@ -290,9 +270,7 @@ export default function StoreItemPage() {
 
           {includes.length > 0 && (
             <Box sx={{ mb: 6 }}>
-              <Typography variant="h2" component="h2" sx={{ mb: 3 }}>
-                What you get
-              </Typography>
+              <DetailHeading title="What you get" icon={<Inventory2Icon />} />
               <Box
                 sx={{
                   display: 'grid',
@@ -324,9 +302,7 @@ export default function StoreItemPage() {
 
           {specs.length > 0 && (
             <Box sx={{ mb: 2 }}>
-              <Typography variant="h2" component="h2" sx={{ mb: 3 }}>
-                Specifications
-              </Typography>
+              <DetailHeading title="Specifications" icon={<TuneIcon />} />
               <Box
                 sx={{
                   display: 'grid',

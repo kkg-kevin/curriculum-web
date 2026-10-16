@@ -5,13 +5,15 @@ import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import Button from '@mui/material/Button';
-import Breadcrumbs from '@mui/material/Breadcrumbs';
-import Link from '@mui/material/Link';
 import Skeleton from '@mui/material/Skeleton';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import BuildCircleIcon from '@mui/icons-material/BuildCircle';
 import Inventory2Icon from '@mui/icons-material/Inventory2';
 import SeoHead from '../components/seo/SeoHead.jsx';
+import DetailHero from '../components/common/DetailHero.jsx';
+import { DetailHeading } from '../components/common/DetailSection.jsx';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
 import JsonLd, { organizationSchema, productSchema, breadcrumbSchema } from '../components/seo/JsonLd.jsx';
 import Section from '../components/common/Section.jsx';
 import SmartImage from '../components/common/SmartImage.jsx';
@@ -141,26 +143,7 @@ export default function ProjectDetailPage() {
       />
 
       {/* header band */}
-      <Box
-        sx={{
-          backgroundColor: 'surface.subtle',
-          borderBottom: '1px solid',
-          borderColor: 'divider',
-          borderTop: '4px solid',
-          borderTopColor: 'primary.dark',
-          py: { xs: 4, md: 6 },
-        }}
-      >
-        <Container maxWidth="lg">
-          <Breadcrumbs sx={{ mb: 2 }}>
-            <Link component={RouterLink} to="/" underline="hover" color="inherit">
-              Home
-            </Link>
-            <Link component={RouterLink} to="/projects" underline="hover" color="inherit">
-              Projects
-            </Link>
-            <Typography color="text.primary">{name}</Typography>
-          </Breadcrumbs>
+      <DetailHero crumbs={[{ label: 'Home', to: '/' }, { label: 'Projects', to: '/projects' }, { label: name }]}>
 
           <Box
             sx={{
@@ -246,8 +229,7 @@ export default function ProjectDetailPage() {
               </Box>
             )}
           </Box>
-        </Container>
-      </Box>
+      </DetailHero>
 
       <Section>
         <DetailLayout
@@ -284,9 +266,7 @@ export default function ProjectDetailPage() {
         >
           {(description || overview) && (
             <Box sx={{ maxWidth: 760, mb: 6 }}>
-              <Typography variant="h2" component="h2" sx={{ mb: 2 }}>
-                About this project
-              </Typography>
+              <DetailHeading title="About this project" icon={<InfoOutlinedIcon />} />
               {description && (
                 <Typography sx={{ color: 'text.secondary', whiteSpace: 'pre-line', maxWidth: PROSE_MAX_WIDTH, lineHeight: 1.7 }}>
                   {description}
@@ -304,13 +284,12 @@ export default function ProjectDetailPage() {
 
           {milestones.length > 0 && (
             <Box sx={{ maxWidth: 820, mb: 6 }}>
-              <Typography variant="h2" component="h2" sx={{ mb: 1 }}>
-                The build, step by step
-              </Typography>
-              <Typography sx={{ color: 'text.secondary', mb: 4, maxWidth: 640 }}>
-                Worked through in order — each step builds on the last, and ends with something
-                working.
-              </Typography>
+              <DetailHeading
+                title="The build, step by step"
+                icon={<FormatListNumberedIcon />}
+                lead="Worked through in order — each step builds on the last, and ends with something working."
+                sx={{ mb: 1.5 }}
+              />
               {milestones.map((m, i) => (
                 <BuildStep key={`${m.name}-${i}`} index={i} total={milestones.length} step={m} />
               ))}
@@ -326,12 +305,7 @@ export default function ProjectDetailPage() {
           >
             {deliverables.length > 0 && (
               <Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                  <BuildCircleIcon sx={{ color: 'primary.main' }} />
-                  <Typography variant="h4" component="h2">
-                    What you&apos;ll build
-                  </Typography>
-                </Box>
+                <DetailHeading title="What you’ll build" icon={<BuildCircleIcon />} />
                 <Box component="ul" sx={{ m: 0, p: 0, listStyle: 'none', display: 'grid', gap: 1.5 }}>
                   {deliverables.map((d, i) => (
                     <Box component="li" key={`${d.name}-${i}`} sx={{ display: 'flex', gap: 1.25 }}>
@@ -352,12 +326,7 @@ export default function ProjectDetailPage() {
 
             {requirements.length > 0 && (
               <Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                  <Inventory2Icon sx={{ color: 'primary.main' }} />
-                  <Typography variant="h4" component="h2">
-                    What you&apos;ll need
-                  </Typography>
-                </Box>
+                <DetailHeading title="What you’ll need" icon={<Inventory2Icon />} />
                 <Box component="ul" sx={{ m: 0, p: 0, listStyle: 'none', display: 'grid', gap: 1 }}>
                   {requirements.map((r, i) => (
                     <Box component="li" key={`${r}-${i}`} sx={{ display: 'flex', gap: 1.25 }}>

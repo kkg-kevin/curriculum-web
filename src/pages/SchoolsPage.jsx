@@ -17,6 +17,7 @@ import Reveal from '../components/common/Reveal.jsx';
 import Clients from '../components/home/Clients.jsx';
 import CTABanner from '../components/home/CTABanner.jsx';
 import { programme, features, implementation, quarky } from '../content/schools.js';
+import { actionRowSx } from '../components/common/ActionRow.jsx';
 
 const FEATURE_ICONS = {
   curriculum: MenuBookIcon,
@@ -52,7 +53,7 @@ export default function SchoolsPage() {
       <JsonLd data={organizationSchema()} />
 
       <PageHeader title={programme.title} lead={programme.lead}>
-        <Box sx={{ mt: 4, display: 'flex', gap: 1.5, flexWrap: 'wrap', justifyContent: 'center' }}>
+        <Box sx={{ mt: 4, ...actionRowSx, justifyContent: 'center' }}>
           <Button component={RouterLink} to={programme.contactTo} variant="contained" size="large">
             Bring it to your school
           </Button>

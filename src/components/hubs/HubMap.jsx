@@ -2,9 +2,11 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Link from '@mui/material/Link';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import PlaceIcon from '@mui/icons-material/Place';
+import DetailSection from '../common/DetailSection.jsx';
 
 /**
- * "Location" card on a club's (hub's) page: an embedded Google Map — Google's keyless embed
+ * "Location" section on a club's (hub's) page: an embedded Google Map — Google's keyless embed
  * (maps?q=…&output=embed), so there is no API key to set up or pay for — and a link to open it in
  * Google Maps (the hub's own map link from the portal when it has one; otherwise a search).
  *
@@ -28,15 +30,19 @@ export default function HubMap({ name, address, mapLink, mapPin }) {
   const open = mapLink || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
 
   return (
-    <Box
-      component="section"
-      aria-labelledby="hub-location"
-      sx={{ p: { xs: 2.5, md: 3 }, borderRadius: 3, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}
-    >
-      <Typography id="hub-location" variant="h4" component="h2" sx={{ mb: 2 }}>
-        Location
-      </Typography>
-      <Box sx={{ position: 'relative', width: '100%', aspectRatio: { xs: '4 / 3', sm: '16 / 9' }, borderRadius: 2, overflow: 'hidden', bgcolor: 'surface.imagePlaceholder' }}>
+    <DetailSection id="hub-location" title="Location" icon={<PlaceIcon />}>
+      <Box
+        sx={{
+          position: 'relative',
+          width: '100%',
+          aspectRatio: { xs: '4 / 3', sm: '16 / 9', lg: '21 / 9' },
+          borderRadius: 3,
+          overflow: 'hidden',
+          border: '1px solid',
+          borderColor: 'surface.ring',
+          bgcolor: 'surface.imagePlaceholder',
+        }}
+      >
         <Box
           component="iframe"
           title={`Map of ${name}`}
@@ -52,9 +58,9 @@ export default function HubMap({ name, address, mapLink, mapPin }) {
           {address || name}
         </Typography>
         <Link href={open} target="_blank" rel="noopener noreferrer" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, fontWeight: 700, fontSize: '0.9rem' }}>
-          Open in Google Maps <OpenInNewIcon sx={{ fontSize: 16 }} />
+          Open in Google Maps <OpenInNewIcon aria-hidden sx={{ fontSize: 16 }} />
         </Link>
       </Box>
-    </Box>
+    </DetailSection>
   );
 }

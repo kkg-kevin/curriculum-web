@@ -6,6 +6,7 @@ import Section from '../common/Section.jsx';
 import SectionHeading from '../common/SectionHeading.jsx';
 import Reveal from '../common/Reveal.jsx';
 import { programme, features } from '../../content/schools.js';
+import { actionRowSx } from '../common/ActionRow.jsx';
 
 /**
  * "For schools" on the home page — the schools programme in one paragraph, with what it
@@ -24,7 +25,7 @@ export default function SchoolsBand() {
       >
         <Box>
           <SectionHeading eyebrow="For schools" title={programme.title} lead={programme.body[0]} />
-          <Reveal delay={180} sx={{ mt: 4, display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
+          <Reveal delay={180} sx={{ mt: 4, ...actionRowSx }}>
             <Button component={RouterLink} to="/schools" variant="contained" size="large">
               See the schools programme
             </Button>
