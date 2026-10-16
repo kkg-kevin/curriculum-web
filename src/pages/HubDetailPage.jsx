@@ -5,10 +5,9 @@ import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import Button from '@mui/material/Button';
-import Breadcrumbs from '@mui/material/Breadcrumbs';
-import Link from '@mui/material/Link';
 import Skeleton from '@mui/material/Skeleton';
 import SeoHead from '../components/seo/SeoHead.jsx';
+import DetailHero from '../components/common/DetailHero.jsx';
 import JsonLd, { organizationSchema } from '../components/seo/JsonLd.jsx';
 import CTABanner from '../components/home/CTABanner.jsx';
 import { ErrorBlock } from '../components/common/StateViews.jsx';
@@ -73,31 +72,12 @@ export default function HubDetailPage() {
       <JsonLd data={[organizationSchema()]} />
 
       {/* header band */}
-      <Box
-        sx={{
-          backgroundColor: 'surface.subtle',
-          borderBottom: '1px solid',
-          borderColor: 'divider',
-          borderTop: '4px solid',
-          borderTopColor: 'primary.dark',
-          py: { xs: 4, md: 6 },
-        }}
-      >
-        <Container maxWidth="lg">
-          <Breadcrumbs sx={{ mb: 2 }}>
-            <Link component={RouterLink} to="/" underline="hover" color="inherit">
-              Home
-            </Link>
-            <Link component={RouterLink} to="/bootcamps" underline="hover" color="inherit">
-              Bootcamps
-            </Link>
-            {slug && (
-              <Link component={RouterLink} to={`/bootcamps/${slug}`} underline="hover" color="inherit">
-                {bootcamp?.name || 'Bootcamp'}
-              </Link>
-            )}
-            <Typography color="text.primary">{hub.name}</Typography>
-          </Breadcrumbs>
+      <DetailHero crumbs={[
+          { label: 'Home', to: '/' },
+          { label: 'Bootcamps', to: '/bootcamps' },
+          ...(slug ? [{ label: bootcamp?.name || 'Bootcamp', to: `/bootcamps/${slug}` }] : []),
+          { label: hub.name },
+        ]}>
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 2, md: 2.5 }, flexWrap: 'wrap', mb: 1.5 }}>
             <ClubLogo src={hub.photo} name={hub.name} size={64} />
@@ -121,8 +101,7 @@ export default function HubDetailPage() {
               {formatDateRange(runStartDate, runEndDate) || 'Dates to be confirmed'}
             </Typography>
           )}
-        </Container>
-      </Box>
+      </DetailHero>
 
       <HubProfile
         hub={hub}

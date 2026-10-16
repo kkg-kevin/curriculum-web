@@ -3,8 +3,6 @@ import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import Breadcrumbs from '@mui/material/Breadcrumbs';
-import Link from '@mui/material/Link';
 import Skeleton from '@mui/material/Skeleton';
 import SeoHead from '../components/seo/SeoHead.jsx';
 import JsonLd, { organizationSchema, breadcrumbSchema, clubSchema } from '../components/seo/JsonLd.jsx';
@@ -12,10 +10,11 @@ import CTABanner from '../components/home/CTABanner.jsx';
 import HubProfile from '../components/hubs/HubProfile.jsx';
 import ClubLogo from '../components/hubs/ClubLogo.jsx';
 import FactPills from '../components/common/FactPills.jsx';
+import DetailHero from '../components/common/DetailHero.jsx';
+import ActionRow from '../components/common/ActionRow.jsx';
 import PlaceIcon from '@mui/icons-material/Place';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import CategoryIcon from '@mui/icons-material/Category';
-import PhoneIcon from '@mui/icons-material/Phone';
 import { ErrorBlock } from '../components/common/StateViews.jsx';
 import { usePublicHubList, usePublicHub } from '../hooks/usePublicHubs.js';
 import { CLUBS_PATH, clubSlug, scheduleLabel, sortDays } from '../utils/clubs.js';
@@ -71,8 +70,9 @@ export default function EstateTechClubPage() {
   const facts = [
     { key: 'type', Icon: CategoryIcon, label: [hub.hubTypeLabel, hub.deliveryLabel].filter(Boolean).join(' · ') },
     { key: 'where', Icon: PlaceIcon, label: where, href: hub.isVirtual ? undefined : profile.mapLink || undefined },
+    // The phone number, email and contact person are in the "Get in touch" card right beside
+    // (on a phone, right under) the photos.
     { key: 'when', Icon: AccessTimeIcon, label: scheduleLabel(hub.schedule) },
-    { key: 'phone', Icon: PhoneIcon, label: profile.phone, href: profile.phone ? `tel:${profile.phone.replace(/\s/g, '')}` : undefined },
   ];
   const enquire = `/enroll?club=${encodeURIComponent(hub.name)}`;
   const description =
@@ -94,43 +94,35 @@ export default function EstateTechClubPage() {
         ]}
       />
 
-      <Box
-        sx={{
-          backgroundColor: 'surface.subtle',
-          borderBottom: '1px solid',
-          borderColor: 'divider',
-          borderTop: '4px solid',
-          borderTopColor: 'primary.dark',
-          py: { xs: 4, md: 5 },
-        }}
-      >
-        <Container maxWidth="lg">
-          <Breadcrumbs sx={{ mb: 2.5 }}>
-            <Link component={RouterLink} to="/" underline="hover" color="inherit">
-              Home
-            </Link>
-            <Link component={RouterLink} to={CLUBS_PATH} underline="hover" color="inherit">
-              Estate Tech Clubs
-            </Link>
-            <Typography color="text.primary">{hub.name}</Typography>
-          </Breadcrumbs>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 2, md: 2.5 } }}>
-            <ClubLogo src={profile.photo} name={hub.name} size={72} />
-            <Typography variant="h1" component="h1" sx={{ fontSize: { xs: '1.9rem', md: '2.75rem' } }}>
-              {hub.name}
-            </Typography>
+      <DetailHero crumbs={[{ label: 'Home', to: '/' }, { label: 'Estate Tech Clubs', to: CLUBS_PATH }, { label: hub.name }]}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: { xs: 'column', md: 'row' },
+            alignItems: { xs: 'stretch', md: 'flex-end' },
+            justifyContent: 'space-between',
+            gap: { xs: 3, md: 4 },
+          }}
+        >
+          <Box sx={{ minWidth: 0 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 2, md: 2.5 } }}>
+              <ClubLogo src={profile.photo} name={hub.name} size={72} />
+              <Typography variant="h1" component="h1" sx={{ fontSize: { xs: '1.9rem', md: '2.75rem' }, minWidth: 0, overflowWrap: 'anywhere' }}>
+                {hub.name}
+              </Typography>
+            </Box>
+            <FactPills items={facts} sx={{ mt: 2.5 }} />
           </Box>
-          <FactPills items={facts} sx={{ mt: 2.5 }} />
-          <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', mt: 3 }}>
+          <ActionRow sx={{ flexShrink: 0 }}>
             <Button component={RouterLink} to={enquire} variant="contained" size="large">
               Enquire about this club
             </Button>
             <Button component={RouterLink} to={CLUBS_PATH} variant="outlined" size="large">
               See all clubs
             </Button>
-          </Box>
-        </Container>
-      </Box>
+          </ActionRow>
+        </Box>
+      </DetailHero>
 
       <HubProfile
         hub={club}

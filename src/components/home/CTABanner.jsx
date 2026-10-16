@@ -5,6 +5,7 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Reveal from '../common/Reveal.jsx';
 import { PAGE_GUTTER } from '../../theme/layout.js';
+import { actionRowSx } from '../common/ActionRow.jsx';
 
 /**
  * Reusable full-bleed CTA band. Rather than a flat blue rectangle it's a
@@ -116,7 +117,7 @@ export default function CTABanner({
               <Typography sx={{ mb: 4, fontSize: '1.08rem', color: 'rgba(255,255,255,0.88)' }}>
                 {body}
               </Typography>
-              <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', justifyContent: 'center' }}>
+              <Box sx={{ ...actionRowSx, justifyContent: 'center' }}>
                 <Button
                   component={RouterLink}
                   to={primary.to}

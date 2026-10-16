@@ -4,6 +4,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import FlipIcon from '@mui/icons-material/Flip';
+import DetailSection from '../common/DetailSection.jsx';
 import Reveal from '../common/Reveal.jsx';
 import { resolveMediaUrl } from '../../utils/media.js';
 import { gameIcon } from './gameIcons.js';
@@ -248,19 +249,15 @@ function GameCard({ game, index }) {
 export default function BootcampGames({ games = [], note = '' }) {
   if (!games.length) return null;
   const anyFlips = games.some((g) => g.description || (g.skills || []).length);
+  // The bootcamp's own note is typed in the portal and may not end in a full stop; the hint
+  // that follows it is a separate sentence.
+  const intro = (note || 'Learning sticks when it’s fun, so every bootcamp makes time to play. These games come with this one.').trim();
+  const lead = anyFlips
+    ? `${/[.!?…]$/.test(intro) ? intro : `${intro}.`} Flip a card to see what each game builds.`
+    : intro;
 
   return (
-    <Box sx={{ mb: 7 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-        <SportsEsportsIcon sx={{ fontSize: 22, color: 'primary.main' }} />
-        <Typography variant="h5" component="h2" sx={{ fontWeight: 700 }}>
-          More than lessons
-        </Typography>
-      </Box>
-      <Typography sx={{ color: 'text.secondary', lineHeight: 1.7, mb: 2.5, maxWidth: 620 }}>
-        {note || 'Learning sticks when it’s fun, so every bootcamp makes time to play. These games come with this one.'}
-        {anyFlips && ' Flip a card to see what each game builds.'}
-      </Typography>
+    <DetailSection title="More than lessons" icon={<SportsEsportsIcon />} lead={lead}>
 
       <Box
         component="ul"
@@ -293,6 +290,6 @@ export default function BootcampGames({ games = [], note = '' }) {
           </Reveal>
         ))}
       </Box>
-    </Box>
+    </DetailSection>
   );
 }

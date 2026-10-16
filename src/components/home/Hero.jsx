@@ -5,6 +5,7 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import { alpha } from '@mui/material/styles';
 import Reveal from '../common/Reveal.jsx';
+import { actionRowSx } from '../common/ActionRow.jsx';
 import { hero } from '../../content/home.js';
 import { purpose } from '../../content/organisation.js';
 import { PurposeIcon } from './Purpose.jsx';
@@ -69,14 +70,28 @@ const headingSheen = (t) => ({
   },
 });
 
+// "5–17" never breaks across two lines.
+function keepRangesTogether(text) {
+  return text.split(/(\d+–\d+)/).map((part, i) =>
+    /^\d+–\d+$/.test(part) ? (
+      <Box key={i} component="span" sx={{ whiteSpace: 'nowrap' }}>
+        {part}
+      </Box>
+    ) : (
+      part
+    ),
+  );
+}
+
+// What's inside — each one opens its own page.
 const PILLARS = [
-  'Learning pathways',
-  'Holiday bootcamps',
-  'Home schooling',
-  'Schools programme',
-  'Buildable projects',
-  'Competitions',
-  'The Quarky robot',
+  { label: 'Learning pathways', to: '/pathways' },
+  { label: 'Holiday bootcamps', to: '/bootcamps' },
+  { label: 'Home schooling', to: '/home-schooling' },
+  { label: 'Schools programme', to: '/schools' },
+  { label: 'Buildable projects', to: '/projects' },
+  { label: 'Competitions', to: '/competitions' },
+  { label: 'The Quarky robot', to: '/store' },
 ];
 
 function HeroBackdrop() {
@@ -144,11 +159,12 @@ function HeroStudents() {
         bottom: { xs: 40, md: 'auto' },
         width: { xs: '150%', md: '134%' },
         transform: { xs: 'translateX(-50%)', md: 'translate(-50%, -50%)' },
-        opacity: (t) => (t.palette.mode === 'dark' ? 0.3 : 0.24),
+        opacity: { xs: 0.16, md: 0.24 },
+        'html[data-color-mode="dark"] &': { opacity: { xs: 0.22, md: 0.3 } },
         pointerEvents: 'none',
-        // Fainter on the left, where the girl sits behind running text.
-        maskImage: { md: 'linear-gradient(90deg, rgba(0,0,0,0.5) 25%, #000 60%)' },
-        WebkitMaskImage: { md: 'linear-gradient(90deg, rgba(0,0,0,0.5) 25%, #000 60%)' },
+        // Much fainter on the left, where the girl sits behind the heading and running text.
+        maskImage: { md: 'linear-gradient(90deg, rgba(0,0,0,0.22) 22%, #000 64%)' },
+        WebkitMaskImage: { md: 'linear-gradient(90deg, rgba(0,0,0,0.22) 22%, #000 64%)' },
       }}
     >
       <Box
@@ -178,7 +194,7 @@ function HeroPurpose() {
         display: 'grid',
         gap: { xs: 2, md: 2.5 },
         width: '100%',
-        maxWidth: { md: 480 },
+        maxWidth: { md: 500 },
         justifySelf: { md: 'end' },
       }}
     >
@@ -234,18 +250,18 @@ export default function Hero() {
     >
       <HeroBackdrop />
 
-      <Container maxWidth="lg" sx={{ py: { xs: 8, md: 14 }, position: 'relative', zIndex: 1 }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 7, md: 12 }, position: 'relative', zIndex: 1 }}>
         <Box
           sx={{
             position: 'relative',
             display: 'grid',
-            gridTemplateColumns: { xs: '1fr', md: '1.05fr 0.95fr' },
-            gap: { xs: 6, md: 5 },
+            gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'minmax(0, 1.15fr) minmax(0, 0.85fr)' },
+            gap: { xs: 6, md: 8 },
             alignItems: 'center',
           }}
         >
           <HeroStudents />
-          <Box sx={{ position: 'relative', maxWidth: { xs: '100%', md: 560, xl: 640 } }}>
+          <Box sx={{ position: 'relative', maxWidth: { xs: '100%', md: 640, xl: 700 } }}>
             <Reveal
               as="span"
               delay={40}
@@ -297,14 +313,14 @@ export default function Hero() {
                   lineHeight: 1.6,
                   color: 'text.secondary',
                   mb: 4,
-                  maxWidth: 520,
+                  maxWidth: 560,
                 }}
               >
-                {hero.sub}
+                {keepRangesTogether(hero.sub)}
               </Typography>
             </Reveal>
 
-            <Reveal delay={210} sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
+            <Reveal delay={210} sx={actionRowSx}>
               <Button component={RouterLink} to={hero.primaryCta.to} variant="contained" size="large">
                 {hero.primaryCta.label}
               </Button>
@@ -314,6 +330,8 @@ export default function Hero() {
             </Reveal>
 
             <Reveal
+              as="nav"
+              aria-label="Programmes"
               delay={290}
               sx={{
                 mt: 5,
@@ -322,26 +340,35 @@ export default function Hero() {
                 borderColor: 'divider',
                 display: 'flex',
                 flexWrap: 'wrap',
-                gap: { xs: 1, sm: 1.75 },
+                columnGap: { xs: 2, sm: 2.25 },
+                rowGap: 1,
               }}
             >
               {PILLARS.map((p) => (
                 <Box
-                  key={p}
+                  key={p.to}
+                  component={RouterLink}
+                  to={p.to}
                   sx={{
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: 0.75,
-                    fontSize: '0.82rem',
+                    py: 0.5,
+                    fontSize: '0.85rem',
                     fontWeight: 600,
                     color: 'text.secondary',
+                    textDecoration: 'none',
+                    borderRadius: 1,
+                    transition: 'color 160ms ease',
+                    '&:hover': { color: 'primary.main', textDecoration: 'underline', textUnderlineOffset: 3 },
                   }}
                 >
                   <Box
                     component="span"
-                    sx={{ width: 5, height: 5, borderRadius: '50%', backgroundColor: 'primary.main' }}
+                    aria-hidden
+                    sx={{ width: 5, height: 5, borderRadius: '50%', backgroundColor: 'primary.main', flexShrink: 0 }}
                   />
-                  {p}
+                  {p.label}
                 </Box>
               ))}
             </Reveal>

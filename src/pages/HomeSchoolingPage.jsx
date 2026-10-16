@@ -15,6 +15,7 @@ import JsonLd, { organizationSchema } from '../components/seo/JsonLd.jsx';
 import Section from '../components/common/Section.jsx';
 import SectionHeading from '../components/common/SectionHeading.jsx';
 import Reveal from '../components/common/Reveal.jsx';
+import { actionRowSx } from '../components/common/ActionRow.jsx';
 import FaqList from '../components/common/FaqList.jsx';
 import CTABanner from '../components/home/CTABanner.jsx';
 import { ErrorBlock, EmptyBlock } from '../components/common/StateViews.jsx';
@@ -96,7 +97,7 @@ function Hero({ packages, isLoading }) {
                 {homeSchoolingHero.sub}
               </Typography>
             </Reveal>
-            <Reveal delay={180} sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', mb: 4 }}>
+            <Reveal delay={180} sx={{ ...actionRowSx, mb: 4 }}>
               <Button component="a" href="#packages" variant="contained" size="large" endIcon={<ArrowDownwardRoundedIcon />}>
                 See packages &amp; prices
               </Button>

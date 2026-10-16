@@ -5,13 +5,16 @@ import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import Button from '@mui/material/Button';
-import Breadcrumbs from '@mui/material/Breadcrumbs';
-import Link from '@mui/material/Link';
 import Skeleton from '@mui/material/Skeleton';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import SeoHead from '../components/seo/SeoHead.jsx';
+import DetailHero from '../components/common/DetailHero.jsx';
+import { DetailHeading } from '../components/common/DetailSection.jsx';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import PaymentsIcon from '@mui/icons-material/Payments';
 import JsonLd, { organizationSchema, breadcrumbSchema, eventSchema } from '../components/seo/JsonLd.jsx';
 import Section from '../components/common/Section.jsx';
 import SmartImage from '../components/common/SmartImage.jsx';
@@ -195,26 +198,7 @@ export default function CompetitionDetailPage() {
       />
 
       {/* header band */}
-      <Box
-        sx={{
-          backgroundColor: 'surface.subtle',
-          borderBottom: '1px solid',
-          borderColor: 'divider',
-          borderTop: '4px solid',
-          borderTopColor: 'primary.dark',
-          py: { xs: 4, md: 6 },
-        }}
-      >
-        <Container maxWidth="lg">
-          <Breadcrumbs sx={{ mb: 2 }}>
-            <Link component={RouterLink} to="/" underline="hover" color="inherit">
-              Home
-            </Link>
-            <Link component={RouterLink} to="/competitions" underline="hover" color="inherit">
-              Competitions
-            </Link>
-            <Typography color="text.primary">{name}</Typography>
-          </Breadcrumbs>
+      <DetailHero crumbs={[{ label: 'Home', to: '/' }, { label: 'Competitions', to: '/competitions' }, { label: name }]}>
 
           <Box sx={{ display: 'flex', gap: { xs: 3, md: 5 }, flexWrap: { xs: 'wrap', md: 'nowrap' }, alignItems: 'flex-start' }}>
             <Box sx={{ flex: 1, minWidth: 260 }}>
@@ -251,8 +235,7 @@ export default function CompetitionDetailPage() {
               </Box>
             )}
           </Box>
-        </Container>
-      </Box>
+      </DetailHero>
 
       <Section>
         <DetailLayout
@@ -278,9 +261,7 @@ export default function CompetitionDetailPage() {
         >
           {description && (
             <Box sx={{ maxWidth: 760, mb: 6 }}>
-              <Typography variant="h2" component="h2" sx={{ mb: 2 }}>
-                About {name}
-              </Typography>
+              <DetailHeading title={`About ${name}`} icon={<InfoOutlinedIcon />} />
               <Typography sx={{ color: 'text.secondary', whiteSpace: 'pre-line', maxWidth: PROSE_MAX_WIDTH, lineHeight: 1.7 }}>
                 {description}
               </Typography>
@@ -289,9 +270,7 @@ export default function CompetitionDetailPage() {
 
           {tracks.length > 0 ? (
             <>
-              <Typography variant="h2" component="h2" sx={{ mb: 1 }}>
-                {tracks.length === 1 ? 'The track' : 'Tracks'}
-              </Typography>
+              <DetailHeading title={tracks.length === 1 ? 'The track' : 'Tracks'} icon={<EmojiEventsIcon />} tight />
               <Typography sx={{ color: 'text.secondary', mb: 4, maxWidth: 620 }}>
                 Each learner or team picks one track to enter. Choose the one that fits their age and
                 interests.
@@ -319,9 +298,7 @@ export default function CompetitionDetailPage() {
 
           {coursePricing.length > 0 && (
             <Box sx={{ mt: 6, maxWidth: 900 }}>
-              <Typography variant="h2" component="h2" sx={{ mb: 1 }}>
-                Course pricing
-              </Typography>
+              <DetailHeading title="Course pricing" icon={<PaymentsIcon />} tight />
               <Typography sx={{ color: 'text.secondary', mb: 4 }}>
                 Individual course prices within this competition&apos;s curriculum.
               </Typography>

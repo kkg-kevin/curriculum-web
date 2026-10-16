@@ -5,7 +5,6 @@ import SeoHead from '../components/seo/SeoHead.jsx';
 import JsonLd, { organizationSchema, itemListSchema } from '../components/seo/JsonLd.jsx';
 import PageHeader from '../components/common/PageHeader.jsx';
 import Section from '../components/common/Section.jsx';
-import CTABanner from '../components/home/CTABanner.jsx';
 import { ErrorBlock, EmptyBlock } from '../components/common/StateViews.jsx';
 import ClubCard from '../components/cards/ClubCard.jsx';
 import { usePublicHubList, usePublicHubProfiles } from '../hooks/usePublicHubs.js';
@@ -103,13 +102,6 @@ export default function EstateTechClubsPage() {
           </Box>
         )}
       </Section>
-
-      <CTABanner
-        heading="No club near you yet?"
-        body="Tell us your estate or neighbourhood. We open new clubs where families ask for them."
-        primary={{ label: 'Tell us where', to: '/contact?subject=A%20tech%20club%20in%20my%20estate' }}
-        secondary={{ label: 'Enroll a learner', to: '/enroll' }}
-      />
     </>
   );
 }

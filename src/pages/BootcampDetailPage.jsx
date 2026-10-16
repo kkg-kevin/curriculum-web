@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { useParams, Link as RouterLink } from 'react-router-dom';
-import { alpha } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import Button from '@mui/material/Button';
-import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Link from '@mui/material/Link';
 import Skeleton from '@mui/material/Skeleton';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -15,9 +15,13 @@ import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
 import EventIcon from '@mui/icons-material/Event';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import RouteIcon from '@mui/icons-material/Route';
 import SeoHead from '../components/seo/SeoHead.jsx';
 import JsonLd, { organizationSchema, breadcrumbSchema, eventSchema } from '../components/seo/JsonLd.jsx';
 import Section from '../components/common/Section.jsx';
+import DetailHero from '../components/common/DetailHero.jsx';
+import DetailSection from '../components/common/DetailSection.jsx';
 import SmartImage from '../components/common/SmartImage.jsx';
 import ExpandableText from '../components/common/ExpandableText.jsx';
 import MediaGallery from '../components/media/MediaGallery.jsx';
@@ -42,21 +46,6 @@ import { RelatedBootcamps } from '../components/common/Related.jsx';
 
 const RUN_STATUS_LABEL = { upcoming: 'Upcoming', active: 'Running now' };
 
-// A lighter section heading than the site's default display-scale h2 (clamp up to 2.7rem/750
-// weight — right for marketing sections, too loud for a detail page's own internal section
-// rhythm). Same "small overline + smaller heading" pattern the Curriculum section already used,
-// applied consistently to every section on this page for a calmer scan.
-function SectionHeading({ icon, children }) {
-  return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-      {icon}
-      <Typography variant="h5" component="h2" sx={{ fontWeight: 700 }}>
-        {children}
-      </Typography>
-    </Box>
-  );
-}
-
 export default function BootcampDetailPage() {
   const { slug } = useParams();
   const { data, isLoading, isError, error, refetch } = usePublicBootcamp(slug);
@@ -72,6 +61,10 @@ export default function BootcampDetailPage() {
   // preview. Clicking the same hub's card again clears it, closing the preview in place instead
   // of navigating to the full /bootcamps/:slug/hubs/:hubId page and back.
   const [selectedHubRun, setSelectedHubRun] = useState(null);
+  // The hub preview sits in the sticky side panel on a wide screen; on a narrow one that panel
+  // is further up the page than the "Running at" list, so the preview opens under the list.
+  const theme = useTheme();
+  const isWide = useMediaQuery(theme.breakpoints.up('md'), { noSsr: true });
 
   if (isLoading) {
     return (
@@ -151,6 +144,7 @@ export default function BootcampDetailPage() {
       ? `From ${formatPrice({ amount: cheapestCoursePricingItem.priceAmount, currency: cheapestCoursePricingItem.priceCurrency })}`
       : 'Enquire for pricing';
   const enquireTo = `/enroll?interestedIn=bootcamp&referenceId=${encodeURIComponent(slug)}`;
+  const hasIntro = Boolean(description) || highlights.length > 0;
 
   return (
     <>
@@ -188,26 +182,7 @@ export default function BootcampDetailPage() {
       {/* header band — identity only (name/tagline/chips/photo). Price, what's included, and the
           booking CTA all live once in the sticky sidebar below, instead of being duplicated in
           both the header and a "Book" card at the very bottom of the page. */}
-      <Box
-        sx={{
-          backgroundColor: 'surface.subtle',
-          borderBottom: '1px solid',
-          borderColor: 'divider',
-          borderTop: '4px solid',
-          borderTopColor: 'primary.dark',
-          py: { xs: 4, md: 6 },
-        }}
-      >
-        <Container maxWidth="lg">
-          <Breadcrumbs sx={{ mb: 2 }}>
-            <Link component={RouterLink} to="/" underline="hover" color="inherit">
-              Home
-            </Link>
-            <Link component={RouterLink} to="/bootcamps" underline="hover" color="inherit">
-              Bootcamps
-            </Link>
-            <Typography color="text.primary">{name}</Typography>
-          </Breadcrumbs>
+      <DetailHero crumbs={[{ label: 'Home', to: '/' }, { label: 'Bootcamps', to: '/bootcamps' }, { label: name }]}>
 
           <Box
             sx={{
@@ -262,7 +237,7 @@ export default function BootcampDetailPage() {
                   { key: 'price', Icon: PaymentsIcon, label: priceLabel },
                 ]}
               />
-              <Button component={RouterLink} to={enquireTo} variant="contained" size="large" sx={{ mt: 3 }}>
+              <Button component={RouterLink} to={enquireTo} variant="contained" size="large" sx={{ mt: 3, width: { xs: '100%', sm: 'auto' } }}>
                 Enquire to book
               </Button>
             </Box>
@@ -275,16 +250,25 @@ export default function BootcampDetailPage() {
               </Box>
             )}
           </Box>
-        </Container>
-      </Box>
+      </DetailHero>
 
       <Section py={{ xs: 5, md: 7 }}>
-        <Box sx={{ display: 'flex', gap: { xs: 0, md: 6 }, alignItems: 'flex-start', flexWrap: 'wrap' }}>
-          {/* main column */}
-          <Box sx={{ flex: '1 1 480px', minWidth: 0 }}>
+        <Box
+          sx={{
+            display: 'grid',
+            columnGap: 6,
+            rowGap: { xs: 5, md: 7 },
+            gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'minmax(0, 1fr) 340px' },
+            gridTemplateAreas: hasIntro
+              ? { xs: '"intro" "aside" "main"', md: '"intro aside" "main aside"' }
+              : { xs: '"aside" "main"', md: '"main aside"' },
+            alignItems: 'start',
+          }}
+        >
+          {hasIntro && (
+            <Box sx={{ gridArea: 'intro', minWidth: 0 }}>
             {description && (
-              <Box sx={{ mb: 7 }}>
-                <SectionHeading>About this bootcamp</SectionHeading>
+              <DetailSection title="About this bootcamp" icon={<InfoOutlinedIcon />}>
                 <Typography
                   sx={{
                     color: 'text.secondary',
@@ -312,14 +296,11 @@ export default function BootcampDetailPage() {
                     Read more
                   </Link>
                 )}
-              </Box>
+              </DetailSection>
             )}
 
             {highlights.length > 0 && (
-              <Box sx={{ mb: 7 }}>
-                <SectionHeading icon={<CheckCircleIcon sx={{ fontSize: 20, color: 'primary.main' }} />}>
-                  What you&apos;ll build
-                </SectionHeading>
+              <DetailSection title="What you’ll build" icon={<CheckCircleIcon />}>
                 <Box component="ul" sx={{ m: 0, p: 0, listStyle: 'none', display: 'grid', gap: 1.5 }}>
                   {highlights.map((h, i) => (
                     <Box component="li" key={`${h}-${i}`} sx={{ display: 'flex', gap: 1.25 }}>
@@ -328,9 +309,77 @@ export default function BootcampDetailPage() {
                     </Box>
                   ))}
                 </Box>
-              </Box>
+              </DetailSection>
             )}
 
+            </Box>
+          )}
+
+          {/* sticky booking panel — price, what's included, and "Enquire to book", always in view
+              on a wide screen; on a phone it comes right after the intro, before the details. */}
+          <Box component="aside" aria-label="Price and booking" sx={{ gridArea: 'aside', position: { md: 'sticky' }, top: { md: 96 }, alignSelf: 'start', minWidth: 0 }}>
+            {isWide && selectedHubRun && (
+              <HubPreviewCard
+                hubId={selectedHubRun.hub.id}
+                run={selectedHubRun}
+                onClose={() => setSelectedHubRun(null)}
+              />
+            )}
+            <Box
+              sx={{
+                p: 3,
+                borderRadius: 3,
+                border: '1px solid',
+                borderColor: 'surface.ring',
+                bgcolor: 'surface.card',
+                boxShadow: 'shadow.md',
+              }}
+            >
+              <Typography sx={{ fontSize: '1.5rem', fontWeight: 700, color: 'text.primary', lineHeight: 1.15 }}>
+                {priceLabel}
+              </Typography>
+
+              {priceNotes.length > 0 && (
+                <Box component="ul" sx={{ m: 0, mt: 2, p: 0, listStyle: 'none', display: 'grid', gap: 0.75 }}>
+                  {priceNotes.map((note, i) => (
+                    <Box component="li" key={i} sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.75 }}>
+                      <CheckCircleIcon sx={{ fontSize: 15, color: 'success.main', flexShrink: 0, mt: '3px' }} />
+                      <Typography variant="body2" color="text.secondary">
+                        {note}
+                      </Typography>
+                    </Box>
+                  ))}
+                </Box>
+              )}
+
+              {games.length > 0 && (
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.75, mt: priceNotes.length > 0 ? 0.75 : 2 }}>
+                  <GameIcon name="dice" size={15} sx={{ color: 'primary.main', mt: '3px' }} />
+                  <Typography variant="body2" color="text.secondary">
+                    Game time included: {gamesSummary(games, 3)}
+                  </Typography>
+                </Box>
+              )}
+
+              <Button
+                component={RouterLink}
+                to={enquireTo}
+                variant="contained"
+                size="large"
+                fullWidth
+                disableElevation
+                sx={{ mt: 2.5 }}
+              >
+                Enquire to book
+              </Button>
+
+              <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mt: 1.5, textAlign: 'center' }}>
+                No online checkout yet — we&apos;ll confirm dates and how to secure a place.
+              </Typography>
+            </Box>
+          </Box>
+
+          <Box sx={{ gridArea: 'main', minWidth: 0 }}>
             {/* The fun side — right after what they'll build, before the practical details. */}
             <BootcampGames games={games} note={gamesNote} />
 
@@ -338,10 +387,7 @@ export default function BootcampDetailPage() {
                 a richer projection (photo/address/contact) than the old "Upcoming runs" list
                 carried — see public-bootcamp.service.js's projectHub(). */}
             {upcomingRuns.length > 0 && (
-              <Box sx={{ mb: 7 }}>
-                <SectionHeading icon={<EventIcon sx={{ fontSize: 20, color: 'primary.main' }} />}>
-                  Running at
-                </SectionHeading>
+              <DetailSection title="Running at" icon={<EventIcon />}>
 
                 <Box sx={{ display: 'grid', gap: 1.5, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
                   {upcomingRuns.map((run, i) => {
@@ -441,7 +487,12 @@ export default function BootcampDetailPage() {
                     );
                   })}
                 </Box>
-              </Box>
+                {!isWide && selectedHubRun && (
+                  <Box sx={{ mt: 2 }}>
+                    <HubPreviewCard hubId={selectedHubRun.hub.id} run={selectedHubRun} onClose={() => setSelectedHubRun(null)} />
+                  </Box>
+                )}
+              </DetailSection>
             )}
 
             {upcomingRuns.length === 0 && (
@@ -474,32 +525,39 @@ export default function BootcampDetailPage() {
               const selected = allSections.find((s) => s.key === selectedPathwayKey) || null;
 
               return (
-                <Box sx={{ mb: 7 }}>
+                <DetailSection
+                  title={selected ? selected.pathwayName || 'Other courses' : 'Pathways in this bootcamp'}
+                  icon={<RouteIcon />}
+                  lead={
+                    selected
+                      ? null
+                      : coursePricing.length > 0
+                        ? 'Individual course prices, and diagnostics where available, by pathway.'
+                        : "Take a diagnostic for the pathway you're interested in."
+                  }
+                  action={
+                    selected && selectedPathwayDiagnostic ? (
+                      <Button
+                        component={RouterLink}
+                        to={`/pathways/${selectedPathwayDiagnostic.pathwaySlug}/diagnostic?bootcamp=${encodeURIComponent(slug)}`}
+                        variant="outlined"
+                        sx={{ color: selectedPathwayDiagnostic.pathwayColor || 'primary.main', borderColor: selectedPathwayDiagnostic.pathwayColor || 'primary.main' }}
+                      >
+                        Take the diagnostic
+                      </Button>
+                    ) : null
+                  }
+                >
                   {selected ? (
                     <>
                       <Button
                         size="small"
                         startIcon={<ArrowBackIcon />}
                         onClick={() => setSelectedPathwayKey(null)}
-                        sx={{ mb: 2, px: 1 }}
+                        sx={{ mb: 2, px: 1, mt: -1 }}
                       >
                         Back to pathways
                       </Button>
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, flexWrap: 'wrap', mb: 3 }}>
-                        <Typography variant="h5" component="h2" sx={{ fontWeight: 700 }}>
-                          {selected.pathwayName || 'Other courses'}
-                        </Typography>
-                        {selectedPathwayDiagnostic && (
-                          <Button
-                            component={RouterLink}
-                            to={`/pathways/${selectedPathwayDiagnostic.pathwaySlug}/diagnostic?bootcamp=${encodeURIComponent(slug)}`}
-                            variant="outlined"
-                            sx={{ color: selectedPathwayDiagnostic.pathwayColor || 'primary.main', borderColor: selectedPathwayDiagnostic.pathwayColor || 'primary.main' }}
-                          >
-                            Take the diagnostic
-                          </Button>
-                        )}
-                      </Box>
                       {selected.courses.length > 0 ? (
                         <CoursePricingRoadmap courses={selected.courses} accent={selected.pathwayColor || undefined} />
                       ) : (
@@ -510,13 +568,7 @@ export default function BootcampDetailPage() {
                     </>
                   ) : (
                     <>
-                      <SectionHeading>Pathways in this bootcamp</SectionHeading>
-                      <Typography variant="body2" sx={{ color: 'text.secondary', mb: 3, mt: -1 }}>
-                        {coursePricing.length > 0
-                          ? 'Individual course prices, and diagnostics where available, by pathway.'
-                          : "Take a diagnostic for the pathway you're interested in."}
-                      </Typography>
-                      <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' } }}>
+                      <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' } }}>
                         {allSections.map((section) => (
                           <BootcampPathwayCard
                             key={section.key}
@@ -527,7 +579,7 @@ export default function BootcampDetailPage() {
                       </Box>
                     </>
                   )}
-                </Box>
+                </DetailSection>
               );
             })()}
 
@@ -540,19 +592,7 @@ export default function BootcampDetailPage() {
                 always visible (clamped, not hidden behind hover) so the info shows on touch
                 devices too. */}
             {curriculum && (
-              <Box>
-                <Typography
-                  variant="overline"
-                  sx={{ display: 'block', color: 'text.secondary', fontWeight: 700, letterSpacing: '0.06em', mb: 0.5 }}
-                >
-                  Curriculum
-                </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5, flexWrap: 'wrap' }}>
-                  <MenuBookIcon sx={{ fontSize: 20, color: 'primary.main' }} />
-                  <Typography variant="h5" component="h2" sx={{ fontWeight: 700 }}>
-                    {curriculum.name}
-                  </Typography>
-                </Box>
+              <DetailSection eyebrow="Curriculum" title={curriculum.name} icon={<MenuBookIcon />}>
                 {curriculum.description && (
                   <ExpandableText color="text.secondary" lines={3} sx={{ lineHeight: 1.7, mb: 3, maxWidth: 680, whiteSpace: 'pre-line' }}>
                     {curriculum.description}
@@ -620,72 +660,8 @@ export default function BootcampDetailPage() {
                     ))}
                   </Box>
                 )}
-              </Box>
+              </DetailSection>
             )}
-          </Box>
-
-          {/* sticky booking sidebar — price, what's included, and the ONE "Enquire to book" CTA
-              on the page, always in view instead of requiring a scroll back up or down to find
-              it (previously duplicated in the header AND a "Book" card at the very bottom). */}
-          <Box sx={{ flex: '1 1 300px', minWidth: 280, maxWidth: { xs: '100%', md: 340 }, position: { md: 'sticky' }, top: { md: 96 } }}>
-            {selectedHubRun && (
-              <HubPreviewCard
-                hubId={selectedHubRun.hub.id}
-                run={selectedHubRun}
-                onClose={() => setSelectedHubRun(null)}
-              />
-            )}
-            <Box
-              sx={{
-                p: 3,
-                borderRadius: 3,
-                border: '1px solid',
-                borderColor: 'divider',
-                bgcolor: 'background.paper',
-              }}
-            >
-              <Typography sx={{ fontSize: '1.5rem', fontWeight: 700, color: 'text.primary', lineHeight: 1.15 }}>
-                {priceLabel}
-              </Typography>
-
-              {priceNotes.length > 0 && (
-                <Box component="ul" sx={{ m: 0, mt: 2, p: 0, listStyle: 'none', display: 'grid', gap: 0.75 }}>
-                  {priceNotes.map((note, i) => (
-                    <Box component="li" key={i} sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.75 }}>
-                      <CheckCircleIcon sx={{ fontSize: 15, color: 'success.main', flexShrink: 0, mt: '3px' }} />
-                      <Typography variant="body2" color="text.secondary">
-                        {note}
-                      </Typography>
-                    </Box>
-                  ))}
-                </Box>
-              )}
-
-              {games.length > 0 && (
-                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.75, mt: priceNotes.length > 0 ? 0.75 : 2 }}>
-                  <GameIcon name="dice" size={15} sx={{ color: 'primary.main', mt: '3px' }} />
-                  <Typography variant="body2" color="text.secondary">
-                    Game time included: {gamesSummary(games, 3)}
-                  </Typography>
-                </Box>
-              )}
-
-              <Button
-                component={RouterLink}
-                to={enquireTo}
-                variant="contained"
-                size="large"
-                fullWidth
-                disableElevation
-                sx={{ mt: 2.5 }}
-              >
-                Enquire to book
-              </Button>
-
-              <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mt: 1.5, textAlign: 'center' }}>
-                No online checkout yet — we&apos;ll confirm dates and how to secure a place.
-              </Typography>
-            </Box>
           </Box>
         </Box>
       </Section>
