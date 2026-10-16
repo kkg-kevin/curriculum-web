@@ -170,7 +170,7 @@ function HeroStudents() {
       <Box
         className="df-anim-float"
         component="img"
-        src="/hero-students.png"
+        src="/hero-kids.png"
         alt=""
         width={1366}
         height={768}
