@@ -12,8 +12,9 @@
  *
  * TODO before launch (spec §9):
  *  - Confirm the WhatsApp number.
- *  - logoPath points at /logo.png (the mascot cropped from the brand
- *    illustration). Swap for a proper logo mark / wordmark SVG when ready.
+ *  - Images in public/ are web-sized copies made from the brand originals there
+ *    (digifunzi-banner*.png, digifunzi-icon-black---a.png): hero-kids.png, mascot-girl.png,
+ *    og-default.png and the favicons. Remake them from the originals if the artwork changes.
  */
 
 export const ORG = {
@@ -48,12 +49,12 @@ export const ORG = {
     { key: 'tiktok', label: 'TikTok', url: 'https://www.tiktok.com/@digifunzi' },
   ],
   // Relative to the site root; callers prefix with the base URL.
-  logoPath: '/logo.png',
-  // Default link-preview image (WhatsApp/Facebook/LinkedIn) for pages without their own cover.
-  // The hero photo (1366×768) stands in until a purpose-made 1200×630 og-default.png is added to
-  // public/ — point this at it then. Must be a file that really exists in public/: the host
-  // answers a missing file with a 404, so a wrong path here silently kills every preview image.
-  ogImagePath: '/hero-students.png',
+  // The "d" mark — what search engines show as the organisation's logo.
+  logoPath: '/digifunzi-icon-black---a.png',
+  // Default link-preview image (WhatsApp/Facebook/LinkedIn) for pages without their own cover:
+  // the brand banner with the wordmark, 1200×630. Must be a file that really exists in public/:
+  // the host answers a missing file with a 404, so a wrong path here silently kills every preview.
+  ogImagePath: '/og-default.png',
 };
 
 /**

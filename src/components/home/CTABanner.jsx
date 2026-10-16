@@ -10,8 +10,8 @@ import { actionRowSx } from '../common/ActionRow.jsx';
 /**
  * Reusable full-bleed CTA band. Rather than a flat blue rectangle it's a
  * contained, rounded "plate" floating on the page ground: a deep brand gradient,
- * a soft radial highlight, a masked dot-grid and the Digifunzi mascot bled off
- * the right edge. Reads as a designed closing panel, not a coloured strip.
+ * a soft radial highlight, a masked dot-grid and the two Digifunzi mascots — the boy
+ * leaning in from the left edge, the girl from the right. Reads as a designed closing panel, not a coloured strip.
  */
 export default function CTABanner({
   heading = 'Ready to get started?',
@@ -81,12 +81,32 @@ export default function CTABanner({
                 WebkitMaskImage: 'linear-gradient(90deg, #000 0%, transparent 60%)',
               }}
             />
-            {/* mascot — bled off the right edge, feet below the plate edge so it
-                reads as leaning into frame rather than sitting cropped */}
+            {/* mascots — the boy at the left edge, the girl at the right, feet below the plate
+                edge so they read as leaning into frame rather than sitting cropped */}
             <Box
               aria-hidden
               component="img"
-              src="/logo.png"
+              src="/mascot-boy.png"
+              alt=""
+              width={312}
+              height={357}
+              loading="lazy"
+              sx={{
+                height: 'auto',
+                position: 'absolute',
+                left: 8,
+                bottom: -40,
+                width: 228,
+                filter: 'drop-shadow(0 24px 34px rgba(0,0,0,0.35))',
+                // Only where there's room beside the centred text.
+                display: { xs: 'none', lg: 'block' },
+                pointerEvents: 'none',
+              }}
+            />
+            <Box
+              aria-hidden
+              component="img"
+              src="/mascot-girl.png"
               alt=""
               width={307}
               height={331}
@@ -105,7 +125,7 @@ export default function CTABanner({
             />
 
             {/* Centred: a heading, a line and two buttons held to the left of a wide plate left
-                its whole middle empty. The mascot still leans in from the right on large screens. */}
+                its whole middle empty. The mascots lean in from either side on large screens. */}
             <Box sx={{ position: 'relative', maxWidth: 640, mx: 'auto', textAlign: 'center' }}>
               <Typography
                 variant="h2"
