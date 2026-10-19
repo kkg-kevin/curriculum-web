@@ -14,6 +14,7 @@ import App from './App.jsx';
 import { ColorModeProvider } from './theme/ColorModeProvider.jsx';
 import { installPrerenderSignal } from './utils/prerenderSignal.js';
 import { captureVisitSource } from './utils/visitSource.js';
+import { revealWhenReady } from './utils/bootSkeleton.js';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -41,3 +42,6 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     </HelmetProvider>
   </React.StrictMode>,
 );
+
+// The start-up skeleton (index.html) stays until the page has loaded its content.
+revealWhenReady();

@@ -274,6 +274,9 @@ async function main() {
         console.warn(`[prerender] ${route}: __APP_READY__ not reached in ${READY_TIMEOUT_MS}ms — snapshotting anyway`);
       }
       await page.evaluate(dedupeHeadTags);
+      // The saved page must never start hidden: the start-up skeleton's class is added again by
+      // index.html's boot snippet in a visitor's browser, and only there.
+      await page.evaluate(() => document.documentElement.classList.remove('app-booting'));
 
       const html = await page.content();
       const problem = brokenSnapshot(route, html, sections);

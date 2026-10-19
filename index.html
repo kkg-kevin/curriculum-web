@@ -25,6 +25,10 @@
           root.setAttribute('data-color-mode', mode);
           root.style.colorScheme = mode;
           root.style.backgroundColor = mode === 'dark' ? '#0B1220' : '#FFFFFF';
+          // Skeleton while the site starts (see #boot-skeleton below): the pre-rendered page is
+          // kept out of sight until the app has styled it — its CSS only exists once the app runs.
+          // src/utils/bootSkeleton.js lifts this class when the page is ready.
+          root.classList.add('app-booting');
         } catch (e) {}
       })();
     </script>
@@ -53,8 +57,71 @@
     />
     <meta property="og:image" content="%VITE_SITE_URL%/og-default.png" />
     <meta name="twitter:card" content="summary_large_image" />
+
+    <!--
+      Skeleton screen while the site starts: grey shapes of the header, the page title and a row
+      of cards, shown instead of the page until the app has loaded and styled it. Only in a
+      browser running JavaScript (the boot snippet above adds .app-booting), so crawlers still
+      read the page itself. If the app never starts, the page shows anyway after 15 seconds.
+    -->
+    <style>
+      #boot-skeleton { display: none; }
+      .app-booting #boot-skeleton { display: block; animation: boot-skeleton-hide 0s linear 15s forwards; }
+      .app-booting #root { visibility: hidden; height: 0; overflow: hidden; animation: boot-root-show 0s linear 15s forwards; }
+      @keyframes boot-skeleton-hide { to { visibility: hidden; height: 0; overflow: hidden; } }
+      @keyframes boot-root-show { to { visibility: visible; height: auto; overflow: visible; } }
+
+      #boot-skeleton { --sk: #e8edf3; --sk-hi: #f4f7fa; --sk-line: #eef2f6; font-family: Inter, Helvetica, Arial, sans-serif; }
+      html[data-color-mode='dark'] #boot-skeleton { --sk: #1a2436; --sk-hi: #233047; --sk-line: #151e2e; }
+      #boot-skeleton .sk {
+        background: linear-gradient(90deg, var(--sk) 0%, var(--sk-hi) 50%, var(--sk) 100%);
+        background-size: 200% 100%;
+        animation: boot-shimmer 1.4s ease-in-out infinite;
+        border-radius: 10px;
+      }
+      @keyframes boot-shimmer { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+      @media (prefers-reduced-motion: reduce) { #boot-skeleton .sk { animation: none; } }
+      #boot-skeleton .sk-bar { height: 64px; border-bottom: 1px solid var(--sk-line); }
+      #boot-skeleton .sk-wrap { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+      #boot-skeleton .sk-bar .sk-wrap { height: 100%; display: flex; align-items: center; gap: 24px; }
+      #boot-skeleton .sk-logo { width: 110px; height: 28px; }
+      #boot-skeleton .sk-nav { display: flex; gap: 18px; margin-left: auto; }
+      #boot-skeleton .sk-nav .sk { width: 84px; height: 14px; border-radius: 999px; }
+      #boot-skeleton .sk-btn { width: 92px; height: 36px; border-radius: 999px; }
+      #boot-skeleton .sk-hero { padding: 44px 0 36px; border-bottom: 1px solid var(--sk-line); }
+      #boot-skeleton .sk-crumb { width: 180px; height: 12px; margin-bottom: 22px; }
+      #boot-skeleton .sk-title { width: min(560px, 85%); height: 44px; margin-bottom: 18px; }
+      #boot-skeleton .sk-text { height: 14px; margin-bottom: 10px; }
+      #boot-skeleton .sk-actions { display: flex; gap: 12px; margin-top: 24px; }
+      #boot-skeleton .sk-actions .sk { width: 150px; height: 46px; border-radius: 999px; }
+      #boot-skeleton .sk-grid { display: grid; gap: 20px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); padding: 36px 0; }
+      #boot-skeleton .sk-card { border: 1px solid var(--sk-line); border-radius: 16px; overflow: hidden; }
+      #boot-skeleton .sk-card .sk-img { height: 160px; border-radius: 0; }
+      #boot-skeleton .sk-card .sk-body { padding: 16px; }
+      @media (max-width: 760px) {
+        #boot-skeleton .sk-nav { display: none; }
+        #boot-skeleton .sk-btn { margin-left: auto; }
+        #boot-skeleton .sk-title { height: 34px; }
+        #boot-skeleton .sk-card:nth-child(n+2) { display: none; }
+      }
+    </style>
   </head>
   <body>
+    <div id="boot-skeleton" aria-hidden="true">
+      <div class="sk-bar"><div class="sk-wrap"><div class="sk sk-logo"></div><div class="sk-nav"><div class="sk"></div><div class="sk"></div><div class="sk"></div><div class="sk"></div></div><div class="sk sk-btn"></div></div></div>
+      <div class="sk-hero"><div class="sk-wrap">
+        <div class="sk sk-crumb"></div>
+        <div class="sk sk-title"></div>
+        <div class="sk sk-text" style="width: min(640px, 95%)"></div>
+        <div class="sk sk-text" style="width: min(480px, 80%)"></div>
+        <div class="sk-actions"><div class="sk"></div><div class="sk"></div></div>
+      </div></div>
+      <div class="sk-wrap"><div class="sk-grid">
+        <div class="sk-card"><div class="sk sk-img"></div><div class="sk-body"><div class="sk sk-text" style="width: 75%"></div><div class="sk sk-text" style="width: 45%"></div><div class="sk sk-text" style="width: 90%"></div></div></div>
+        <div class="sk-card"><div class="sk sk-img"></div><div class="sk-body"><div class="sk sk-text" style="width: 70%"></div><div class="sk sk-text" style="width: 40%"></div><div class="sk sk-text" style="width: 85%"></div></div></div>
+        <div class="sk-card"><div class="sk sk-img"></div><div class="sk-body"><div class="sk sk-text" style="width: 80%"></div><div class="sk sk-text" style="width: 50%"></div><div class="sk sk-text" style="width: 88%"></div></div></div>
+      </div></div>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
