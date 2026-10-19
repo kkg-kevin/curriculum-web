@@ -23,8 +23,9 @@ function Point({ icon: Icon = CheckCircleRoundedIcon, children }) {
  * `highestPerChild` is the highest per-child price on offer, for the "save per child" line.
  * `to` / `fallbackFeature` let an Estate Tech Club page reuse the card: where "Choose" goes, and
  * the line shown when the package lists no features (both default to Home Schooling's).
+ * `showExtra` = false leaves out the "add more children" line (shown by default).
  */
-export default function PackageCard({ pkg, highestPerChild, to, fallbackFeature }) {
+export default function PackageCard({ pkg, highestPerChild, to, fallbackFeature, showExtra = true }) {
   const featured = Boolean(pkg.badge);
   const perChild = perChildAmount(pkg);
   const saving = highestPerChild - perChild;
@@ -109,7 +110,7 @@ export default function PackageCard({ pkg, highestPerChild, to, fallbackFeature 
         <Typography variant="overline" sx={{ color: 'text.secondary', lineHeight: 1.6, mb: 1 }}>What’s included</Typography>
         <Box component="ul" sx={{ listStyle: 'none', p: 0, m: 0, mb: 3, display: 'grid', gap: 1.25 }}>
           {points.map((point) => <Point key={point}>{point}</Point>)}
-          {pkg.allowExtraChildren && pkg.extraChildAmount != null && (
+          {showExtra && pkg.allowExtraChildren && pkg.extraChildAmount != null && (
             <Point icon={AddCircleOutlineRoundedIcon}>
               Add more children for {formatKsh(pkg.extraChildAmount)} / month each (up to {pkg.maxChildren})
             </Point>

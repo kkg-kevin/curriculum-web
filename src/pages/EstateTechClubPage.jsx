@@ -13,13 +13,14 @@ import FactPills from '../components/common/FactPills.jsx';
 import DetailHero from '../components/common/DetailHero.jsx';
 import ActionRow from '../components/common/ActionRow.jsx';
 import PlaceIcon from '@mui/icons-material/Place';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import CategoryIcon from '@mui/icons-material/Category';
+import SellIcon from '@mui/icons-material/Sell';
 import { ErrorBlock } from '../components/common/StateViews.jsx';
 import { usePublicHubList, usePublicHub } from '../hooks/usePublicHubs.js';
 import { packagesForClub, useClubPackages } from '../hooks/usePublicClubs.js';
 import ClubPackages from '../components/clubs/ClubPackages.jsx';
-import { CLUBS_PATH, clubJoinPath, clubSlug, scheduleLabel, sortDays } from '../utils/clubs.js';
+import { ClubFaq, ClubJoinSteps, ClubPriceCard, ClubQuickFacts } from '../components/clubs/ClubSections.jsx';
+import { formatKsh } from '../content/homeSchooling.js';
+import { CLUBS_PATH, clubJoinPath, clubSlug, scheduleLabel, sessionLines, sortDays } from '../utils/clubs.js';
 
 /**
  * One Estate Tech Club (`/estate-tech-clubs/:slug`). The hub is found in GET /api/public/hubs by
@@ -68,22 +69,26 @@ export default function EstateTechClubPage() {
   }
 
   const path = `${CLUBS_PATH}/${slug}`;
+  const details = profile.clubDetails || {};
+  const hasSessions = sessionLines(details).length > 0;
   const club = {
     ...profile,
     isVirtual: hub.isVirtual,
+    // Written for parents (portal → Club details for parents) when the club has it; the venue's
+    // own description otherwise.
+    description: details.description || profile.description,
     operatingHours: profile.operatingHours && { ...profile.operatingHours, days: sortDays(profile.operatingHours.days) },
   };
   const where = hub.isVirtual ? 'Online' : profile.address || hub.town;
+  const fromAmount = canJoin ? Math.min(...packages.map((p) => p.monthlyAmount)) : null;
   const facts = [
-    { key: 'type', Icon: CategoryIcon, label: [hub.hubTypeLabel, hub.deliveryLabel].filter(Boolean).join(' · ') },
     { key: 'where', Icon: PlaceIcon, label: where, href: hub.isVirtual ? undefined : profile.mapLink || undefined },
-    // The phone number, email and contact person are in the "Get in touch" card right beside
-    // (on a phone, right under) the photos.
-    { key: 'when', Icon: AccessTimeIcon, label: scheduleLabel(hub.schedule) },
+    { key: 'price', Icon: SellIcon, label: fromAmount != null ? `From ${formatKsh(fromAmount)} / month` : '' },
   ];
   const enquire = `/enroll?club=${encodeURIComponent(hub.name)}`;
+  const joinPath = clubJoinPath(hub);
   const description =
-    profile.description ||
+    club.description ||
     `Coding, robotics and AI for kids at ${hub.name}${where ? `, ${where}` : ''}. Run by Digifunzi — see the days, hours and how to join.`;
 
   return (
@@ -123,7 +128,7 @@ export default function EstateTechClubPage() {
           <ActionRow sx={{ flexShrink: 0 }}>
             {/* Parents join online; a club with no package on the website yet falls back to an enquiry. */}
             {canJoin ? (
-              <Button component={RouterLink} to={clubJoinPath(hub)} variant="contained" color="secondary" size="large">
+              <Button component={RouterLink} to={joinPath} variant="contained" color="secondary" size="large">
                 Join this club
               </Button>
             ) : (
@@ -136,32 +141,38 @@ export default function EstateTechClubPage() {
             </Button>
           </ActionRow>
         </Box>
+        <ClubQuickFacts hub={hub} details={details} fallbackSchedule={scheduleLabel(hub.schedule)} />
       </DetailHero>
 
       <HubProfile
         hub={club}
-        aboutHeading="About this club"
-        sideAction={
-          canJoin ? (
-            <Button component={RouterLink} to={clubJoinPath(hub)} variant="contained" color="secondary" fullWidth sx={{ mt: 3 }}>
-              Join this club
-            </Button>
-          ) : (
-            <Button component={RouterLink} to={enquire} variant="contained" fullWidth sx={{ mt: 3 }}>
-              Enquire about this club
-            </Button>
-          )
-        }
+        aboutHeading="About the club"
+        // What a parent decides on comes first: the prices and how joining works. Desk pricing is a co-working thing — left out here.
+        hideSpaces
+        compactMap
+        // With session times set, they replace the venue's opening hours in the side card.
+        hideHours={hasSessions}
+        sideTop={canJoin ? <ClubPriceCard fromAmount={fromAmount} details={details} joinPath={joinPath} /> : null}
+        sideAction={canJoin ? null : (
+          <Button component={RouterLink} to={enquire} variant="contained" fullWidth sx={{ mt: 3 }}>
+            Enquire about this club
+          </Button>
+        )}
+        beforeDetails={(
+          <>
+            {canJoin && <ClubPackages hub={hub} packages={packages} />}
+            {canJoin && <ClubJoinSteps joinPath={joinPath} />}
+          </>
+        )}
+        afterDetails={<ClubFaq details={details} canJoin={canJoin} enquirePath={enquire} />}
       />
-
-      {canJoin && <ClubPackages hub={hub} packages={packages} enquirePath={enquire} />}
 
       <CTABanner
         heading={`Want your child to join ${hub.name}?`}
         body={canJoin
           ? 'Sign up in a few minutes — choose a package and create your family’s logins.'
           : "Send us your details and we'll get back to you about places, days and what your child will learn."}
-        primary={canJoin ? { label: 'Join now', to: clubJoinPath(hub) } : { label: 'Enquire now', to: enquire }}
+        primary={canJoin ? { label: 'Join now', to: joinPath } : { label: 'Enquire now', to: enquire }}
         secondary={{ label: 'See all clubs', to: CLUBS_PATH }}
       />
     </>
