@@ -163,4 +163,17 @@ export const publicApi = {
   // amountDue, parentEmail, children: [{ name, username }] }.
   submitHomeLearningSignup: (payload) =>
     api.post('/api/public/home-learning/signups', payload).then((r) => r.data.data),
+
+  // ---- Estate Tech Clubs: packages + sign-up ----------------------------------------
+  // Club packages = the designated admin's Tech Club packages ticked "Show on the website" in the
+  // portal's Billing → Packages. Each lists the clubs it's offered at: hubIds (ids from listHubs)
+  // or allClubs: true. Same shape as the Home Schooling packages otherwise.
+  listClubPackages: () => api.get('/api/public/clubs/packages').then((r) => r.data),
+  // Same as the Home Schooling sign-up, for a club (no home address): creates the membership, the
+  // parent's login, each child's login and the first month's invoice, locked until an admin
+  // approves the (cash) payment (see server: tech-clubs/club-signup.service.js). Resolves to
+  // { membershipId, clubName, packageName, childCount, monthlyAmount, currency, invoiceNumber,
+  //   amountDue, parentEmail, children: [{ name, username }] }.
+  submitClubSignup: (payload) =>
+    api.post('/api/public/clubs/signups', payload).then((r) => r.data.data),
 };

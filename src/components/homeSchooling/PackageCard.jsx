@@ -21,12 +21,14 @@ function Point({ icon: Icon = CheckCircleRoundedIcon, children }) {
  * One Home Schooling package. A package with a badge (set by the team in the curriculum system)
  * is the featured one: ribboned, outlined in brand blue and lifted.
  * `highestPerChild` is the highest per-child price on offer, for the "save per child" line.
+ * `to` / `fallbackFeature` let an Estate Tech Club page reuse the card: where "Choose" goes, and
+ * the line shown when the package lists no features (both default to Home Schooling's).
  */
-export default function PackageCard({ pkg, highestPerChild }) {
+export default function PackageCard({ pkg, highestPerChild, to, fallbackFeature }) {
   const featured = Boolean(pkg.badge);
   const perChild = perChildAmount(pkg);
   const saving = highestPerChild - perChild;
-  const points = pkg.features.length ? pkg.features : [`Home learning for ${childrenLabel(pkg.childrenIncluded)}`];
+  const points = pkg.features.length ? pkg.features : [fallbackFeature || `Home learning for ${childrenLabel(pkg.childrenIncluded)}`];
 
   return (
     <Box
@@ -116,7 +118,7 @@ export default function PackageCard({ pkg, highestPerChild }) {
 
         <Button
           component={RouterLink}
-          to={homeSchoolingSignupPath(pkg.slug)}
+          to={to || homeSchoolingSignupPath(pkg.slug)}
           variant={featured ? 'contained' : 'outlined'}
           color={featured ? 'secondary' : 'primary'}
           size="large"
