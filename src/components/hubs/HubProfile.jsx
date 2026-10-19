@@ -43,8 +43,8 @@ function ContactRow({ Icon, children, alignTop = false }) {
   );
 }
 
-function ContactCard({ hub, sideAction }) {
-  const hours = hub.operatingHours;
+function ContactCard({ hub, sideAction, sideTop, hideHours }) {
+  const hours = hideHours ? null : hub.operatingHours;
   return (
     <Box
       sx={{
@@ -56,6 +56,7 @@ function ContactCard({ hub, sideAction }) {
         boxShadow: 'shadow.md',
       }}
     >
+      {sideTop}
       <Typography variant="h4" component="h2" sx={{ fontSize: '1.1rem', mb: 2 }}>
         Get in touch
       </Typography>
@@ -236,7 +237,19 @@ function SpaceCard({ space: s }) {
   );
 }
 
-export default function HubProfile({ hub, sideAction = null, aboutHeading = 'About this hub' }) {
+/**
+ * Optional, for an Estate Tech Club page (a bootcamp's hub page passes none of them):
+ *   sideTop        — shown at the top of the contact card (the club's price and Join button)
+ *   hideHours      — leave the venue's opening hours out of the contact card
+ *   hideSpaces     — leave out "Spaces available" (desk pricing means nothing to a parent)
+ *   beforeDetails  — sections before About (prices, how joining works)
+ *   afterDetails   — sections after the map (FAQs)
+ *   compactMap     — a shorter map
+ */
+export default function HubProfile({
+  hub, sideAction = null, aboutHeading = 'About this hub',
+  sideTop = null, hideHours = false, hideSpaces = false, beforeDetails = null, afterDetails = null, compactMap = false,
+}) {
   const amenityGroups = groupAmenities(hub.amenities);
 
   return (
@@ -264,10 +277,12 @@ export default function HubProfile({ hub, sideAction = null, aboutHeading = 'Abo
         </Box>
 
         <Box component="aside" aria-label="Contact details" sx={{ gridArea: 'contact', position: { md: 'sticky' }, top: { md: 100 }, alignSelf: 'start', minWidth: 0 }}>
-          <ContactCard hub={hub} sideAction={sideAction} />
+          <ContactCard hub={hub} sideAction={sideAction} sideTop={sideTop} hideHours={hideHours} />
         </Box>
 
         <Box sx={{ gridArea: 'details', minWidth: 0 }}>
+          {beforeDetails}
+
           {hub.description && (
             <DetailSection title={aboutHeading} icon={<InfoOutlinedIcon />}>
               <Typography sx={{ color: 'text.secondary', whiteSpace: 'pre-line', maxWidth: PROSE_MAX_WIDTH, lineHeight: 1.75, fontSize: { md: '1.05rem' } }}>
@@ -278,7 +293,7 @@ export default function HubProfile({ hub, sideAction = null, aboutHeading = 'Abo
 
           {/* What can be booked, and for how much — before the amenities, since it's what a
               family decides on. */}
-          {hub.spaces?.length > 0 && (
+          {!hideSpaces && hub.spaces?.length > 0 && (
             <DetailSection title="Spaces available" icon={<MeetingRoomIcon />}>
               <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))' }}>
                 {hub.spaces.map((s, i) => (
@@ -295,7 +310,9 @@ export default function HubProfile({ hub, sideAction = null, aboutHeading = 'Abo
           )}
 
           {/* Where it is — an embedded map of the address (none for an online club). */}
-          {!hub.isVirtual && <HubMap name={hub.name} address={hub.address} mapLink={hub.mapLink} mapPin={hub.mapPin} />}
+          {!hub.isVirtual && <HubMap name={hub.name} address={hub.address} mapLink={hub.mapLink} mapPin={hub.mapPin} compact={compactMap} />}
+
+          {afterDetails}
         </Box>
       </Box>
     </Section>

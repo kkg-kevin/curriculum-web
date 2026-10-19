@@ -17,7 +17,8 @@ import DetailSection from '../common/DetailSection.jsx';
  * Nothing for an online club or a hub without an address. The map is Google's own frame, loaded
  * only when scrolled near (loading="lazy"); the privacy page says Google may set its own cookies.
  */
-export default function HubMap({ name, address, mapLink, mapPin }) {
+// `compact` makes the map shorter (an Estate Tech Club page, where it's one detail among many).
+export default function HubMap({ name, address, mapLink, mapPin, compact = false }) {
   if (!address && !mapPin) return null;
   const inKenya = (text) => (/kenya/i.test(text) ? text : `${text}, Kenya`);
   const query =
@@ -35,7 +36,7 @@ export default function HubMap({ name, address, mapLink, mapPin }) {
         sx={{
           position: 'relative',
           width: '100%',
-          aspectRatio: { xs: '4 / 3', sm: '16 / 9', lg: '21 / 9' },
+          aspectRatio: compact ? { xs: '16 / 9', sm: '12 / 5', lg: '3 / 1' } : { xs: '4 / 3', sm: '16 / 9', lg: '21 / 9' },
           borderRadius: 3,
           overflow: 'hidden',
           border: '1px solid',
