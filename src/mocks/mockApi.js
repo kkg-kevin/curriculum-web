@@ -197,6 +197,28 @@ export async function mockAdapter(config) {
     );
   }
 
+  // ---- GET /api/public/clubs/packages (published Tech Club packages, every club) ----
+  if (method === 'get' && path === '/api/public/clubs/packages') {
+    return ok(homeLearningPackages.map((p) => ({ ...p, hubIds: [], allClubs: true })), config);
+  }
+
+  // ---- POST /api/public/clubs/signups (offline stand-in: nothing is created) ----
+  if (method === 'post' && path === '/api/public/clubs/signups') {
+    const body = safeParse(config.data);
+    if (!body?.hubId || !body?.parent?.email || !Array.isArray(body?.children) || !body.children.length) {
+      return fail(400, 'Please check your details and try again', config);
+    }
+    console.warn('[mockApi] OFFLINE MODE (VITE_USE_MOCK=true) — club sign-up NOT created, only logged.', body);
+    return ok({
+      success: true,
+      data: {
+        membershipId: 'mock-membership', clubName: 'Mock club', packageName: body.packageSlug, childCount: body.children.length,
+        monthlyAmount: 0, currency: 'KES', invoiceNumber: 'INV-MOCK-000002', amountDue: 0, parentEmail: body.parent.email,
+        children: body.children.map((c) => ({ name: `${c.firstName} ${c.lastName}`, username: c.username })),
+      },
+    }, config, 201);
+  }
+
   // ---- POST /api/public/home-learning/signups (offline stand-in: nothing is created) ----
   if (method === 'post' && path === '/api/public/home-learning/signups') {
     const body = safeParse(config.data);

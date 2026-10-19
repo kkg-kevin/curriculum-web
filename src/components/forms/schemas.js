@@ -184,6 +184,34 @@ export const signupChildSchema = z.object({
   password: loginPassword,
 });
 
+// The Estate Tech Club sign-up (/estate-tech-clubs/:slug/join): the Home Schooling sign-up's
+// package, parent and children steps — the club is the venue, so there's no home address.
+export const clubSignupSchema = z
+  .object({
+    packageSlug: z.string().min(1, 'Choose a package'),
+    parent: z.object({
+      name: requiredText(150, 'Enter your name'),
+      email: z.string().trim().email('Enter a valid email address').max(255),
+      phone,
+      password: loginPassword,
+      confirmPassword: z.string().min(1, 'Please confirm your password'),
+    }),
+    children: z.array(signupChildSchema).min(1, 'Add at least one child').max(20),
+    consent: z.literal(true, { errorMap: () => ({ message: 'Please agree so we can store your family’s details' }) }),
+    ...honeypot,
+  })
+  .superRefine((data, ctx) => {
+    if (data.parent.password !== data.parent.confirmPassword) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['parent', 'confirmPassword'], message: 'Passwords don’t match' });
+    }
+    const seen = new Set();
+    data.children.forEach((child, index) => {
+      const key = child.username.toLowerCase();
+      if (key && seen.has(key)) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['children', index, 'username'], message: 'Each child needs a different username' });
+      seen.add(key);
+    });
+  });
+
 export const homeSchoolingSignupSchema = z
   .object({
     packageSlug: z.string().min(1, 'Choose a package'),

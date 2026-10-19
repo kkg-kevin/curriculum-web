@@ -8,6 +8,7 @@ import Section from '../components/common/Section.jsx';
 import { ErrorBlock, EmptyBlock } from '../components/common/StateViews.jsx';
 import ClubCard from '../components/cards/ClubCard.jsx';
 import { usePublicHubList, usePublicHubProfiles } from '../hooks/usePublicHubs.js';
+import { packagesForClub, useClubPackages } from '../hooks/usePublicClubs.js';
 import { clubPath } from '../utils/clubs.js';
 import { CARD_GRID_COLUMNS, shortListSx } from '../theme/layout.js';
 
@@ -34,6 +35,12 @@ function CardSkeleton() {
 export default function EstateTechClubsPage() {
   const { data: hubs = [], isLoading, isError, error, refetch } = usePublicHubList();
   const profiles = usePublicHubProfiles(hubs.map((h) => h.id));
+  // The cheapest package at each club, for its card. Optional — the cards work without it.
+  const { data: packages = [] } = useClubPackages();
+  const fromAmount = (hubId) => {
+    const offered = packagesForClub(packages, hubId);
+    return offered.length ? Math.min(...offered.map((p) => p.monthlyAmount)) : null;
+  };
   const count = hubs.length;
 
   return (
@@ -51,7 +58,7 @@ export default function EstateTechClubsPage() {
 
       <PageHeader
         title="Estate Tech Clubs"
-        lead="Coding, robotics and AI clubs run in estates and community spaces, so children can learn close to home. Find the club nearest you, check its days and hours, and send us an enquiry."
+        lead="Coding, robotics and AI clubs run in estates and community spaces, so children can learn close to home. Find the club nearest you, check its days and hours, then join online or send us an enquiry."
       >
         {!isLoading && !isError && count > 0 && (
           <Box
@@ -97,7 +104,7 @@ export default function EstateTechClubsPage() {
         {!isLoading && !isError && count > 0 && (
           <Box sx={{ ...GRID_SX, ...shortListSx(count) }}>
             {hubs.map((hub) => (
-              <ClubCard key={hub.id} hub={hub} profile={profiles[hub.id]} />
+              <ClubCard key={hub.id} hub={hub} profile={profiles[hub.id]} fromAmount={fromAmount(hub.id)} />
             ))}
           </Box>
         )}

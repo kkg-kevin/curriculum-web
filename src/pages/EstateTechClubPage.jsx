@@ -17,7 +17,9 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import CategoryIcon from '@mui/icons-material/Category';
 import { ErrorBlock } from '../components/common/StateViews.jsx';
 import { usePublicHubList, usePublicHub } from '../hooks/usePublicHubs.js';
-import { CLUBS_PATH, clubSlug, scheduleLabel, sortDays } from '../utils/clubs.js';
+import { packagesForClub, useClubPackages } from '../hooks/usePublicClubs.js';
+import ClubPackages from '../components/clubs/ClubPackages.jsx';
+import { CLUBS_PATH, clubJoinPath, clubSlug, scheduleLabel, sortDays } from '../utils/clubs.js';
 
 /**
  * One Estate Tech Club (`/estate-tech-clubs/:slug`). The hub is found in GET /api/public/hubs by
@@ -31,6 +33,11 @@ export default function EstateTechClubPage() {
   const hub = (list.data || []).find((h) => clubSlug(h) === slug) || null;
   const profileQuery = usePublicHub(hub?.id);
   const profile = profileQuery.data;
+  // The club's membership packages. Never holds the page up: with none (or while they load, or
+  // if they fail) the page is the enquiry-only page it always was.
+  const packagesQuery = useClubPackages();
+  const packages = packagesForClub(packagesQuery.data, hub?.id);
+  const canJoin = packages.length > 0;
 
   if (list.isLoading || (hub && profileQuery.isLoading)) {
     return (
@@ -114,9 +121,16 @@ export default function EstateTechClubPage() {
             <FactPills items={facts} sx={{ mt: 2.5 }} />
           </Box>
           <ActionRow sx={{ flexShrink: 0 }}>
-            <Button component={RouterLink} to={enquire} variant="contained" size="large">
-              Enquire about this club
-            </Button>
+            {/* Parents join online; a club with no package on the website yet falls back to an enquiry. */}
+            {canJoin ? (
+              <Button component={RouterLink} to={clubJoinPath(hub)} variant="contained" color="secondary" size="large">
+                Join this club
+              </Button>
+            ) : (
+              <Button component={RouterLink} to={enquire} variant="contained" size="large">
+                Enquire about this club
+              </Button>
+            )}
             <Button component={RouterLink} to={CLUBS_PATH} variant="outlined" size="large">
               See all clubs
             </Button>
@@ -128,16 +142,26 @@ export default function EstateTechClubPage() {
         hub={club}
         aboutHeading="About this club"
         sideAction={
-          <Button component={RouterLink} to={enquire} variant="contained" fullWidth sx={{ mt: 3 }}>
-            Enquire about this club
-          </Button>
+          canJoin ? (
+            <Button component={RouterLink} to={clubJoinPath(hub)} variant="contained" color="secondary" fullWidth sx={{ mt: 3 }}>
+              Join this club
+            </Button>
+          ) : (
+            <Button component={RouterLink} to={enquire} variant="contained" fullWidth sx={{ mt: 3 }}>
+              Enquire about this club
+            </Button>
+          )
         }
       />
 
+      {canJoin && <ClubPackages hub={hub} packages={packages} enquirePath={enquire} />}
+
       <CTABanner
         heading={`Want your child to join ${hub.name}?`}
-        body="Send us your details and we'll get back to you about places, days and what your child will learn."
-        primary={{ label: 'Enquire now', to: enquire }}
+        body={canJoin
+          ? 'Sign up in a few minutes — choose a package and create your family’s logins.'
+          : "Send us your details and we'll get back to you about places, days and what your child will learn."}
+        primary={canJoin ? { label: 'Join now', to: clubJoinPath(hub) } : { label: 'Enquire now', to: enquire }}
         secondary={{ label: 'See all clubs', to: CLUBS_PATH }}
       />
     </>

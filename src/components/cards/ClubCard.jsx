@@ -10,14 +10,16 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import FramedImage from '../media/FramedImage.jsx';
 import ClubLogo from '../hubs/ClubLogo.jsx';
 import { clubPath, scheduleLabel } from '../../utils/clubs.js';
+import { formatKsh } from '../../content/homeSchooling.js';
 
 /**
  * One card on the Estate Tech Clubs page (`/estate-tech-clubs`). `hub` is the list entry from
  * GET /api/public/hubs ({ id, name, hubTypeLabel, deliveryLabel, isVirtual, town, schedule });
  * `profile` is its full profile from GET /api/public/hubs/:id once loaded (photo, address) — the
  * card shows the brand band and the town until then. Links to the club's own page.
+ * `fromAmount` is the cheapest monthly package on offer there (none = the club takes enquiries only).
  */
-export default function ClubCard({ hub, profile }) {
+export default function ClubCard({ hub, profile, fromAmount }) {
   // A photo of the space, never the logo (that's the badge beside the name).
   const photo = profile?.photos?.[0];
   const where = hub.isVirtual ? 'Online' : profile?.address || hub.town;
@@ -88,6 +90,11 @@ export default function ClubCard({ hub, profile }) {
               <AccessTimeIcon sx={{ color: 'text.secondary', fontSize: 18 }} />
               <Typography variant="body2" color="text.secondary">{when}</Typography>
             </Box>
+          )}
+          {fromAmount != null && (
+            <Typography variant="body2" sx={{ fontWeight: 700 }}>
+              From {formatKsh(fromAmount)} <Box component="span" sx={{ fontWeight: 400, color: 'text.secondary' }}>/ month · join online</Box>
+            </Typography>
           )}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mt: 'auto', pt: 1, color: 'primary.main', fontWeight: 700 }}>
             <Typography variant="body2" sx={{ fontWeight: 700, color: 'inherit' }}>View club</Typography>

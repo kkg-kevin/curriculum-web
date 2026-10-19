@@ -13,6 +13,13 @@ export const clubSlug = (hub) => slugify(hub?.name);
 
 export const clubPath = (hub) => `${CLUBS_PATH}/${clubSlug(hub)}`;
 
+/** The club's sign-up form, optionally with a package and number of children chosen. */
+export function clubJoinPath(hub, packageSlug, children) {
+  const base = `${clubPath(hub)}/join`;
+  if (!packageSlug) return base;
+  return `${base}?package=${encodeURIComponent(packageSlug)}${children ? `&children=${Number(children)}` : ''}`;
+}
+
 const WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
 /** The hub's opening days in week order (the portal stores them in the order they were ticked). */
