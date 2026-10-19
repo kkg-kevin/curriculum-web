@@ -12,9 +12,10 @@
  *
  * TODO before launch (spec §9):
  *  - Confirm the WhatsApp number.
- *  - Images in public/ are web-sized copies made from the brand originals there
- *    (digifunzi-banner*.png, digifunzi-icon-black---a.png): hero-kids.png, mascot-girl.png,
- *    og-default.png and the favicons. Remake them from the originals if the artwork changes.
+ *  - Images in public/ are web-sized copies made from the brand originals
+ *    (digifunzi-banner*.png — removed from public/ in Oct 2026, still in git history — and
+ *    digifunzi-icon-black---a.png): hero-kids.png, mascot-girl.png, og-default.png and the
+ *    favicons. Remake them from the originals if the artwork changes.
  */
 
 export const ORG = {
