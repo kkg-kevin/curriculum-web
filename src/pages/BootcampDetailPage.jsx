@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useParams, Link as RouterLink } from 'react-router-dom';
-import { alpha, useTheme } from '@mui/material/styles';
-import useMediaQuery from '@mui/material/useMediaQuery';
+import { alpha } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
@@ -35,7 +34,7 @@ import { FORMAT_LABEL } from '../components/cards/BootcampCard.jsx';
 import BootcampPathwayCard from '../components/cards/BootcampPathwayCard.jsx';
 import HubPreviewCard from '../components/hubs/HubPreviewCard.jsx';
 import CoursePricingRoadmap from '../components/pathway/CoursePricingRoadmap.jsx';
-import BootcampGames, { GameIcon, gamesSummary } from '../components/bootcamp/BootcampGames.jsx';
+import BootcampGames from '../components/bootcamp/BootcampGames.jsx';
 import { usePublicBootcamp } from '../hooks/usePublicBootcamps.js';
 import { formatPrice, ageLabel } from '../utils/format.js';
 import { formatDateRange } from '../utils/dates.js';
@@ -63,8 +62,6 @@ export default function BootcampDetailPage() {
   const [selectedHubRun, setSelectedHubRun] = useState(null);
   // The hub preview sits in the sticky side panel on a wide screen; on a narrow one that panel
   // is further up the page than the "Running at" list, so the preview opens under the list.
-  const theme = useTheme();
-  const isWide = useMediaQuery(theme.breakpoints.up('md'), { noSsr: true });
 
   if (isLoading) {
     return (
@@ -143,8 +140,7 @@ export default function BootcampDetailPage() {
     : cheapestCoursePricingItem
       ? `From ${formatPrice({ amount: cheapestCoursePricingItem.priceAmount, currency: cheapestCoursePricingItem.priceCurrency })}`
       : 'Enquire for pricing';
-  const enquireTo = `/enroll?interestedIn=bootcamp&referenceId=${encodeURIComponent(slug)}`;
-  const hasIntro = Boolean(description) || highlights.length > 0;
+  const hasIntro = Boolean(description) || highlights.length > 0 || priceNotes.length > 0;
 
   return (
     <>
@@ -179,9 +175,8 @@ export default function BootcampDetailPage() {
         ]}
       />
 
-      {/* header band — identity only (name/tagline/chips/photo). Price, what's included, and the
-          booking CTA all live once in the sticky sidebar below, instead of being duplicated in
-          both the header and a "Book" card at the very bottom of the page. */}
+      {/* header band — name/tagline/chips/photo, with the dates, place and price as facts. What
+          the price includes is listed with the details below. */}
       <DetailHero crumbs={[{ label: 'Home', to: '/' }, { label: 'Bootcamps', to: '/bootcamps' }, { label: name }]}>
 
           <Box
@@ -237,9 +232,6 @@ export default function BootcampDetailPage() {
                   { key: 'price', Icon: PaymentsIcon, label: priceLabel },
                 ]}
               />
-              <Button component={RouterLink} to={enquireTo} variant="contained" size="large" sx={{ mt: 3, width: { xs: '100%', sm: 'auto' } }}>
-                Enquire to book
-              </Button>
             </Box>
 
             {/* The right half: the cover, then the bootcamp's other images (up to 3) — each shown
@@ -256,12 +248,9 @@ export default function BootcampDetailPage() {
         <Box
           sx={{
             display: 'grid',
-            columnGap: 6,
             rowGap: { xs: 5, md: 7 },
-            gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'minmax(0, 1fr) 340px' },
-            gridTemplateAreas: hasIntro
-              ? { xs: '"intro" "aside" "main"', md: '"intro aside" "main aside"' }
-              : { xs: '"aside" "main"', md: '"main aside"' },
+            gridTemplateColumns: 'minmax(0, 1fr)',
+            gridTemplateAreas: hasIntro ? '"intro" "main"' : '"main"',
             alignItems: 'start',
           }}
         >
@@ -312,72 +301,21 @@ export default function BootcampDetailPage() {
               </DetailSection>
             )}
 
-            </Box>
-          )}
-
-          {/* sticky booking panel — price, what's included, and "Enquire to book", always in view
-              on a wide screen; on a phone it comes right after the intro, before the details. */}
-          <Box component="aside" aria-label="Price and booking" sx={{ gridArea: 'aside', position: { md: 'sticky' }, top: { md: 96 }, alignSelf: 'start', minWidth: 0 }}>
-            {isWide && selectedHubRun && (
-              <HubPreviewCard
-                hubId={selectedHubRun.hub.id}
-                run={selectedHubRun}
-                onClose={() => setSelectedHubRun(null)}
-              />
-            )}
-            <Box
-              sx={{
-                p: 3,
-                borderRadius: 3,
-                border: '1px solid',
-                borderColor: 'surface.ring',
-                bgcolor: 'surface.card',
-                boxShadow: 'shadow.md',
-              }}
-            >
-              <Typography sx={{ fontSize: '1.5rem', fontWeight: 700, color: 'text.primary', lineHeight: 1.15 }}>
-                {priceLabel}
-              </Typography>
-
-              {priceNotes.length > 0 && (
-                <Box component="ul" sx={{ m: 0, mt: 2, p: 0, listStyle: 'none', display: 'grid', gap: 0.75 }}>
+            {priceNotes.length > 0 && (
+              <DetailSection title="Included in the price" icon={<PaymentsIcon />}>
+                <Box component="ul" sx={{ m: 0, p: 0, listStyle: 'none', display: 'grid', gap: 1.5 }}>
                   {priceNotes.map((note, i) => (
-                    <Box component="li" key={i} sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.75 }}>
-                      <CheckCircleIcon sx={{ fontSize: 15, color: 'success.main', flexShrink: 0, mt: '3px' }} />
-                      <Typography variant="body2" color="text.secondary">
-                        {note}
-                      </Typography>
+                    <Box component="li" key={`${note}-${i}`} sx={{ display: 'flex', gap: 1.25 }}>
+                      <CheckCircleIcon sx={{ fontSize: 20, color: 'success.main', flexShrink: 0, mt: 0.25 }} />
+                      <Typography>{note}</Typography>
                     </Box>
                   ))}
                 </Box>
-              )}
+              </DetailSection>
+            )}
 
-              {games.length > 0 && (
-                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.75, mt: priceNotes.length > 0 ? 0.75 : 2 }}>
-                  <GameIcon name="dice" size={15} sx={{ color: 'primary.main', mt: '3px' }} />
-                  <Typography variant="body2" color="text.secondary">
-                    Game time included: {gamesSummary(games, 3)}
-                  </Typography>
-                </Box>
-              )}
-
-              <Button
-                component={RouterLink}
-                to={enquireTo}
-                variant="contained"
-                size="large"
-                fullWidth
-                disableElevation
-                sx={{ mt: 2.5 }}
-              >
-                Enquire to book
-              </Button>
-
-              <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mt: 1.5, textAlign: 'center' }}>
-                No online checkout yet — we&apos;ll confirm dates and how to secure a place.
-              </Typography>
             </Box>
-          </Box>
+          )}
 
           <Box sx={{ gridArea: 'main', minWidth: 0 }}>
             {/* The fun side — right after what they'll build, before the practical details. */}
@@ -487,7 +425,7 @@ export default function BootcampDetailPage() {
                     );
                   })}
                 </Box>
-                {!isWide && selectedHubRun && (
+                {selectedHubRun && (
                   <Box sx={{ mt: 2 }}>
                     <HubPreviewCard hubId={selectedHubRun.hub.id} run={selectedHubRun} onClose={() => setSelectedHubRun(null)} />
                   </Box>
