@@ -27,6 +27,7 @@ import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import ChildIcons from '../homeSchooling/ChildIcons.jsx';
 import Honeypot, { HONEYPOT_DEFAULT, isBot } from '../forms/Honeypot.jsx';
 import PrivacyNote from '../forms/PrivacyNote.jsx';
+import MpesaPayNow from '../payments/MpesaPayNow.jsx';
 import { clubSignupSchema } from '../forms/schemas.js';
 import { useClubSignup } from '../../hooks/usePublicClubs.js';
 import { APP_URL } from '../../config/env.js';
@@ -84,10 +85,17 @@ function Confirmation({ result }) {
         <Box>
           <Typography sx={{ fontSize: '1.6rem', fontWeight: 800, lineHeight: 1.1, color: 'primary.main' }}>{formatKsh(result.amountDue)}</Typography>
           <Typography variant="body2" color="text.secondary">
-            First month · invoice {result.invoiceNumber}. Pay in cash to our team — we’ll call you on the number you gave us.
+            First month · invoice {result.invoiceNumber}. {result.pay ? 'Pay by M-Pesa below and your accounts unlock straight away — or pay in cash to our team.' : 'Pay in cash to our team — we’ll call you on the number you gave us.'}
           </Typography>
         </Box>
       </Box>
+
+      <MpesaPayNow
+        pay={result.pay}
+        amountDue={result.amountDue}
+        defaultPhone={result.parentPhone}
+        paidMessage="Your family’s accounts are active — sign in with the logins below."
+      />
 
       <Box sx={{ textAlign: 'left', maxWidth: 520, mx: 'auto', mb: 3 }}>
         <Typography variant="overline" color="text.secondary">Your logins</Typography>
@@ -106,7 +114,7 @@ function Confirmation({ result }) {
       </Box>
 
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        Until your payment is approved, signing in shows “payment pending”. Then we place each child in a club class and they can start.
+        Until your payment is in, signing in shows “payment pending”. Then we place each child in a club class and they can start.
       </Typography>
       <Button href={`${APP_URL}/login`} variant="contained" size="large">Go to sign in</Button>
     </Box>
@@ -196,7 +204,7 @@ export default function ClubSignupForm({ hub, packages, initialSlug, initialChil
         consent: values.consent,
         hp_field: values.hp_field,
       });
-      setResult(data);
+      setResult({ ...data, parentPhone: values.parent.phone });
       window.scrollTo?.({ top: 0, behavior: 'smooth' });
     } catch {
       // Shown below from signup.error.

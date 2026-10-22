@@ -176,4 +176,19 @@ export const publicApi = {
   //   amountDue, parentEmail, children: [{ name, username }] }.
   submitClubSignup: (payload) =>
     api.post('/api/public/clubs/signups', payload).then((r) => r.data.data),
+
+  // ---- Pay now by M-Pesa, after a sign-up (no login) ---------------------------------
+  // Each sign-up above answers with `pay: { token, paybill, account, accountLabel, maxAmount }`
+  // (null when M-Pesa is off). The token opens that one invoice's amount and lets the family send
+  // the "enter your M-Pesa PIN" prompt to a phone (server: payments/mpesa, payment-links.js).
+  //   getPayment  → { invoiceNumber, status, currency, total, amountDue, paid, mpesa: { enabled, paybill, account } }
+  //   payByMpesa  → the prompt: { id, status: "pending", message, amount, phone }
+  //   getPaymentRequest → the same prompt later: status pending | successful | failed | cancelled | timeout | error
+  getPayment: (token) => api.get(`/api/public/payments/${encodeURIComponent(token)}`).then((r) => r.data.data),
+  payByMpesa: (token, payload) =>
+    api.post(`/api/public/payments/${encodeURIComponent(token)}/mpesa`, payload).then((r) => r.data.data),
+  getPaymentRequest: (token, requestId) =>
+    api
+      .get(`/api/public/payments/${encodeURIComponent(token)}/mpesa/${encodeURIComponent(requestId)}`)
+      .then((r) => r.data.data),
 };
