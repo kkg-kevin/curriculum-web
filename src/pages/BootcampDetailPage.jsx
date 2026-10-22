@@ -13,9 +13,8 @@ import MenuBookIcon from '@mui/icons-material/MenuBook';
 import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
 import EventIcon from '@mui/icons-material/Event';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import RouteIcon from '@mui/icons-material/Route';
+import HowToRegIcon from '@mui/icons-material/HowToReg';
 import SeoHead from '../components/seo/SeoHead.jsx';
 import JsonLd, { organizationSchema, breadcrumbSchema, eventSchema } from '../components/seo/JsonLd.jsx';
 import Section from '../components/common/Section.jsx';
@@ -24,16 +23,14 @@ import DetailSection from '../components/common/DetailSection.jsx';
 import SmartImage from '../components/common/SmartImage.jsx';
 import ExpandableText from '../components/common/ExpandableText.jsx';
 import MediaGallery from '../components/media/MediaGallery.jsx';
-import FactPills from '../components/common/FactPills.jsx';
 import PlaceIcon from '@mui/icons-material/Place';
 import PaymentsIcon from '@mui/icons-material/Payments';
 import ScheduleIcon from '@mui/icons-material/Schedule';
+import ChildCareIcon from '@mui/icons-material/ChildCare';
 import CTABanner from '../components/home/CTABanner.jsx';
 import { ErrorBlock } from '../components/common/StateViews.jsx';
 import { FORMAT_LABEL } from '../components/cards/BootcampCard.jsx';
-import BootcampPathwayCard from '../components/cards/BootcampPathwayCard.jsx';
 import HubPreviewCard from '../components/hubs/HubPreviewCard.jsx';
-import CoursePricingRoadmap from '../components/pathway/CoursePricingRoadmap.jsx';
 import BootcampGames from '../components/bootcamp/BootcampGames.jsx';
 import { usePublicBootcamp } from '../hooks/usePublicBootcamps.js';
 import { formatPrice, ageLabel } from '../utils/format.js';
@@ -45,6 +42,33 @@ import { RelatedBootcamps } from '../components/common/Related.jsx';
 
 const RUN_STATUS_LABEL = { upcoming: 'Upcoming', active: 'Running now' };
 
+// One labelled fact in the booking card: a tinted icon, a small label, the value.
+function BookingFact({ Icon, label, value }) {
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+      <Box
+        sx={{
+          width: 38,
+          height: 38,
+          borderRadius: 2,
+          display: 'grid',
+          placeItems: 'center',
+          flexShrink: 0,
+          bgcolor: (t) => alpha(t.palette.primary.main, 0.1),
+        }}
+      >
+        <Icon sx={{ fontSize: 20, color: 'primary.main' }} />
+      </Box>
+      <Box sx={{ minWidth: 0 }}>
+        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', lineHeight: 1.3 }}>
+          {label}
+        </Typography>
+        <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', lineHeight: 1.35 }}>{value}</Typography>
+      </Box>
+    </Box>
+  );
+}
+
 export default function BootcampDetailPage() {
   const { slug } = useParams();
   const { data, isLoading, isError, error, refetch } = usePublicBootcamp(slug);
@@ -53,9 +77,6 @@ export default function BootcampDetailPage() {
   // ~150-word description shows in full at this line count; only a genuine outlier (or content
   // saved before the cap existed) ever needs the "Read more" toggle.
   const [descriptionExpanded, setDescriptionExpanded] = useState(false);
-  // Which pathway section (by pathwayId, or 'ungrouped' for the pathway-less courses section)
-  // is currently expanded in the "Pathway courses" area — null shows the card grid instead.
-  const [selectedPathwayKey, setSelectedPathwayKey] = useState(null);
   // Which "Running at" hub is previewed in the sidebar right now (by hub id) — null hides the
   // preview. Clicking the same hub's card again clears it, closing the preview in place instead
   // of navigating to the full /bootcamps/:slug/hubs/:hubId page and back.
@@ -95,42 +116,18 @@ export default function BootcampDetailPage() {
   const {
     name, tagline, description, format, duration, ageMin, ageMax, coverImage, images = [], price,
     startDate, endDate,
-    highlights = [], upcomingRuns = [], coursePricing = [], priceNotes = [], curriculum, pathwayDiagnostics = [],
+    highlights = [], upcomingRuns = [], coursePricing = [], priceNotes = [], curriculum,
     // Games and play that come with the bootcamp — absent on an older API, which reads as none.
     games = [], gamesNote = '',
   } = data;
 
-  // Only the currently expanded pathway's diagnostic (if it has one) — `selectedPathwayKey` is a
-  // pathwayId when a real pathway is expanded (see the "Pathways in this bootcamp" section
-  // below), null otherwise. Used by the sidebar CTA so it only ever offers ONE diagnostic at a
-  // time, matching whichever pathway the visitor is currently looking at, rather than listing
-  // every pathway's diagnostic regardless of what's expanded.
-  const selectedPathwayDiagnostic = pathwayDiagnostics.find((pd) => pd.pathwayId === selectedPathwayKey) || null;
-
-  // Each coursePricing section's stable key (a pathwayId, or `ungrouped-i` for priced courses not
-  // tied to any pathway) — computed once here so both the sidebar price below and the "Pathways in
-  // this bootcamp" section further down key/match sections identically, rather than two separate
-  // key-generation copies risking drift.
-  const keyedCoursePricing = coursePricing.map((section, i) => ({
-    ...section,
-    key: section.pathwayId || `ungrouped-${i}`,
-  }));
-
   const age = ageLabel(ageMin, ageMax);
   // A bootcamp priced by course/module instead of as a whole has `price: null` — falling straight
   // to "Enquire for pricing" would hide real numbers that DO exist, just spread across the
-  // "Pathway courses" section below. Surface the cheapest priced item instead, as a "From X"
+  // bootcamp's per-course prices. Surface the cheapest priced item instead, as a "From X"
   // headline — a course entry priced by module (modules.length > 0) carries no priceAmount of its
-  // own (see CoursePricingRoadmap.jsx), so its modules must be checked instead of the course.
-  //
-  // Scoped to whichever pathway is currently expanded (`selectedPathwayKey`) when one is — so the
-  // sidebar price reflects the pathway a visitor is actually looking at, not always the bootcamp's
-  // overall cheapest item. Falls back to every pathway's courses when none is selected (the
-  // default "browsing" view).
-  const pricingScope = selectedPathwayKey
-    ? keyedCoursePricing.filter((section) => section.key === selectedPathwayKey)
-    : keyedCoursePricing;
-  const cheapestCoursePricingItem = pricingScope
+  // own, so its modules must be checked instead of the course.
+  const cheapestCoursePricingItem = coursePricing
     .flatMap((section) => section.courses || [])
     .flatMap((course) => ((course.modules || []).length > 0 ? course.modules : [course]))
     .filter((item) => typeof item.priceAmount === 'number')
@@ -141,6 +138,67 @@ export default function BootcampDetailPage() {
       ? `From ${formatPrice({ amount: cheapestCoursePricingItem.priceAmount, currency: cheapestCoursePricingItem.priceCurrency })}`
       : 'Enquire for pricing';
   const hasIntro = Boolean(description) || highlights.length > 0 || priceNotes.length > 0;
+
+  // The facts a parent decides on, and the one action — in the right-hand column under the header.
+  // Enrolling starts with a short diagnostic; the pathway it comes from is picked from the child's
+  // age (BootcampEnrollPage.jsx), never by the visitor.
+  const where =
+    upcomingRuns.length === 1
+      ? upcomingRuns[0].hub?.name
+      : upcomingRuns.length > 1
+        ? `${upcomingRuns.length} locations`
+        : '';
+  const bookingFacts = [
+    { key: 'dates', Icon: ScheduleIcon, label: 'Dates', value: formatDateRange(startDate, endDate) },
+    { key: 'where', Icon: PlaceIcon, label: upcomingRuns.length > 1 ? 'Running at' : 'Where', value: where },
+    { key: 'age', Icon: ChildCareIcon, label: 'Suitable for', value: age },
+  ].filter((fact) => fact.value);
+  const facts = (
+    <Box
+      sx={{
+        borderRadius: 4,
+        border: '1px solid',
+        borderColor: 'divider',
+        bgcolor: 'background.paper',
+        boxShadow: 3,
+        overflow: 'hidden',
+      }}
+    >
+      {/* the price heads the card */}
+      <Box sx={{ px: 3, py: 2.5, bgcolor: (t) => alpha(t.palette.primary.main, 0.06), display: 'flex', alignItems: 'center', gap: 1.5 }}>
+        <PaymentsIcon sx={{ color: 'primary.main' }} />
+        <Box sx={{ minWidth: 0 }}>
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', lineHeight: 1.3 }}>
+            Price
+          </Typography>
+          <Typography sx={{ fontWeight: 800, fontSize: '1.35rem', lineHeight: 1.25 }}>{priceLabel}</Typography>
+        </Box>
+      </Box>
+
+      <Box sx={{ px: 3, pt: 2.5, pb: 3 }}>
+        {bookingFacts.length > 0 && (
+          <Box sx={{ display: 'grid', gap: 2, mb: 3 }}>
+            {bookingFacts.map(({ key, ...fact }) => (
+              <BookingFact key={key} {...fact} />
+            ))}
+          </Box>
+        )}
+        <Button
+          component={RouterLink}
+          to={`/bootcamps/${slug}/enroll`}
+          variant="contained"
+          size="large"
+          startIcon={<HowToRegIcon />}
+          fullWidth
+        >
+          Enroll
+        </Button>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 1.5, textAlign: 'center', fontSize: '0.8rem' }}>
+          Starts with a short diagnostic matched to your child&apos;s age.
+        </Typography>
+      </Box>
+    </Box>
+  );
 
   return (
     <>
@@ -213,25 +271,6 @@ export default function BootcampDetailPage() {
                 </Typography>
               )}
 
-              {/* The facts a parent decides on, and the one action, up front — they used to appear
-                  only in the sidebar further down. */}
-              <FactPills
-                sx={{ mt: 3 }}
-                items={[
-                  { key: 'dates', Icon: ScheduleIcon, label: formatDateRange(startDate, endDate) },
-                  {
-                    key: 'where',
-                    Icon: PlaceIcon,
-                    label:
-                      upcomingRuns.length === 1
-                        ? upcomingRuns[0].hub?.name
-                        : upcomingRuns.length > 1
-                          ? `${upcomingRuns.length} locations`
-                          : '',
-                  },
-                  { key: 'price', Icon: PaymentsIcon, label: priceLabel },
-                ]}
-              />
             </Box>
 
             {/* The right half: the cover, then the bootcamp's other images (up to 3) — each shown
@@ -249,11 +288,24 @@ export default function BootcampDetailPage() {
           sx={{
             display: 'grid',
             rowGap: { xs: 5, md: 7 },
-            gridTemplateColumns: 'minmax(0, 1fr)',
-            gridTemplateAreas: hasIntro ? '"intro" "main"' : '"main"',
+            columnGap: { md: 6 },
+            gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'minmax(0, 1fr) 340px' },
+            gridTemplateAreas: hasIntro
+              ? { xs: '"aside" "intro" "main"', md: '"intro aside" "main aside"' }
+              : { xs: '"aside" "main"', md: '"main aside"' },
             alignItems: 'start',
           }}
         >
+          {/* The booking card — price, the facts a parent decides on, and Enroll — kept in view
+              on the right. */}
+          <Box
+            component="aside"
+            aria-label="Dates, place, price and enrolment"
+            sx={{ gridArea: 'aside', position: { md: 'sticky' }, top: { md: 96 }, alignSelf: 'start', minWidth: 0 }}
+          >
+            {facts}
+          </Box>
+
           {hasIntro && (
             <Box sx={{ gridArea: 'intro', minWidth: 0 }}>
             {description && (
@@ -441,85 +493,6 @@ export default function BootcampDetailPage() {
                 </Typography>
               </Box>
             )}
-
-            {(coursePricing.length > 0 || pathwayDiagnostics.length > 0) && (() => {
-              const keyed = keyedCoursePricing;
-              // A pathway can carry a diagnostic with no priced courses at all — e.g. a
-              // whole-bootcamp-priced bootcamp (no per-course breakdown, see the Pricing card's
-              // mode toggle) still assigns per-pathway diagnostics in the builder. Give it a card
-              // too (courses: []) so its diagnostic stays reachable rather than only existing for
-              // pathways that happen to also have course pricing.
-              const knownPathwayIds = new Set(keyed.map((s) => s.pathwayId).filter(Boolean));
-              const diagnosticOnly = pathwayDiagnostics
-                .filter((pd) => !knownPathwayIds.has(pd.pathwayId))
-                .map((pd) => ({
-                  pathwayId: pd.pathwayId,
-                  pathwayName: pd.pathwayName,
-                  pathwayColor: pd.pathwayColor,
-                  courses: [],
-                  key: pd.pathwayId,
-                }));
-              const allSections = [...keyed, ...diagnosticOnly];
-              const selected = allSections.find((s) => s.key === selectedPathwayKey) || null;
-
-              return (
-                <DetailSection
-                  title={selected ? selected.pathwayName || 'Other courses' : 'Pathways in this bootcamp'}
-                  icon={<RouteIcon />}
-                  lead={
-                    selected
-                      ? null
-                      : coursePricing.length > 0
-                        ? 'Individual course prices, and diagnostics where available, by pathway.'
-                        : "Take a diagnostic for the pathway you're interested in."
-                  }
-                  action={
-                    selected && selectedPathwayDiagnostic ? (
-                      <Button
-                        component={RouterLink}
-                        to={`/pathways/${selectedPathwayDiagnostic.pathwaySlug}/diagnostic?bootcamp=${encodeURIComponent(slug)}`}
-                        variant="outlined"
-                        sx={{ color: selectedPathwayDiagnostic.pathwayColor || 'primary.main', borderColor: selectedPathwayDiagnostic.pathwayColor || 'primary.main' }}
-                      >
-                        Take the diagnostic
-                      </Button>
-                    ) : null
-                  }
-                >
-                  {selected ? (
-                    <>
-                      <Button
-                        size="small"
-                        startIcon={<ArrowBackIcon />}
-                        onClick={() => setSelectedPathwayKey(null)}
-                        sx={{ mb: 2, px: 1, mt: -1 }}
-                      >
-                        Back to pathways
-                      </Button>
-                      {selected.courses.length > 0 ? (
-                        <CoursePricingRoadmap courses={selected.courses} accent={selected.pathwayColor || undefined} />
-                      ) : (
-                        <Typography color="text.secondary">
-                          This pathway&apos;s course prices aren&apos;t broken out individually — see the price above.
-                        </Typography>
-                      )}
-                    </>
-                  ) : (
-                    <>
-                      <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' } }}>
-                        {allSections.map((section) => (
-                          <BootcampPathwayCard
-                            key={section.key}
-                            pathway={section}
-                            onSelect={() => setSelectedPathwayKey(section.key)}
-                          />
-                        ))}
-                      </Box>
-                    </>
-                  )}
-                </DetailSection>
-              );
-            })()}
 
             {/* Curriculum & Competencies — shown once for the whole bootcamp (every hub run
                 shares the same curriculum), not per run. `curriculum` is null when the bootcamp

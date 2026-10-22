@@ -17,6 +17,7 @@ const DiagnosticPage = lazy(() => import('../pages/DiagnosticPage.jsx'));
 const DiagnosticReportPage = lazy(() => import('../pages/DiagnosticReportPage.jsx'));
 const BootcampsPage = lazy(() => import('../pages/BootcampsPage.jsx'));
 const BootcampDetailPage = lazy(() => import('../pages/BootcampDetailPage.jsx'));
+const BootcampEnrollPage = lazy(() => import('../pages/BootcampEnrollPage.jsx'));
 const HubDetailPage = lazy(() => import('../pages/HubDetailPage.jsx'));
 const EstateTechClubsPage = lazy(() => import('../pages/EstateTechClubsPage.jsx'));
 const EstateTechClubPage = lazy(() => import('../pages/EstateTechClubPage.jsx'));
@@ -51,6 +52,7 @@ export const routes = [
       { path: 'projects/:slug', element: <ProjectDetailPage /> },
       { path: 'bootcamps', element: <BootcampsPage /> },
       { path: 'bootcamps/:slug', element: <BootcampDetailPage /> },
+      { path: 'bootcamps/:slug/enroll', element: <BootcampEnrollPage /> },
       { path: 'bootcamps/:slug/hubs/:hubId', element: <HubDetailPage /> },
       { path: 'competitions', element: <CompetitionsPage /> },
       { path: 'competitions/:slug', element: <CompetitionDetailPage /> },

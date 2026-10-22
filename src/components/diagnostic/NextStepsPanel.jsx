@@ -130,6 +130,8 @@ export default function NextStepsPanel({
   mentorHref,
   mentorIsExternal,
   bootcamp,
+  // false hides "See the full pathway" — a bootcamp's Enroll flow keeps the pathway out of view.
+  roadmap = true,
 }) {
   const [showRoadmap, setShowRoadmap] = useState(false);
   const [showBootcampEnroll, setShowBootcampEnroll] = useState(false);
@@ -184,39 +186,43 @@ export default function NextStepsPanel({
           />
         )}
 
-        <OptionCard
-          icon={<RouteIcon />}
-          title={showRoadmap ? 'Hide the course roadmap' : 'See the full pathway'}
-          body="The courses in order — from where to start through to the finish."
-          onClick={() => setShowRoadmap((v) => !v)}
-          trailingIcon={
-            <ExpandMoreIcon
-              fontSize="small"
-              sx={{ transform: showRoadmap ? 'rotate(180deg)' : 'none', transition: 'transform 160ms ease' }}
+        {roadmap && (
+          <>
+            <OptionCard
+              icon={<RouteIcon />}
+              title={showRoadmap ? 'Hide the course roadmap' : 'See the full pathway'}
+              body="The courses in order — from where to start through to the finish."
+              onClick={() => setShowRoadmap((v) => !v)}
+              trailingIcon={
+                <ExpandMoreIcon
+                  fontSize="small"
+                  sx={{ transform: showRoadmap ? 'rotate(180deg)' : 'none', transition: 'transform 160ms ease' }}
+                />
+              }
             />
-          }
-        />
 
-        <Collapse in={showRoadmap} unmountOnExit>
-          <Box
-            sx={{
-              mt: 0.5,
-              px: { xs: 0.5, sm: 1 },
-              py: 1,
-            }}
-          >
-            <PathwayRoadmap courses={courses} accent={accent} name={pathwayName} />
-            {bootcamp ? (
-              <Button variant="contained" sx={{ mt: 3 }} onClick={() => setShowBootcampEnroll(true)}>
-                Enroll now in {bootcamp.name}
-              </Button>
-            ) : (
-              <Button component={RouterLink} to={enrollTo} variant="contained" sx={{ mt: 3 }}>
-                Enrol in {pathwayName}
-              </Button>
-            )}
-          </Box>
-        </Collapse>
+            <Collapse in={showRoadmap} unmountOnExit>
+              <Box
+                sx={{
+                  mt: 0.5,
+                  px: { xs: 0.5, sm: 1 },
+                  py: 1,
+                }}
+              >
+                <PathwayRoadmap courses={courses} accent={accent} name={pathwayName} />
+                {bootcamp ? (
+                  <Button variant="contained" sx={{ mt: 3 }} onClick={() => setShowBootcampEnroll(true)}>
+                    Enroll now in {bootcamp.name}
+                  </Button>
+                ) : (
+                  <Button component={RouterLink} to={enrollTo} variant="contained" sx={{ mt: 3 }}>
+                    Enrol in {pathwayName}
+                  </Button>
+                )}
+              </Box>
+            </Collapse>
+          </>
+        )}
 
         <OptionCard
           icon={<WhatsAppIcon />}
