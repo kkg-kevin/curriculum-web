@@ -80,6 +80,7 @@ export const STATIC_ROUTES = [
   { path: '/store' },
   { path: '/about' },
   { path: '/enroll', sitemap: false }, // noindex — see EnrollPage
+  { path: '/get-started', sitemap: false }, // noindex — the header Enroll button's chooser
   { path: '/contact' },
   { path: '/privacy' },
   { path: '/terms' },

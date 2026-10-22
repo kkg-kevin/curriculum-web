@@ -43,7 +43,7 @@ export default function MobileMenu({ open, onClose, links }) {
       </Box>
 
       <Box sx={{ p: 2 }}>
-        <Button component={NavLink} to="/enroll" onClick={onClose} variant="contained" fullWidth>
+        <Button component={NavLink} to="/get-started" onClick={onClose} variant="contained" fullWidth>
           Enroll a learner
         </Button>
       </Box>

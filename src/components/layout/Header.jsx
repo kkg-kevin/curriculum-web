@@ -91,7 +91,7 @@ export default function Header() {
 
         <Box sx={{ justifySelf: 'end', display: 'flex', alignItems: 'center', gap: { xs: 0.5, md: 1.5 } }}>
           {!isMobile && (
-            <Button component={NavLink} to="/enroll" variant="contained" sx={enrollSx}>
+            <Button component={NavLink} to="/get-started" variant="contained" sx={enrollSx}>
               Enroll
             </Button>
           )}

@@ -16,12 +16,10 @@ import { ErrorBlock, LoadingBlock } from '../components/common/StateViews.jsx';
 import { usePathway } from '../hooks/usePathways.js';
 import { usePublicBootcamp } from '../hooks/usePublicBootcamps.js';
 import { useDiagnostic, useSubmitDiagnostic } from '../hooks/useDiagnostic.js';
-import PrivacyNote from '../components/forms/PrivacyNote.jsx';
 import { diagnosticAgeSchema, diagnosticContactSchema } from '../components/forms/schemas.js';
 import { whatsAppUrl } from '../config/site.js';
 import { ageLabel } from '../utils/format.js';
-import FormStatus from '../components/forms/FormStatus.jsx';
-import DiagnosticQuestions from '../components/diagnostic/DiagnosticQuestions.jsx';
+import DiagnosticAnswerForm from '../components/diagnostic/DiagnosticAnswerForm.jsx';
 import DiagnosticReport from '../components/diagnostic/DiagnosticReport.jsx';
 import NextStepsPanel from '../components/diagnostic/NextStepsPanel.jsx';
 
@@ -30,8 +28,8 @@ import NextStepsPanel from '../components/diagnostic/NextStepsPanel.jsx';
 // submitting; they become a `source: "diagnostic"` lead so the team can follow up. The report
 // itself never exposes them.
 //
-// A visitor can also reach this page from a bootcamp's own "Take the diagnostic" picker (see
-// BootcampDetailPage.jsx / public-bootcamp.service.js's resolvePathwayDiagnostics) — the
+// `?bootcamp=` links from before a bootcamp's Enroll button (BootcampEnrollPage.jsx, which picks
+// the pathway from the child's age) still work here — the
 // diagnostic itself is always the PATHWAY's own (no bootcamp-specific assessment override, see
 // that resolver's comment), carried through via `?bootcamp=:bootcampSlug` purely so the report's
 // "Where to from here" step can offer the bootcamp's own auto-provisioned-account enrollment
@@ -245,79 +243,13 @@ export default function DiagnosticPage() {
             )}
 
             {diagnosticQuery.data && (
-              <Box component="form" onSubmit={handleSubmit} noValidate sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                <Typography color="text.secondary" sx={{ '& p': { m: 0 } }}>
-                  {diagnosticQuery.data.instructions ? (
-                    <span dangerouslySetInnerHTML={{ __html: diagnosticQuery.data.instructions }} />
-                  ) : (
-                    'Answer as many questions as you can — there is no time limit. You’ll see your results as soon as you submit.'
-                  )}
-                </Typography>
-
-                <Box
-                  sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 2,
-                    maxWidth: 480,
-                    p: 2.5,
-                    borderRadius: 2,
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    backgroundColor: 'surface.subtle',
-                  }}
-                >
-                  <Typography variant="subtitle2">Your details</Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    We&apos;ll send your report to the screen straight away. Your name and phone let
-                    our team follow up with next steps.
-                  </Typography>
-                  <TextField
-                    label="Your name"
-                    required
-                    {...contactForm.register('parentName')}
-                    error={!!contactForm.formState.errors.parentName}
-                    helperText={contactForm.formState.errors.parentName?.message}
-                    inputProps={{ maxLength: 120 }}
-                  />
-                  <TextField
-                    label="Phone number"
-                    required
-                    {...contactForm.register('parentPhone')}
-                    error={!!contactForm.formState.errors.parentPhone}
-                    helperText={contactForm.formState.errors.parentPhone?.message}
-                    inputProps={{ maxLength: 20 }}
-                  />
-                  <TextField
-                    label="Learner's first name (optional)"
-                    {...contactForm.register('childName')}
-                    error={!!contactForm.formState.errors.childName}
-                    helperText={
-                      contactForm.formState.errors.childName?.message ||
-                      'Just so the report reads nicely — you can leave this blank'
-                    }
-                    inputProps={{ maxLength: 120 }}
-                  />
-                </Box>
-
-                <DiagnosticQuestions items={diagnosticQuery.data.items} onChange={setAnswers} />
-
-                <FormStatus status={submitMutation.isError ? 'error' : 'idle'} error={submitMutation.error} />
-
-                <Box>
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    size="large"
-                    disabled={submitMutation.isPending}
-                  >
-                    {submitMutation.isPending ? 'Grading…' : 'Submit & see my report'}
-                  </Button>
-                  <PrivacyNote sx={{ display: 'block', mt: 1.5 }}>
-                    We use your name and phone number to follow up on this diagnostic. See our
-                  </PrivacyNote>
-                </Box>
-              </Box>
+              <DiagnosticAnswerForm
+                diagnostic={diagnosticQuery.data}
+                contactForm={contactForm}
+                onAnswersChange={setAnswers}
+                onSubmit={handleSubmit}
+                submitMutation={submitMutation}
+              />
             )}
           </Box>
         )}

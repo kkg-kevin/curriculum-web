@@ -199,23 +199,6 @@ export default function BootcampsPage() {
 
         {!isLoading && !isError && count > 0 && (
           <>
-            <Box
-              role="note"
-              sx={{
-                mb: 4,
-                p: 2,
-                borderRadius: 2,
-                border: '1px dashed',
-                borderColor: 'divider',
-                backgroundColor: 'surface.subtle',
-              }}
-            >
-              <Typography variant="body2" color="text.secondary">
-                <strong>Prices shown are indicative.</strong> Open a bootcamp and send an enquiry —
-                we&apos;ll confirm the next run&apos;s dates, the final price and how to secure a place.
-              </Typography>
-            </Box>
-
             {availableFormats.length > 2 && (
               <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 4 }}>
                 {availableFormats.map((f) => (
