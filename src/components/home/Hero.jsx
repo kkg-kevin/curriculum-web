@@ -4,8 +4,10 @@ import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import { alpha } from '@mui/material/styles';
+import RouteIcon from '@mui/icons-material/Route';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import Reveal from '../common/Reveal.jsx';
-import { actionRowSx } from '../common/ActionRow.jsx';
+import { programmeIcon } from './programmeIcons.js';
 import { hero } from '../../content/home.js';
 import { purpose } from '../../content/organisation.js';
 import { PurposeIcon } from './Purpose.jsx';
@@ -14,9 +16,10 @@ import { PurposeIcon } from './Purpose.jsx';
  * Premium hero. Two-column on desktop, stacked on mobile:
  *
  *  LEFT  — the copy: a status pill, a per-word clip-reveal heading with a
- *          one-time sheen, sub, CTAs and a "what's inside" strip.
- *  RIGHT — the vision, mission and 2030 goal as three stacked cards. On phones they drop
- *          under the copy.
+ *          one-time sheen, sub, the three programme buttons (Bootcamps, Home Schooling,
+ *          Tech Clubs) and a "what's inside" strip.
+ *  RIGHT — the vision, mission and 2030 goal as three stacked cards, with "Browse pathways"
+ *          under them. On phones they drop under the copy.
  *
  * Motion notes: entrance animation is done with the <Reveal> component
  * (IntersectionObserver + CSS transition) and the infinite float/sheen use
@@ -186,6 +189,95 @@ function HeroStudents() {
   );
 }
 
+// One of the three programme buttons: an icon tile, the name, a short hint, and an arrow that
+// slides on hover. Three across from `sm` up, one under the other on a phone. The first is filled
+// so the row has one clear lead.
+function ProgrammeButton({ programme, highlighted }) {
+  const Icon = programmeIcon(programme.key);
+  return (
+    <Box
+      component={RouterLink}
+      to={programme.to}
+      sx={{
+        position: 'relative',
+        display: 'flex',
+        // A row on a phone; from `sm` up the tiles are narrow, so icon on top, then the words.
+        flexDirection: { xs: 'row', sm: 'column' },
+        alignItems: { xs: 'center', sm: 'flex-start' },
+        gap: { xs: 1.5, sm: 1.25 },
+        p: { xs: 1.5, sm: 2 },
+        pr: { xs: 1.25, sm: 2 },
+        minWidth: 0,
+        borderRadius: 3,
+        textDecoration: 'none',
+        color: highlighted ? 'primary.contrastText' : 'text.primary',
+        background: (t) =>
+          highlighted
+            ? `linear-gradient(135deg, ${t.palette.primary.main} 0%, ${t.palette.primary.dark} 100%)`
+            : alpha(t.palette.surface.card, 0.86),
+        backdropFilter: 'blur(4px)',
+        border: '1px solid',
+        borderColor: highlighted ? 'transparent' : 'surface.ring',
+        boxShadow: highlighted ? 'shadow.md' : 'shadow.sm',
+        transition: 'transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease',
+        '&:hover': {
+          transform: 'translateY(-2px)',
+          boxShadow: 'shadow.lg',
+          borderColor: highlighted ? 'transparent' : 'primary.main',
+        },
+        '&:hover .df-programme-arrow': { transform: 'translateX(3px)', opacity: 1 },
+        '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.light', outlineOffset: 2 },
+        '@media (prefers-reduced-motion: reduce)': { transition: 'none', '&:hover': { transform: 'none' } },
+      }}
+    >
+      <Box
+        sx={{
+          width: 40,
+          height: 40,
+          borderRadius: 2.5,
+          display: 'grid',
+          placeItems: 'center',
+          flexShrink: 0,
+          bgcolor: (t) => (highlighted ? 'rgba(255,255,255,0.18)' : alpha(t.palette.primary.main, 0.12)),
+          color: highlighted ? 'inherit' : 'primary.main',
+        }}
+      >
+        <Icon sx={{ fontSize: 22 }} />
+      </Box>
+      <Box sx={{ minWidth: 0, flex: 1 }}>
+        <Typography component="span" sx={{ display: 'block', fontWeight: 800, fontSize: '0.98rem', lineHeight: 1.25 }}>
+          {programme.label}
+        </Typography>
+        <Typography
+          component="span"
+          sx={{
+            display: 'block',
+            fontSize: '0.78rem',
+            lineHeight: 1.35,
+            opacity: highlighted ? 0.85 : 1,
+            color: highlighted ? 'inherit' : 'text.secondary',
+          }}
+        >
+          {programme.hint}
+        </Typography>
+      </Box>
+      <ArrowForwardIcon
+        className="df-programme-arrow"
+        sx={{
+          fontSize: 18,
+          flexShrink: 0,
+          opacity: 0.7,
+          transition: 'transform 180ms ease, opacity 180ms ease',
+          // Top-right corner of the stacked tile.
+          position: { sm: 'absolute' },
+          top: { sm: 18 },
+          right: { sm: 16 },
+        }}
+      />
+    </Box>
+  );
+}
+
 function HeroPurpose() {
   return (
     <Box
@@ -226,6 +318,29 @@ function HeroPurpose() {
           </Reveal>
         );
       })}
+
+      {/* Browse pathways, right under the 2030 goal. */}
+      <Reveal delay={220 + purpose.length * 110} y={20}>
+        <Button
+          component={RouterLink}
+          to={hero.pathwaysCta.to}
+          variant="outlined"
+          size="large"
+          fullWidth
+          startIcon={<RouteIcon />}
+          endIcon={<ArrowForwardIcon />}
+          sx={{
+            py: 1.5,
+            px: 3,
+            backgroundColor: (t) => alpha(t.palette.surface.card, 0.78),
+            backdropFilter: 'blur(3px)',
+            '& .MuiButton-endIcon': { ml: 'auto', transition: 'transform 180ms ease' },
+            '&:hover .MuiButton-endIcon': { transform: 'translateX(3px)' },
+          }}
+        >
+          {hero.pathwaysCta.label}
+        </Button>
+      </Reveal>
     </Box>
   );
 }
@@ -320,13 +435,19 @@ export default function Hero() {
               </Typography>
             </Reveal>
 
-            <Reveal delay={210} sx={actionRowSx}>
-              <Button component={RouterLink} to={hero.primaryCta.to} variant="contained" size="large">
-                {hero.primaryCta.label}
-              </Button>
-              <Button component={RouterLink} to={hero.secondaryCta.to} variant="outlined" size="large">
-                {hero.secondaryCta.label}
-              </Button>
+            <Reveal
+              as="nav"
+              aria-label="Join a programme"
+              delay={210}
+              sx={{
+                display: 'grid',
+                gap: 1.5,
+                gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: 'repeat(3, minmax(0, 1fr))' },
+              }}
+            >
+              {hero.programmes.map((p, i) => (
+                <ProgrammeButton key={p.key} programme={p} highlighted={i === 0} />
+              ))}
             </Reveal>
 
             <Reveal

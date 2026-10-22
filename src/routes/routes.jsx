@@ -32,6 +32,7 @@ const ProjectDetailPage = lazy(() => import('../pages/ProjectDetailPage.jsx'));
 const StoreListPage = lazy(() => import('../pages/StoreListPage.jsx'));
 const StoreItemPage = lazy(() => import('../pages/StoreItemPage.jsx'));
 const EnrollPage = lazy(() => import('../pages/EnrollPage.jsx'));
+const GetStartedPage = lazy(() => import('../pages/GetStartedPage.jsx'));
 const ContactPage = lazy(() => import('../pages/ContactPage.jsx'));
 const AboutPage = lazy(() => import('../pages/AboutPage.jsx'));
 const NotFoundPage = lazy(() => import('../pages/NotFoundPage.jsx'));
@@ -69,6 +70,8 @@ export const routes = [
       // guessed /store/<slug> that 404s. public/.htaccess does the same as a real 301.
       { path: 'quarky', element: <Navigate to="/store" replace /> },
       { path: 'enroll', element: <EnrollPage /> },
+      // The header's Enroll button: the programmes a family can enrol in themselves.
+      { path: 'get-started', element: <GetStartedPage /> },
       { path: 'contact', element: <ContactPage /> },
       { path: 'about', element: <AboutPage /> },
       { path: 'privacy', element: <LegalPage doc="privacy" /> },

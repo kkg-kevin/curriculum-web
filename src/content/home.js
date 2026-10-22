@@ -8,8 +8,14 @@ export const hero = {
   eyebrow: 'Digital skills for Africa’s next generation',
   heading: 'Robotics, AI & coding for kids in Kenya',
   sub: 'Digifunzi is an impact-driven digital literacy programme. We foster creativity, collaboration and leadership in kids aged 5–17, and give them the skills to compete for opportunities in the digital economy.',
-  primaryCta: { label: 'Enroll a learner', to: '/enroll' },
-  secondaryCta: { label: 'Browse pathways', to: '/pathways' },
+  // The three ways to join, as the hero's buttons. `key` picks the icon in components/home/Hero.jsx.
+  programmes: [
+    { key: 'bootcamps', label: 'Bootcamps', hint: 'Holiday programmes', to: '/bootcamps' },
+    { key: 'homeSchooling', label: 'Home Schooling', hint: 'An educator at home', to: '/home-schooling' },
+    { key: 'techClubs', label: 'Tech Clubs', hint: 'In your estate', to: '/estate-tech-clubs' },
+  ],
+  // Under the vision, mission and 2030 goal cards.
+  pathwaysCta: { label: 'Browse pathways', to: '/pathways' },
 };
 
 export const valueProps = [
