@@ -18,6 +18,7 @@ import PaymentsIcon from '@mui/icons-material/Payments';
 import PlaceIcon from '@mui/icons-material/Place';
 import { bootcampEnrollmentSchema } from './schemas.js';
 import { useSubmitBootcampEnrollment } from '../../hooks/useBootcampEnrollment.js';
+import MpesaPayNow from '../payments/MpesaPayNow.jsx';
 import { usePublicBootcamp } from '../../hooks/usePublicBootcamps.js';
 import { APP_URL } from '../../config/env.js';
 import FormStatus from './FormStatus.jsx';
@@ -153,6 +154,8 @@ export default function BootcampEnrollForm({
   // username. It's the same value the learner just typed into the form, not a secret being
   // exposed anywhere it shouldn't be.
   const [submittedPassword, setSubmittedPassword] = useState('');
+  // The parent's phone, for the M-Pesa prompt on the success screen.
+  const [submittedPhone, setSubmittedPhone] = useState('');
   const { data: bootcamp, isLoading: bootcampLoading } = usePublicBootcamp(bootcampSlug);
   const runs = bootcamp?.upcomingRuns || [];
   const needsHubChoice = runs.length > 1;
@@ -194,6 +197,7 @@ export default function BootcampEnrollForm({
       return;
     }
     setSubmittedPassword(values.password);
+    setSubmittedPhone(values.parentPhone);
     await mutation.mutateAsync({
       bootcampIdOrSlug: bootcampSlug,
       parentName: values.parentName,
@@ -235,9 +239,9 @@ export default function BootcampEnrollForm({
           <CopyableField label="Password" value={submittedPassword} />
         </Box>
 
-        {/* Payment — cash-only for now: there's nothing to click through online, so this is
-            instructional (pay at the hub) rather than a "Pay now" action. An admin confirms the
-            cash payment was received from the Enquiries page, which unlocks the account. */}
+        {/* Payment — by M-Pesa right here when it's on (payment.pay; paying in full unlocks the
+            account by itself), or in cash at the hub, which an admin confirms from the Enquiries
+            page. */}
         <Box
           sx={{
             display: 'flex',
@@ -257,9 +261,11 @@ export default function BootcampEnrollForm({
               {hasPrice ? formatMoney(payment.amount, payment.currency) : 'Price to be confirmed'}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {hasPrice
-                ? `Pay by cash at ${payment.hubName || 'your hub'} to activate full access.`
-                : `Ask ${payment.hubName || 'your hub'} to confirm the price and pay by cash to activate full access.`}
+              {hasPrice && payment.pay
+                ? `Pay by M-Pesa below to activate full access straight away${payment.invoiceNumber ? ` (invoice ${payment.invoiceNumber})` : ''} — or in cash at ${payment.hubName || 'your hub'}.`
+                : hasPrice
+                  ? `Pay by cash at ${payment.hubName || 'your hub'} to activate full access.`
+                  : `Ask ${payment.hubName || 'your hub'} to confirm the price and pay by cash to activate full access.`}
             </Typography>
             {/* This bootcamp is priced by course/module rather than as a whole — the total above
                 is the sum of every priced course (or module) rather than one flat number, since
@@ -272,6 +278,15 @@ export default function BootcampEnrollForm({
             )}
           </Box>
         </Box>
+
+        {hasPrice && (
+          <MpesaPayNow
+            pay={payment.pay}
+            amountDue={payment.amount}
+            defaultPhone={submittedPhone}
+            paidMessage="Your account now has full access — log in with the username and password above."
+          />
+        )}
 
         <Alert severity="info" sx={{ mb: 2.5 }}>
           Your account can log in right away, but stays view-only until your payment is
