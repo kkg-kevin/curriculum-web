@@ -134,24 +134,6 @@ export default function StoreListPage() {
       </PageHeader>
 
       <Section>
-        <Box
-          role="note"
-          sx={{
-            mb: 4,
-            p: 2,
-            borderRadius: 2,
-            border: '1px dashed',
-            borderColor: 'divider',
-            backgroundColor: 'surface.subtle',
-          }}
-        >
-          <Typography variant="body2" color="text.secondary">
-            <strong>Prices shown are indicative.</strong> Online checkout is coming soon — for now,
-            open an item and send an enquiry. We&apos;ll confirm the final price, arrange payment and
-            get it to you.
-          </Typography>
-        </Box>
-
         {isLoading && (
           <Box sx={GRID_SX}>
             {Array.from({ length: 6 }).map((_, i) => (
