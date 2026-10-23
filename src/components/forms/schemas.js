@@ -200,7 +200,7 @@ export function isGoogleMapsUrl(value) {
 export const signupChildSchema = z.object({
   firstName: requiredText(80, 'Enter their first name'),
   lastName: requiredText(80, 'Enter their last name'),
-  gender: z.enum(['female', 'male', 'other'], { errorMap: () => ({ message: 'Choose one' }) }),
+  gender: z.enum(['female', 'male'], { errorMap: () => ({ message: 'Choose one' }) }),
   dateOfBirth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Enter their date of birth').optional().or(z.literal('')),
   currentGrade: optionalText(150),
   username,
