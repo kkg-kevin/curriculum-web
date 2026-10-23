@@ -13,7 +13,6 @@ import MenuBookIcon from '@mui/icons-material/MenuBook';
 import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
 import EventIcon from '@mui/icons-material/Event';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import HowToRegIcon from '@mui/icons-material/HowToReg';
 import SeoHead from '../components/seo/SeoHead.jsx';
 import JsonLd, { organizationSchema, breadcrumbSchema, eventSchema } from '../components/seo/JsonLd.jsx';
@@ -37,7 +36,6 @@ import { formatPrice, ageLabel } from '../utils/format.js';
 import { formatDateRange } from '../utils/dates.js';
 import { resolveMediaUrl } from '../utils/media.js';
 import { titleWithKind } from '../utils/seo.js';
-import { PROSE_MAX_WIDTH } from '../theme/layout.js';
 import { RelatedBootcamps } from '../components/common/Related.jsx';
 
 const RUN_STATUS_LABEL = { upcoming: 'Upcoming', active: 'Running now' };
@@ -137,7 +135,7 @@ export default function BootcampDetailPage() {
     : cheapestCoursePricingItem
       ? `From ${formatPrice({ amount: cheapestCoursePricingItem.priceAmount, currency: cheapestCoursePricingItem.priceCurrency })}`
       : 'Enquire for pricing';
-  const hasIntro = Boolean(description) || highlights.length > 0 || priceNotes.length > 0;
+  const hasIntro = highlights.length > 0 || priceNotes.length > 0;
 
   // The facts a parent decides on, and the one action — in the right-hand column under the header.
   // Enrolling starts with a short diagnostic; the pathway it comes from is picked from the child's
@@ -271,6 +269,38 @@ export default function BootcampDetailPage() {
                 </Typography>
               )}
 
+              {/* What the bootcamp is about, right under the tagline. */}
+              {description && (
+                <Box sx={{ mt: 2.5, maxWidth: 620 }}>
+                  <Typography
+                    sx={{
+                      color: 'text.secondary',
+                      whiteSpace: 'pre-line',
+                      lineHeight: 1.7,
+                      ...(descriptionExpanded
+                        ? {}
+                        : {
+                            display: '-webkit-box',
+                            WebkitBoxOrient: 'vertical',
+                            WebkitLineClamp: 8,
+                            overflow: 'hidden',
+                          }),
+                    }}
+                  >
+                    {description}
+                  </Typography>
+                  {!descriptionExpanded && description.length > 600 && (
+                    <Link
+                      component="button"
+                      type="button"
+                      onClick={() => setDescriptionExpanded(true)}
+                      sx={{ display: 'inline-block', mt: 1, fontWeight: 700 }}
+                    >
+                      Read more
+                    </Link>
+                  )}
+                </Box>
+              )}
             </Box>
 
             {/* The right half: the cover, then the bootcamp's other images (up to 3) — each shown
@@ -308,38 +338,6 @@ export default function BootcampDetailPage() {
 
           {hasIntro && (
             <Box sx={{ gridArea: 'intro', minWidth: 0 }}>
-            {description && (
-              <DetailSection title="About this bootcamp" icon={<InfoOutlinedIcon />}>
-                <Typography
-                  sx={{
-                    color: 'text.secondary',
-                    whiteSpace: 'pre-line', maxWidth: PROSE_MAX_WIDTH,
-                    lineHeight: 1.7,
-                    ...(descriptionExpanded
-                      ? {}
-                      : {
-                          display: '-webkit-box',
-                          WebkitBoxOrient: 'vertical',
-                          WebkitLineClamp: 8,
-                          overflow: 'hidden',
-                        }),
-                  }}
-                >
-                  {description}
-                </Typography>
-                {!descriptionExpanded && description.length > 600 && (
-                  <Link
-                    component="button"
-                    type="button"
-                    onClick={() => setDescriptionExpanded(true)}
-                    sx={{ display: 'inline-block', mt: 1, fontWeight: 700 }}
-                  >
-                    Read more
-                  </Link>
-                )}
-              </DetailSection>
-            )}
-
             {highlights.length > 0 && (
               <DetailSection title="What you’ll build" icon={<CheckCircleIcon />}>
                 <Box component="ul" sx={{ m: 0, p: 0, listStyle: 'none', display: 'grid', gap: 1.5 }}>
