@@ -16,16 +16,18 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
 import JsonLd, { organizationSchema, productSchema, breadcrumbSchema } from '../components/seo/JsonLd.jsx';
 import Section from '../components/common/Section.jsx';
-import SmartImage from '../components/common/SmartImage.jsx';
+import MediaGallery from '../components/media/MediaGallery.jsx';
+import BuyBox from '../components/catalog/BuyBox.jsx';
 import CTABanner from '../components/home/CTABanner.jsx';
 import { ErrorBlock } from '../components/common/StateViews.jsx';
 import { usePublicProject } from '../hooks/usePublicProjects.js';
-import { formatPrice, ageLabel } from '../utils/format.js';
+import { ageLabel } from '../utils/format.js';
 import { resolveMediaUrl } from '../utils/media.js';
 import { titleWithKind } from '../utils/seo.js';
 import { PROSE_MAX_WIDTH } from '../theme/layout.js';
 import DetailLayout from '../components/common/DetailLayout.jsx';
 import { RelatedProjects } from '../components/common/Related.jsx';
+import { PRICING_IS_PLACEHOLDER } from '../content/catalog.js';
 
 const LEVEL_LABEL = { beginner: 'Beginner', intermediate: 'Intermediate', advanced: 'Advanced' };
 
@@ -103,12 +105,13 @@ export default function ProjectDetailPage() {
 
   const {
     name, tagline, description, overview, level, ageMin, ageMax, coverImage, price,
-    deliverables = [], milestones = [], requirements = [],
+    deliverables = [], milestones = [], requirements = [], gallery = [], kitPrice = null,
   } = data;
 
   const age = ageLabel(ageMin, ageMax);
-  const priceLabel = price ? formatPrice(price) : 'Enquire for pricing';
   const enquireTo = `/enroll?interestedIn=project&referenceId=${encodeURIComponent(slug)}`;
+  const contactTo = `/contact?subject=${encodeURIComponent(`${name} — project enquiry`)}`;
+  const buyItem = { id: data.id, slug, name, image: coverImage, price, kitPrice };
 
   return (
     <>
@@ -137,7 +140,7 @@ export default function ProjectDetailPage() {
               kind: 'project',
             },
             `/projects/${slug}`,
-            { pricingIsPlaceholder: true },
+            { pricingIsPlaceholder: PRICING_IS_PLACEHOLDER },
           ),
         ]}
       />
@@ -186,46 +189,15 @@ export default function ProjectDetailPage() {
                 </Typography>
               )}
 
-              {/* price + enquire */}
-              <Box
-                sx={{
-                  mt: 3,
-                  p: 2.5,
-                  borderRadius: 2,
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  bgcolor: 'background.paper',
-                  maxWidth: 420,
-                }}
-              >
-                <Typography sx={{ fontSize: '1.4rem', fontWeight: 800, color: 'primary.dark' }}>
-                  {priceLabel}
-                </Typography>
-                {price?.note && (
-                  <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                    {price.note}
-                  </Typography>
-                )}
-                <Button
-                  component={RouterLink}
-                  to={enquireTo}
-                  variant="contained"
-                  size="large"
-                  fullWidth
-                  sx={{ mt: 2 }}
-                >
-                  Enquire to buy
-                </Button>
-                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-                  No online checkout yet — we&apos;ll confirm the price, arrange payment and unlock it
-                  for your learner.
-                </Typography>
+              {/* price + buy */}
+              <Box sx={{ mt: 3 }}>
+                <BuyBox kind="project" item={buyItem} enquireTo={enquireTo} contactTo={contactTo} />
               </Box>
             </Box>
 
             {coverImage && (
-              <Box sx={{ width: { xs: '100%', md: 380 }, flexShrink: 0 }}>
-                <SmartImage src={coverImage} alt={name} ratio="4 / 3" />
+              <Box sx={{ width: { xs: '100%', md: 460 }, flexShrink: 0 }}>
+                <MediaGallery images={[coverImage, ...gallery]} alt={name} ratio="16 / 10" />
               </Box>
             )}
           </Box>
@@ -248,18 +220,10 @@ export default function ProjectDetailPage() {
                   boxShadow: 'shadow.md',
                 }}
               >
-                <Box>
-                  <Typography variant="h4" component="p" gutterBottom>
-                    Get {name} for your learner
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {priceLabel}
-                    {price?.note ? ` · ${price.note}` : ''}
-                  </Typography>
-                </Box>
-                <Button component={RouterLink} to={enquireTo} variant="contained" size="large">
-                  Enquire to buy
-                </Button>
+                <Typography variant="h4" component="p">
+                  Get {name} for your learner
+                </Typography>
+                <BuyBox kind="project" item={buyItem} enquireTo={enquireTo} contactTo={contactTo} compact />
               </Box>
             </Box>
           }

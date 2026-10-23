@@ -45,8 +45,9 @@
  * }
  */
 
-/** Flip to false the day real prices + a real checkout go live. */
-export const PRICING_IS_PLACEHOLDER = true;
+/** Flip to false the day real prices + a real checkout go live — done: the cart checkout charges
+ *  the listed price (server: modules/orders). */
+export const PRICING_IS_PLACEHOLDER = false;
 
 /**
  * Map an item's `kind` onto the lead API's `interestedIn` enum, which only

@@ -52,7 +52,7 @@ function CardSkeleton() {
 /**
  * Projects section (`/projects`). A project is a `type: "project"` assessment the curriculum
  * team flipped "For sale" in the Assessment Builder — see GET /api/public/projects. A learner
- * buys it once (via an "Enquire to buy" lead, no checkout yet) and keeps it for life.
+ * buys it once (cart → checkout → pay; server: modules/orders) and keeps it for life.
  *
  * `?level=` filters the grid client-side.
  */

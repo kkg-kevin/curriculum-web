@@ -20,14 +20,13 @@ import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
 import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
 import AutoFixHighRoundedIcon from '@mui/icons-material/AutoFixHighRounded';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
-import PaymentsRoundedIcon from '@mui/icons-material/PaymentsRounded';
 import RemoveRoundedIcon from '@mui/icons-material/RemoveRounded';
 import VisibilityOffRoundedIcon from '@mui/icons-material/VisibilityOffRounded';
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import ChildIcons from './ChildIcons.jsx';
 import Honeypot, { HONEYPOT_DEFAULT, isBot } from '../forms/Honeypot.jsx';
 import PrivacyNote from '../forms/PrivacyNote.jsx';
-import MpesaPayNow from '../payments/MpesaPayNow.jsx';
+import PaymentStep from '../payments/PaymentStep.jsx';
 import { homeSchoolingSignupSchema } from '../forms/schemas.js';
 import { useHomeLearningSignup } from '../../hooks/usePublicHomeLearning.js';
 import { APP_URL } from '../../config/env.js';
@@ -35,7 +34,8 @@ import {
   bestPackageFor, childrenLabel, formatKsh, homeSchoolingEnquiryPath, maxChildrenOffered, priceForPackage,
 } from '../../content/homeSchooling.js';
 
-const STEPS = ['Package', 'Parent', 'Children', 'Home', 'Review'];
+const STEPS = ['Package', 'Parent', 'Children', 'Home', 'Review', 'Payment'];
+const REVIEW = 4; // submitting here creates the accounts, then the Payment step opens
 const EMPTY_CHILD = { firstName: '', lastName: '', gender: '', dateOfBirth: '', currentGrade: '', username: '', password: '' };
 const sectionSx = { p: { xs: 2.5, sm: 3 }, borderRadius: 4, border: '1px solid', borderColor: 'surface.ring', bgcolor: 'surface.card', boxShadow: 'shadow.sm' };
 const gridSx = { display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } };
@@ -73,60 +73,62 @@ function PasswordField({ label, error, helperText, inputProps, ...rest }) {
   );
 }
 
+// The Payment step: the accounts and invoice exist now; the family picks how to pay.
 function Confirmation({ result }) {
   return (
-    <Box sx={{ ...sectionSx, textAlign: 'center', py: { xs: 4, sm: 5 } }}>
-      <CheckCircleRoundedIcon sx={{ fontSize: 56, color: 'success.main', mb: 1 }} />
-      <Typography variant="h3" component="h2" sx={{ mb: 1 }}>You’re signed up!</Typography>
-      <Typography color="text.secondary" sx={{ maxWidth: 520, mx: 'auto', mb: 3 }}>
-        We’ve created your family’s accounts for <strong>{result.packageName}</strong>. They unlock as soon as we confirm your payment.
-      </Typography>
-
-      <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1.5, textAlign: 'left', p: 2.5, mb: 3, borderRadius: 3, bgcolor: 'surface.subtle' }}>
-        <PaymentsRoundedIcon color="primary" />
-        <Box>
-          <Typography sx={{ fontSize: '1.6rem', fontWeight: 800, lineHeight: 1.1, color: 'primary.main' }}>{formatKsh(result.amountDue)}</Typography>
-          <Typography variant="body2" color="text.secondary">
-            First month · invoice {result.invoiceNumber}. {result.pay ? 'Pay by M-Pesa below and your accounts unlock straight away — or pay in cash to our team.' : 'Pay in cash to our team — we’ll call you on the number you gave us.'}
+    <Box>
+      <Stepper activeStep={STEPS.length - 1} alternativeLabel sx={{ mb: 4 }}>
+        {STEPS.map((label) => <Step key={label}><StepLabel>{label}</StepLabel></Step>)}
+      </Stepper>
+      <Box sx={{ ...sectionSx, py: { xs: 3, sm: 4 } }}>
+        <Box sx={{ textAlign: 'center' }}>
+          <CheckCircleRoundedIcon sx={{ fontSize: 48, color: 'success.main', mb: 1 }} />
+          <Typography variant="h3" component="h2" sx={{ mb: 1 }}>Your accounts are ready — now pay</Typography>
+          <Typography color="text.secondary" sx={{ maxWidth: 520, mx: 'auto', mb: 3 }}>
+            We’ve created your family’s accounts for <strong>{result.packageName}</strong>. They unlock as soon as your first month’s payment is confirmed.
           </Typography>
         </Box>
-      </Box>
 
-      <MpesaPayNow
-        pay={result.pay}
-        amountDue={result.amountDue}
-        defaultPhone={result.parentPhone}
-        paidMessage="Your family’s accounts are active — sign in with the logins below."
-      />
+        <PaymentStep
+          pay={result.pay}
+          amountDue={result.amountDue}
+          invoiceNumber={result.invoiceNumber}
+          defaultPhone={result.parentPhone}
+          paidMessage="Your family’s accounts are active — sign in with the logins below."
+        />
 
-      <Box sx={{ textAlign: 'left', maxWidth: 520, mx: 'auto', mb: 3 }}>
-        <Typography variant="overline" color="text.secondary">Your logins</Typography>
-        <Box component="ul" sx={{ listStyle: 'none', p: 0, m: 0, display: 'grid', gap: 1 }}>
-          <Box component="li" sx={{ p: 1.5, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
-            <Typography sx={{ fontWeight: 700 }}>Parent</Typography>
-            <Typography variant="body2" color="text.secondary">Sign in with <strong>{result.parentEmail}</strong> and your password — you’ll see your children and invoices.</Typography>
-          </Box>
-          {result.children.map((child) => (
-            <Box component="li" key={child.username} sx={{ p: 1.5, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
-              <Typography sx={{ fontWeight: 700 }}>{child.name}</Typography>
-              <Typography variant="body2" color="text.secondary">Username <strong>{child.username}</strong> with the password you chose.</Typography>
+        <Box sx={{ textAlign: 'left', maxWidth: 560, mx: 'auto', mb: 3 }}>
+          <Typography variant="overline" color="text.secondary">Your logins</Typography>
+          <Box component="ul" sx={{ listStyle: 'none', p: 0, m: 0, display: 'grid', gap: 1 }}>
+            <Box component="li" sx={{ p: 1.5, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
+              <Typography sx={{ fontWeight: 700 }}>Parent</Typography>
+              <Typography variant="body2" color="text.secondary">Sign in with <strong>{result.parentEmail}</strong> and your password — you’ll see your children and invoices.</Typography>
             </Box>
-          ))}
+            {result.children.map((child) => (
+              <Box component="li" key={child.username} sx={{ p: 1.5, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
+                <Typography sx={{ fontWeight: 700 }}>{child.name}</Typography>
+                <Typography variant="body2" color="text.secondary">Username <strong>{child.username}</strong> with the password you chose.</Typography>
+              </Box>
+            ))}
+          </Box>
+        </Box>
+
+        <Box sx={{ textAlign: 'center' }}>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Until your payment is confirmed, signing in shows “payment pending”. After that you can start straight away.
+          </Typography>
+          <Button href={`${APP_URL}/login`} variant="contained" size="large">Go to sign in</Button>
         </Box>
       </Box>
-
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        Until your payment is in, signing in shows “payment pending”. After that you can start straight away.
-      </Typography>
-      <Button href={`${APP_URL}/login`} variant="contained" size="large">Go to sign in</Button>
     </Box>
   );
 }
 
 /**
- * The Home Schooling sign-up: package → parent → children → home → review. Submitting creates the
- * family's accounts (see server: home-learning-signup.service.js); they unlock once our team
- * approves the payment. `packages` are the published packages; `initialSlug` / `initialChildren`
+ * The Home Schooling sign-up: package → parent → children → home → review → payment. Submitting
+ * the review creates the family's accounts and first invoice (see server:
+ * home-learning-signup.service.js); the Payment step then takes their payment, and the accounts
+ * unlock once it's confirmed. `packages` are the published packages; `initialSlug` / `initialChildren`
  * come from the package card or price calculator that linked here.
  */
 export default function HomeSchoolingSignupForm({ packages, initialSlug, initialChildren }) {
@@ -402,7 +404,7 @@ export default function HomeSchoolingSignupForm({ packages, initialSlug, initial
         </Box>
       )}
 
-      {step === 4 && (
+      {step === REVIEW && (
         <Box sx={{ display: 'grid', gap: 2 }}>
           <Box sx={sectionSx}>
             <Typography variant="h4" component="h2" sx={{ mb: 2 }}>Check your details</Typography>
@@ -425,8 +427,8 @@ export default function HomeSchoolingSignupForm({ packages, initialSlug, initial
           <Box sx={{ ...sectionSx, bgcolor: 'surface.subtle' }}>
             <Typography sx={{ fontWeight: 800, mb: 0.5 }}>How payment works</Typography>
             <Typography variant="body2" color="text.secondary">
-              Submitting creates your family’s accounts and your first month’s invoice of <strong>{price ? formatKsh(price.monthlyAmount) : '—'}</strong>.
-              Pay in cash to our team; once we confirm it, your logins unlock. Until then, signing in shows “payment pending”.
+              Confirming creates your family’s accounts and your first month’s invoice of <strong>{price ? formatKsh(price.monthlyAmount) : '—'}</strong>.
+              Next you choose how to pay. Your logins unlock as soon as the payment is confirmed; until then, signing in shows “payment pending”.
             </Typography>
           </Box>
 
@@ -454,9 +456,9 @@ export default function HomeSchoolingSignupForm({ packages, initialSlug, initial
 
       <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, mt: 3 }}>
         {step > 0 ? <Button startIcon={<ArrowBackRoundedIcon />} onClick={back}>Back</Button> : <span />}
-        {step < STEPS.length - 1
+        {step < REVIEW
           ? <Button variant="contained" size="large" endIcon={<ArrowForwardRoundedIcon />} onClick={next} disabled={step === 0 && !(pkg && price)}>Continue</Button>
-          : <Button type="submit" variant="contained" color="secondary" size="large" disabled={signup.isPending || !price}>{signup.isPending ? 'Creating your accounts…' : 'Create our accounts'}</Button>}
+          : <Button type="submit" variant="contained" color="secondary" size="large" endIcon={<ArrowForwardRoundedIcon />} disabled={signup.isPending || !price}>{signup.isPending ? 'Creating your accounts…' : 'Confirm & continue to payment'}</Button>}
       </Box>
     </Box>
   );

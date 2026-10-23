@@ -31,6 +31,9 @@ const ProjectsListPage = lazy(() => import('../pages/ProjectsListPage.jsx'));
 const ProjectDetailPage = lazy(() => import('../pages/ProjectDetailPage.jsx'));
 const StoreListPage = lazy(() => import('../pages/StoreListPage.jsx'));
 const StoreItemPage = lazy(() => import('../pages/StoreItemPage.jsx'));
+const CartPage = lazy(() => import('../pages/CartPage.jsx'));
+const CheckoutPage = lazy(() => import('../pages/CheckoutPage.jsx'));
+const PayPage = lazy(() => import('../pages/PayPage.jsx'));
 const EnrollPage = lazy(() => import('../pages/EnrollPage.jsx'));
 const GetStartedPage = lazy(() => import('../pages/GetStartedPage.jsx'));
 const ContactPage = lazy(() => import('../pages/ContactPage.jsx'));
@@ -65,6 +68,10 @@ export const routes = [
       { path: 'schools', element: <SchoolsPage /> },
       { path: 'store', element: <StoreListPage /> },
       { path: 'store/:slug', element: <StoreItemPage /> },
+      // Buying: the cart, its checkout, and paying an order later from its email link.
+      { path: 'cart', element: <CartPage /> },
+      { path: 'checkout', element: <CheckoutPage /> },
+      { path: 'pay/:token', element: <PayPage /> },
       // /quarky was the single-product page before the Store existed. Its item's slug is set in
       // the portal's Inventory and can change, so this lands on the Store itself rather than a
       // guessed /store/<slug> that 404s. public/.htaccess does the same as a real 301.

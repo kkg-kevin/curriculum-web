@@ -26,9 +26,10 @@ function formatKsh(amount) {
  *
  * `pay` is what the sign-up answered with: { token, paybill, account } (null when M-Pesa is off —
  * then nothing renders). `amountDue` is the invoice's amount; `defaultPhone` the number the parent
- * gave on the form. `paidMessage` is what to say once the money has arrived.
+ * gave on the form. `paidMessage` is what to say once the money has arrived. `bare` drops its own
+ * card and Paybill line, for use inside PaymentStep's Paybill option (which shows those itself).
  */
-export default function MpesaPayNow({ pay, amountDue, defaultPhone = '', paidMessage }) {
+export default function MpesaPayNow({ pay, amountDue, defaultPhone = '', paidMessage, bare = false }) {
   const [phone, setPhone] = useState(defaultPhone || '');
   const [stage, setStage] = useState('form'); // form | sending | waiting | done
   const [request, setRequest] = useState(null);
@@ -85,7 +86,7 @@ export default function MpesaPayNow({ pay, amountDue, defaultPhone = '', paidMes
 
   return (
     <Box
-      sx={{
+      sx={bare ? { textAlign: 'left', mb: 2 } : {
         textAlign: 'left', p: { xs: 2, sm: 2.5 }, mb: 3, mx: 'auto', maxWidth: 520, borderRadius: 3,
         border: '1px solid', borderColor: paid ? 'success.main' : 'divider', bgcolor: 'background.paper',
       }}
@@ -148,7 +149,7 @@ export default function MpesaPayNow({ pay, amountDue, defaultPhone = '', paidMes
             </Box>
           )}
 
-          {pay.paybill && pay.account && (
+          {!bare && pay.paybill && pay.account && (
             <Typography variant="body2" color="text.secondary" sx={{ mt: 1.5 }}>
               Or from the M-Pesa menu: Lipa na M-Pesa → Pay Bill, business number <strong>{pay.paybill}</strong>, account number <strong>{pay.account}</strong>.
             </Typography>

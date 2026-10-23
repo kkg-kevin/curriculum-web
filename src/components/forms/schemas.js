@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { HONEYPOT_FIELD } from './Honeypot.jsx';
+import { ageOn } from '../../utils/dates.js';
 
 const phone = z
   .string()
@@ -100,6 +101,20 @@ export const diagnosticAgeSchema = z.object({
 });
 
 /**
+ * A bootcamp's Enroll step: the learner's date of birth, from which the age (and so the
+ * diagnostic) is worked out. Same 3–19 range as diagnosticAgeSchema.
+ */
+export const learnerBirthDateSchema = z
+  .object({ dateOfBirth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Choose the learner’s date of birth') })
+  .superRefine(({ dateOfBirth }, ctx) => {
+    const age = ageOn(dateOfBirth);
+    const issue = (message) => ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['dateOfBirth'], message });
+    if (age === null) issue('The date of birth can’t be in the future');
+    else if (age < 3) issue('Our programmes start from age 3');
+    else if (age > 19) issue('This programme is for under-19s');
+  });
+
+/**
  * Public diagnostic — contact details, collected on the questions step before
  * the visitor can submit. Name + phone are required (they become a
  * `source: "diagnostic"` lead — WEBSITE_INTEGRATION_CONTRACT.md §4.3); the
@@ -129,12 +144,16 @@ const username = z
  *
  * username/password are the LEARNER'S OWN login, chosen right here on the form — the account is
  * ready to use the moment this submits, no separate "here's your password" reveal step needed.
+ * parentPassword is the parent's own login (their email + this password); a family that already
+ * has a Digifunzi account under that email gives that account's password instead.
  */
 export const bootcampEnrollmentSchema = z
   .object({
     parentName: z.string().trim().min(2, 'Please enter your name').max(120),
     parentEmail: z.string().trim().email('Enter a valid email address').max(160),
     parentPhone: phone,
+    parentPassword: z.string().min(6, 'At least 6 characters').max(72),
+    confirmParentPassword: z.string().min(1, 'Please confirm your password'),
     learnerName: z.string().trim().min(2, 'Please enter the learner’s name').max(120),
     learnerAge: z.coerce
       .number({ invalid_type_error: 'Enter an age' })
@@ -145,6 +164,10 @@ export const bootcampEnrollmentSchema = z
     password: z.string().min(6, 'Password must be at least 6 characters').max(72),
     confirmPassword: z.string().min(1, 'Please confirm your password'),
     ...honeypot,
+  })
+  .refine((data) => data.parentPassword === data.confirmParentPassword, {
+    message: 'Passwords don’t match',
+    path: ['confirmParentPassword'],
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: 'Passwords don’t match',
