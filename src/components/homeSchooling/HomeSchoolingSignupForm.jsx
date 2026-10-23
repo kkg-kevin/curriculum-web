@@ -329,9 +329,8 @@ export default function HomeSchoolingSignupForm({ packages, initialSlug, initial
                     name={`children.${index}.gender`}
                     render={({ field: f }) => (
                       <TextField select label="Gender" {...f} error={Boolean(e.gender)} helperText={e.gender?.message} fullWidth>
-                        <MenuItem value="female">Girl</MenuItem>
-                        <MenuItem value="male">Boy</MenuItem>
-                        <MenuItem value="other">Prefer not to say</MenuItem>
+                        <MenuItem value="female">Female</MenuItem>
+                        <MenuItem value="male">Male</MenuItem>
                       </TextField>
                     )}
                   />
