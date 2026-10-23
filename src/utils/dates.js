@@ -15,6 +15,19 @@ export const todayStr = () => new Date().toISOString().slice(0, 10);
 
 const dayOf = (value) => (value ? String(value).slice(0, 10) : '');
 
+/**
+ * Whole years old on `today` for a "YYYY-MM-DD" date of birth — the birthday itself counts.
+ * null for a missing or unreadable date, or one after `today`.
+ */
+export function ageOn(dateOfBirth, today = todayStr()) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateOfBirth || '');
+  const t = /^(\d{4})-(\d{2})-(\d{2})$/.exec(today || '');
+  if (!m || !t || dateOfBirth > today) return null;
+  let age = Number(t[1]) - Number(m[1]);
+  if (t[2] + t[3] < m[2] + m[3]) age -= 1;
+  return age;
+}
+
 /** True once an event's last day is behind us. An event with no end date never "ends". */
 export function hasEnded(endDate, today = todayStr()) {
   const end = dayOf(endDate);

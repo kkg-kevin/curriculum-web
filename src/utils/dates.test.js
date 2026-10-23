@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { hasEnded, byUpcomingFirst } from './dates.js';
+import { hasEnded, byUpcomingFirst, ageOn } from './dates.js';
 
 const TODAY = '2026-10-08';
 
@@ -42,5 +42,18 @@ describe('byUpcomingFirst', () => {
         { name: 'Dated', startDate: '2026-11-16', endDate: '2026-12-18' },
       ]),
     ).toEqual(['Dated', 'A undated', 'B undated']);
+  });
+});
+
+describe('ageOn', () => {
+  it('counts whole years, the birthday itself included', () => {
+    expect(ageOn('2016-10-22', '2026-10-22')).toBe(10);
+    expect(ageOn('2016-10-23', '2026-10-22')).toBe(9);
+    expect(ageOn('2016-02-29', '2026-03-01')).toBe(10);
+  });
+  it('is null for a missing, unreadable or future date', () => {
+    expect(ageOn('', '2026-10-22')).toBeNull();
+    expect(ageOn('22/10/2016', '2026-10-22')).toBeNull();
+    expect(ageOn('2027-01-01', '2026-10-22')).toBeNull();
   });
 });

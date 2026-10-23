@@ -14,11 +14,10 @@ import StepLabel from '@mui/material/StepLabel';
 import Skeleton from '@mui/material/Skeleton';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import PaymentsIcon from '@mui/icons-material/Payments';
 import PlaceIcon from '@mui/icons-material/Place';
 import { bootcampEnrollmentSchema } from './schemas.js';
 import { useSubmitBootcampEnrollment } from '../../hooks/useBootcampEnrollment.js';
-import MpesaPayNow from '../payments/MpesaPayNow.jsx';
+import PaymentStep from '../payments/PaymentStep.jsx';
 import { usePublicBootcamp } from '../../hooks/usePublicBootcamps.js';
 import { APP_URL } from '../../config/env.js';
 import FormStatus from './FormStatus.jsx';
@@ -67,10 +66,6 @@ function HubOption({ run, selected, onSelect }) {
       </Box>
     </Box>
   );
-}
-
-function formatMoney(amount, currency) {
-  return `${currency} ${Number(amount || 0).toLocaleString()}`;
 }
 
 // Copies a value to the clipboard and flips a "Copied!" state for a moment — small, local, no
@@ -125,11 +120,11 @@ function CopyableField({ label, value }) {
  * in as pre-fill defaults instead of round-tripping through a URL.
  *
  * The learner's OWN login (username + password) is chosen right here on the form, not minted by
- * the system. On success this shows a DISTINCT confirmation state (not FormStatus's generic
- * success alert): the username AND password they just chose (as a reminder — the API never
- * round-trips the password, so it's captured locally at submit time, see submittedPassword), a
- * link to the real curriculum system to log in, and a note that access stays view-only until
- * payment is confirmed.
+ * the system. On success this shows the Payment step (PaymentStep.jsx — every way to pay the
+ * invoice the enrolment raised) above both logins: the username AND password they just chose (as
+ * a reminder — the API never round-trips the password, so it's captured locally at submit time,
+ * see submittedPassword), and a link to the real curriculum system to log in. Access stays
+ * view-only until payment is confirmed.
  *
  * Which hub the learner attends is chosen here too, as its own step, whenever the bootcamp
  * runs at more than one hub (bootcamp.upcomingRuns.length > 1) — a bootcamp running at just one
@@ -154,11 +149,20 @@ export default function BootcampEnrollForm({
   // username. It's the same value the learner just typed into the form, not a secret being
   // exposed anywhere it shouldn't be.
   const [submittedPassword, setSubmittedPassword] = useState('');
-  // The parent's phone, for the M-Pesa prompt on the success screen.
+  // The parent's phone, for the M-Pesa prompt on the Payment step.
   const [submittedPhone, setSubmittedPhone] = useState('');
+  const [submittedLearnerName, setSubmittedLearnerName] = useState('');
   const { data: bootcamp, isLoading: bootcampLoading } = usePublicBootcamp(bootcampSlug);
   const runs = bootcamp?.upcomingRuns || [];
   const needsHubChoice = runs.length > 1;
+  // (Choose a hub) → Your details → Payment. Submitting the details creates the logins and the
+  // invoice; the Payment step then takes the payment (PaymentStep.jsx).
+  const steps = needsHubChoice ? ['Choose a hub', 'Your details', 'Payment'] : ['Your details', 'Payment'];
+  const stepper = (active) => (
+    <Stepper activeStep={active} alternativeLabel sx={{ mb: 1 }}>
+      {steps.map((label) => <Step key={label}><StepLabel>{label}</StepLabel></Step>)}
+    </Stepper>
+  );
 
   // 'hub' only ever appears when there's a real choice to make; single-hub / no-hub bootcamps
   // go straight to 'details' and submit whichever hub (if any) resolved automatically.
@@ -181,6 +185,8 @@ export default function BootcampEnrollForm({
       parentName: defaultParentName,
       parentEmail: '',
       parentPhone: defaultParentPhone,
+      parentPassword: '',
+      confirmParentPassword: '',
       learnerName: defaultLearnerName,
       learnerAge: defaultLearnerAge,
       username: '',
@@ -198,11 +204,13 @@ export default function BootcampEnrollForm({
     }
     setSubmittedPassword(values.password);
     setSubmittedPhone(values.parentPhone);
+    setSubmittedLearnerName(values.learnerName);
     await mutation.mutateAsync({
       bootcampIdOrSlug: bootcampSlug,
       parentName: values.parentName,
       parentEmail: values.parentEmail,
       parentPhone: values.parentPhone,
+      parentPassword: values.parentPassword,
       learnerName: values.learnerName,
       learnerAge: values.learnerAge,
       username: values.username,
@@ -215,7 +223,8 @@ export default function BootcampEnrollForm({
 
   // ---- Success: the account is ready with the login they just chose --------
   if (mutation.isSuccess) {
-    const { learnerUsername, payment } = mutation.data?.data || {};
+    const { learnerUsername, parentAccount, payment } = mutation.data?.data || {};
+    const learnerFirstName = (submittedLearnerName || '').trim().split(/\s+/)[0] || 'The learner';
     const hasPrice = payment?.amount != null;
     return (
       <Box
@@ -223,75 +232,64 @@ export default function BootcampEnrollForm({
           p: { xs: 2.5, md: 3.5 },
           borderRadius: 4,
           border: '1px solid',
-          borderColor: 'success.main',
+          borderColor: 'divider',
           bgcolor: 'surface.subtle',
         }}
       >
-        <Typography variant="h5" component="h2" sx={{ fontWeight: 800, mb: 0.5 }}>
-          You’re enrolled in {bootcampName}!
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5 }}>
-          Your account is ready — log in with the username and password you just chose.
-        </Typography>
-
-        <Box sx={{ mb: 2.5, display: 'grid', gap: 1.5 }}>
-          <CopyableField label="Username" value={learnerUsername} />
-          <CopyableField label="Password" value={submittedPassword} />
+        {stepper(steps.length - 1)}
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mt: 2, mb: 0.5 }}>
+          <CheckCircleIcon color="success" />
+          <Typography variant="h5" component="h2" sx={{ fontWeight: 800 }}>
+            You’re enrolled in {bootcampName} — now pay
+          </Typography>
         </Box>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5 }}>
+          Two logins are ready: yours, to follow progress and pay, and {learnerFirstName}&rsquo;s own. Both work right away
+          but stay view-only until your payment is confirmed.
+        </Typography>
 
-        {/* Payment — by M-Pesa right here when it's on (payment.pay; paying in full unlocks the
-            account by itself), or in cash at the hub, which an admin confirms from the Enquiries
-            page. */}
-        <Box
-          sx={{
-            display: 'flex',
-            gap: 1.5,
-            alignItems: 'flex-start',
-            p: 2,
-            mb: 2.5,
-            borderRadius: 3,
-            border: '1px solid',
-            borderColor: 'divider',
-            bgcolor: 'background.paper',
-          }}
-        >
-          <PaymentsIcon color="primary" sx={{ mt: 0.25 }} />
-          <Box>
-            <Typography sx={{ fontWeight: 800, fontSize: '1.05rem' }}>
-              {hasPrice ? formatMoney(payment.amount, payment.currency) : 'Price to be confirmed'}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {hasPrice && payment.pay
-                ? `Pay by M-Pesa below to activate full access straight away${payment.invoiceNumber ? ` (invoice ${payment.invoiceNumber})` : ''} — or in cash at ${payment.hubName || 'your hub'}.`
-                : hasPrice
-                  ? `Pay by cash at ${payment.hubName || 'your hub'} to activate full access.`
-                  : `Ask ${payment.hubName || 'your hub'} to confirm the price and pay by cash to activate full access.`}
-            </Typography>
-            {/* This bootcamp is priced by course/module rather than as a whole — the total above
-                is the sum of every priced course (or module) rather than one flat number, since
-                enrollment signs you up for the whole bootcamp, not a single course. */}
-            {hasPrice && payment.mode === 'by_course' && (
-              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+        {/* Payment — every way this workspace takes money (PaymentStep); paying in full unlocks
+            full access by itself, whether by the M-Pesa prompt or once staff confirm the payment. */}
+        {hasPrice ? (
+          <>
+            <PaymentStep
+              pay={payment.pay}
+              amountDue={payment.amount}
+              invoiceNumber={payment.invoiceNumber}
+              defaultPhone={submittedPhone}
+              paidMessage="Your account now has full access — log in with the details below."
+            />
+            {/* This bootcamp is priced by course/module rather than as a whole — the total is the
+                sum of every priced course (or module), since enrollment covers the whole bootcamp. */}
+            {payment.mode === 'by_course' && (
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: -2, mb: 2.5, textAlign: 'center' }}>
                 This total combines this bootcamp’s individually priced courses/modules — see the
                 “Pathway courses” section on the bootcamp page for the breakdown.
               </Typography>
             )}
-          </Box>
-        </Box>
-
-        {hasPrice && (
-          <MpesaPayNow
-            pay={payment.pay}
-            amountDue={payment.amount}
-            defaultPhone={submittedPhone}
-            paidMessage="Your account now has full access — log in with the username and password above."
-          />
+          </>
+        ) : (
+          <Alert severity="info" sx={{ mb: 2.5 }}>
+            The price is still to be confirmed — {payment?.hubName || 'your hub'} will be in touch about paying.
+          </Alert>
         )}
 
-        <Alert severity="info" sx={{ mb: 2.5 }}>
-          Your account can log in right away, but stays view-only until your payment is
-          confirmed. Once that’s done, you’ll have full access.
-        </Alert>
+        <Box sx={{ mb: 2.5, display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' } }}>
+          <Box sx={{ p: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', display: 'grid', gap: 1.25, alignContent: 'start' }}>
+            <Typography sx={{ fontWeight: 800 }}>Your parent account</Typography>
+            <CopyableField label="Email" value={parentAccount?.email} />
+            <Typography variant="body2" color="text.secondary">
+              {parentAccount?.existing
+                ? `Sign in with your existing password — ${learnerFirstName} has been added to your account.`
+                : 'Sign in with the password you just chose.'}
+            </Typography>
+          </Box>
+          <Box sx={{ p: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', display: 'grid', gap: 1.25, alignContent: 'start' }}>
+            <Typography sx={{ fontWeight: 800 }}>{learnerFirstName}&rsquo;s login</Typography>
+            <CopyableField label="Username" value={learnerUsername} />
+            <CopyableField label="Password" value={submittedPassword} />
+          </Box>
+        </Box>
 
         <Button
           variant="contained"
@@ -319,10 +317,7 @@ export default function BootcampEnrollForm({
   if (stage === 'hub') {
     return (
       <Box sx={{ display: 'grid', gap: 2, p: { xs: 2.5, md: 3.5 }, borderRadius: 4, border: '1px solid', borderColor: 'divider', bgcolor: 'surface.subtle' }}>
-        <Stepper activeStep={0} alternativeLabel sx={{ mb: 1 }}>
-          <Step><StepLabel>Choose a hub</StepLabel></Step>
-          <Step><StepLabel>Your details</StepLabel></Step>
-        </Stepper>
+        {stepper(0)}
 
         <Box>
           <Typography variant="h6" component="h2" gutterBottom>
@@ -374,17 +369,14 @@ export default function BootcampEnrollForm({
           Enroll in {bootcampName}
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-          We’ll set up an account right away so you can get started. You can pay by cash — your
-          account unlocks fully as soon as that’s confirmed.
+          We’ll set up your account and the learner’s right away so you can get started. Next you choose how to
+          pay — your account unlocks fully as soon as the payment is confirmed.
         </Typography>
       </Box>
 
+      {stepper(needsHubChoice ? 1 : 0)}
       {needsHubChoice && (
         <>
-          <Stepper activeStep={1} alternativeLabel sx={{ mb: 1 }}>
-            <Step><StepLabel>Choose a hub</StepLabel></Step>
-            <Step><StepLabel>Your details</StepLabel></Step>
-          </Stepper>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
             <Button size="small" onClick={() => setStage('hub')} sx={{ px: 1 }}>
               Change hub
@@ -426,6 +418,35 @@ export default function BootcampEnrollForm({
           helperText={errors.parentPhone?.message}
         />
       </Box>
+      <Box>
+        <Typography sx={{ fontWeight: 700 }}>Your parent account</Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25, mb: 1.5 }}>
+          Sign in with your email and this password to follow progress and pay invoices. Already have
+          a Digifunzi account with this email? Use its password.
+        </Typography>
+        <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
+          <TextField
+            label="Your password"
+            type="password"
+            required
+            autoComplete="new-password"
+            {...register('parentPassword')}
+            error={!!errors.parentPassword}
+            helperText={errors.parentPassword?.message || 'At least 6 characters'}
+          />
+          <TextField
+            label="Confirm your password"
+            type="password"
+            required
+            autoComplete="new-password"
+            {...register('confirmParentPassword')}
+            error={!!errors.confirmParentPassword}
+            helperText={errors.confirmParentPassword?.message}
+          />
+        </Box>
+      </Box>
+
+      <Typography sx={{ fontWeight: 700, mb: -0.5 }}>The learner</Typography>
       <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '2fr 1fr' } }}>
         <TextField
           label="Learner's name"
@@ -480,7 +501,7 @@ export default function BootcampEnrollForm({
       </Box>
 
       <Button type="submit" variant="contained" size="large" disabled={isSubmitting || mutation.isPending}>
-        {isSubmitting || mutation.isPending ? 'Setting up your account…' : 'Enroll now'}
+        {isSubmitting || mutation.isPending ? 'Setting up your account…' : 'Continue to payment'}
       </Button>
       <PrivacyNote>We use your details only to set up and manage this account. See our</PrivacyNote>
     </Box>

@@ -6,6 +6,7 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import SmartImage from '../common/SmartImage.jsx';
+import PhotoCountBadge from './PhotoCountBadge.jsx';
 import { formatPrice, ageLabel } from '../../utils/format.js';
 
 const LEVEL_LABEL = { beginner: 'Beginner', intermediate: 'Intermediate', advanced: 'Advanced' };
@@ -70,6 +71,7 @@ export default function ProjectCard({ project }) {
         {coverImage ? (
           <Box sx={{ position: 'relative', width: '100%', flexShrink: 0 }}>
             <SmartImage src={coverImage} alt={name} ratio="16 / 10" rounded={false} />
+            <PhotoCountBadge count={project.photoCount} />
             <Box
               sx={{
                 position: 'absolute',

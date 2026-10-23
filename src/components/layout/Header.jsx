@@ -12,6 +12,7 @@ import Logo from '../common/Logo.jsx';
 import ColorModeToggle from '../common/ColorModeToggle.jsx';
 import MobileMenu from './MobileMenu.jsx';
 import { PAGE_MAX_WIDTH, PAGE_GUTTER } from '../../theme/layout.js';
+import CartButton from './CartButton.jsx';
 
 export const NAV_LINKS = [
   { label: 'Bootcamps', to: '/bootcamps' },
@@ -95,6 +96,7 @@ export default function Header() {
               Enroll
             </Button>
           )}
+          <CartButton />
           <ColorModeToggle />
           {isMobile && (
             <IconButton edge="end" aria-label="Open menu" aria-haspopup="dialog" aria-expanded={menuOpen} onClick={() => setMenuOpen(true)}>

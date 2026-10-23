@@ -6,8 +6,8 @@
  * its own top-level section (`/projects`), separate from the Store, which sells
  * physical goods (the Quarky robot, bundles, accessories — src/content/store.js).
  *
- * ⚠️ PLACEHOLDER content and prices — see src/content/catalog.js. There is no
- * commerce API yet; "Enquire to buy" posts a lead via /api/public/leads.
+ * Static fallback content — the live list comes from GET /api/public/projects (see catalog.js).
+ * Buying goes through the cart checkout (POST /api/public/orders).
  *
  * Item shape + PRICING_IS_PLACEHOLDER: src/content/catalog.js.
  */

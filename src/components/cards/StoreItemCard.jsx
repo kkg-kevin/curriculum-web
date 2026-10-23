@@ -6,6 +6,7 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import SmartImage from '../common/SmartImage.jsx';
+import PhotoCountBadge from './PhotoCountBadge.jsx';
 import PriceTag from '../catalog/PriceTag.jsx';
 
 const CATEGORY_LABEL = { kit: 'Robots & kits', bundle: 'Bundle', accessory: 'Accessory' };
@@ -58,6 +59,7 @@ export default function StoreItemCard({ item }) {
         {image ? (
           <Box sx={{ position: 'relative', width: '100%', flexShrink: 0 }}>
             <SmartImage src={image} alt={name} ratio="16 / 10" rounded={false} />
+            <PhotoCountBadge count={item.photoCount} />
             <Box
               sx={{
                 position: 'absolute',

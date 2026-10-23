@@ -17,14 +17,15 @@ import TuneIcon from '@mui/icons-material/Tune';
 import JsonLd, { organizationSchema, productSchema, breadcrumbSchema } from '../components/seo/JsonLd.jsx';
 import { resolveMediaUrl } from '../utils/media.js';
 import Section from '../components/common/Section.jsx';
-import SmartImage from '../components/common/SmartImage.jsx';
+import MediaGallery from '../components/media/MediaGallery.jsx';
+import BuyBox from '../components/catalog/BuyBox.jsx';
 import CTABanner from '../components/home/CTABanner.jsx';
 import { ErrorBlock } from '../components/common/StateViews.jsx';
-import PriceTag from '../components/catalog/PriceTag.jsx';
 import { usePublicStoreItem } from '../hooks/usePublicStore.js';
 import { PROSE_MAX_WIDTH } from '../theme/layout.js';
 import DetailLayout from '../components/common/DetailLayout.jsx';
 import { RelatedStoreItems } from '../components/common/Related.jsx';
+import { PRICING_IS_PLACEHOLDER } from '../content/catalog.js';
 
 const CATEGORY_LABEL = { kit: 'Robots & kits', bundle: 'Bundle', accessory: 'Accessory' };
 const STOCK_LABEL = { available: 'Available now', preorder: 'Pre-order', coming_soon: 'Coming soon' };
@@ -78,6 +79,7 @@ export default function StoreItemPage() {
   const galleryImages = [image, ...gallery].filter(Boolean);
   const enquireTo = `/enroll?interestedIn=${interestFor(storeCategory)}&referenceId=${encodeURIComponent(slug)}`;
   const contactTo = `/contact?subject=${encodeURIComponent(`${name} — enquiry`)}`;
+  const buyItem = { id: data.id, slug, name, image, price };
 
   return (
     <>
@@ -104,7 +106,7 @@ export default function StoreItemPage() {
               status: notAvailable ? stockStatus : 'available',
             },
             `/store/${slug}`,
-            { pricingIsPlaceholder: true },
+            { pricingIsPlaceholder: PRICING_IS_PLACEHOLDER },
           ),
         ]}
       />
@@ -150,61 +152,15 @@ export default function StoreItemPage() {
                 </Typography>
               )}
 
-              {/* price + enquire */}
-              <Box
-                sx={{
-                  mt: 3,
-                  p: 2.5,
-                  borderRadius: 2,
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  bgcolor: 'background.paper',
-                  maxWidth: 420,
-                }}
-              >
-                <PriceTag price={price} size="lg" />
-                {price?.note && (
-                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                    {price.note}
-                  </Typography>
-                )}
-                <Button
-                  component={RouterLink}
-                  to={notAvailable ? contactTo : enquireTo}
-                  variant="contained"
-                  size="large"
-                  fullWidth
-                  sx={{ mt: 2 }}
-                >
-                  {notAvailable ? 'Notify me when available' : 'Enquire to buy'}
-                </Button>
-                <Button component={RouterLink} to={contactTo} variant="text" size="small" fullWidth sx={{ mt: 0.5 }}>
-                  Ask a question first
-                </Button>
-                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-                  No online checkout yet — we&apos;ll confirm the price, arrange payment and get it to
-                  you, usually within one working day.
-                </Typography>
+              {/* price + buy */}
+              <Box sx={{ mt: 3 }}>
+                <BuyBox kind="store_item" item={buyItem} status={stockStatus || 'available'} enquireTo={enquireTo} contactTo={contactTo} />
               </Box>
             </Box>
 
             {galleryImages.length > 0 && (
-              <Box sx={{ width: { xs: '100%', md: 380 }, flexShrink: 0 }}>
-                <SmartImage src={galleryImages[0]} alt={name} ratio="4 / 3" />
-                {galleryImages.length > 1 && (
-                  <Box
-                    sx={{
-                      mt: 1.5,
-                      display: 'grid',
-                      gap: 1,
-                      gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))',
-                    }}
-                  >
-                    {galleryImages.slice(1).map((src, i) => (
-                      <SmartImage key={src} src={src} alt={`${name} — view ${i + 2}`} ratio="1 / 1" />
-                    ))}
-                  </Box>
-                )}
+              <Box sx={{ width: { xs: '100%', md: 460 }, flexShrink: 0 }}>
+                <MediaGallery images={galleryImages} alt={name} ratio="4 / 3" />
               </Box>
             )}
           </Box>
@@ -227,20 +183,10 @@ export default function StoreItemPage() {
                   boxShadow: 'shadow.md',
                 }}
               >
-                <Box>
-                  <Typography variant="h4" component="p" gutterBottom>
-                    {notAvailable ? `Get notified about ${name}` : `Get ${name}`}
-                  </Typography>
-                  <PriceTag price={price} size="sm" />
-                </Box>
-                <Button
-                  component={RouterLink}
-                  to={notAvailable ? contactTo : enquireTo}
-                  variant="contained"
-                  size="large"
-                >
-                  {notAvailable ? 'Notify me' : 'Enquire to buy'}
-                </Button>
+                <Typography variant="h4" component="p">
+                  {notAvailable && stockStatus === 'coming_soon' ? `Get notified about ${name}` : `Get ${name}`}
+                </Typography>
+                <BuyBox kind="store_item" item={buyItem} status={stockStatus || 'available'} enquireTo={enquireTo} contactTo={contactTo} compact />
               </Box>
             </Box>
           }
