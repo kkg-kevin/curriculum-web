@@ -52,6 +52,10 @@
   RewriteRule ^(pathways|projects|store|bootcamps|competitions|estate-tech-clubs)(/.*)?$ /200.html [L]
   RewriteRule ^home-schooling(/signup)?/?$ /200.html [L]
   RewriteRule ^(about|contact|enroll|privacy|terms)/?$ /200.html [L]
+  # Buying: the cart, its checkout, and paying an order later from the link in its email
+  # (/pay/<token>) — never prerendered, always the SPA shell.
+  RewriteRule ^(cart|checkout)/?$ /200.html [L]
+  RewriteRule ^pay/[A-Za-z0-9_-]+/?$ /200.html [L]
 
   # 5. Anything else isn't a page on this site: a real 404 status, served with 404.html.
   RewriteRule ^ - [R=404,L]
