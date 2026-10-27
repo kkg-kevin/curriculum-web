@@ -182,7 +182,10 @@ export const publicApi = {
   // (null when nothing is due): `methods` are the ways to pay it (PaymentStep.jsx), and the
   // Paybill fields are only there while the M-Pesa phone prompt is set up. The token opens that one
   // invoice (server: payments/payment-links.js).
-  //   getPayment  → { invoiceNumber, status, currency, total, amountDue, paid, mpesa: { enabled, paybill, account }, methods, notices }
+  //   getPayment  → { invoiceNumber, status, currency, total, amountDue, paid, mpesa: { enabled, paybill, account }, methods, notices,
+  //                   plans, chosenPlan, schedule, next } — `plans` are the part-payment plans the family
+  //                   may still choose (before anything is paid); `next` is the next part to pay.
+  //   choosePaymentPlan → the same, after choosing a plan (`planKey`) or the whole amount at once (null).
   //   payByMpesa  → the prompt: { id, status: "pending", message, amount, phone }
   //   getPaymentRequest → the same prompt later: status pending | successful | failed | cancelled | timeout | error
   // ---- Buying: the cart's checkout (server: modules/orders) ------------------------------
@@ -192,6 +195,8 @@ export const publicApi = {
   getCheckout: () => api.get('/api/public/checkout').then((r) => r.data.data),
   placeOrder: (payload) => api.post('/api/public/orders', payload).then((r) => r.data.data),
   getPayment: (token) => api.get(`/api/public/payments/${encodeURIComponent(token)}`).then((r) => r.data.data),
+  choosePaymentPlan: (token, planKey) =>
+    api.post(`/api/public/payments/${encodeURIComponent(token)}/plan`, { planKey }).then((r) => r.data.data),
   payByMpesa: (token, payload) =>
     api.post(`/api/public/payments/${encodeURIComponent(token)}/mpesa`, payload).then((r) => r.data.data),
   getPaymentRequest: (token, requestId) =>
