@@ -56,6 +56,49 @@ function Detail({ label, value }) {
   );
 }
 
+const formatDay = (date) => new Date(`${date}T00:00:00`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+
+// Pay in full, or one of the plans the school offers (part payments — server:
+// billing/billing.instalments.js). Choosing saves the plan on the invoice; the first part is what's
+// paid now, and any payment switches the accounts on.
+function PlanChooser({ plans, chosen, amountDue, busy, error, onChoose }) {
+  const options = [{ key: null, label: 'Pay in full', line: `${formatKsh(amountDue)} now` }, ...plans.map((p) => ({
+    key: p.key,
+    label: p.label,
+    line: `${formatKsh(p.parts[0].amount)} now, then ${p.parts.slice(1).map((x) => `${formatKsh(x.amount)} on ${formatDay(x.dueDate)}`).join(', ')}`,
+  }))];
+  return (
+    <Box sx={{ mb: 2.5 }}>
+      <Typography variant="h5" component="h3" sx={{ mb: 1.5 }}>Pay in full or in parts?</Typography>
+      <Box role="radiogroup" aria-label="Payment plan" sx={{ display: 'grid', gap: 1 }}>
+        {options.map((o) => {
+          const active = (o.key || null) === (chosen || null);
+          return (
+            <Box
+              key={o.key || 'full'}
+              component="button"
+              type="button"
+              role="radio"
+              aria-checked={active}
+              disabled={busy}
+              onClick={() => onChoose(o.key)}
+              sx={{
+                display: 'block', p: 1.5, textAlign: 'left', cursor: busy ? 'wait' : 'pointer', font: 'inherit', color: 'inherit',
+                borderRadius: 2.5, border: '2px solid', borderColor: active ? 'primary.main' : 'divider', bgcolor: active ? 'surface.subtle' : 'background.paper',
+              }}
+            >
+              <Typography sx={{ fontWeight: 800, lineHeight: 1.2 }}>{o.label}</Typography>
+              <Typography variant="body2" color="text.secondary">{o.line}</Typography>
+            </Box>
+          );
+        })}
+      </Box>
+      {error && <Alert severity="error" sx={{ mt: 1 }}>{error}</Alert>}
+      {chosen && <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>Your accounts switch on with the first payment. We’ll remind you before each of the others.</Typography>}
+    </Box>
+  );
+}
+
 // How to pay with the chosen method.
 function Instructions({ method, amountDue }) {
   if (method.key === 'paybill') {
@@ -209,19 +252,43 @@ function SentNotices({ notices }) {
  * a bot — shows a short fallback). `amountDue` / `invoiceNumber` are the invoice's.
  * `initialNotices` are "I've paid" notices already sent (the /pay/:token page shows them again).
  * `laterNote` replaces the "not paying right now?" line (a guest Store order has no login).
+ * Part payments: `pay.plans` are the plans the family may choose (before anything is paid);
+ * `chosenPlan` / `next` (from the /pay link) are a plan already chosen and the next part to pay.
  */
-export default function PaymentStep({ pay, amountDue, invoiceNumber, defaultPhone = '', paidMessage, initialNotices = [], laterNote }) {
+export default function PaymentStep({ pay, amountDue, invoiceNumber, defaultPhone = '', paidMessage, initialNotices = [], laterNote, chosenPlan = null, next = null }) {
   const methods = pay?.methods || [];
+  const plans = pay?.plans || [];
   const [selected, setSelected] = useState(methods[0]?.key || null);
   const [notices, setNotices] = useState(initialNotices);
+  const [planKey, setPlanKey] = useState(plans.some((p) => p.key === chosenPlan) ? chosenPlan : null);
+  const [planBusy, setPlanBusy] = useState(false);
+  const [planError, setPlanError] = useState('');
   const method = methods.find((m) => m.key === selected);
+  const plan = plans.find((p) => p.key === planKey);
+  // What's paid now: the first part of a chosen plan, the next part of one chosen earlier, or all of it.
+  const payNow = plan ? plan.parts[0].amount : !plans.length && next ? next.amount : amountDue;
+
+  const choosePlan = async (key) => {
+    if ((key || null) === (planKey || null)) return;
+    setPlanBusy(true);
+    setPlanError('');
+    try {
+      await publicApi.choosePaymentPlan(pay.token, key || null);
+      setPlanKey(key || null);
+    } catch (err) {
+      setPlanError(err.message || 'That couldn’t be saved. Please try again.');
+    } finally {
+      setPlanBusy(false);
+    }
+  };
 
   return (
     <Box sx={{ textAlign: 'left', maxWidth: 560, mx: 'auto', mb: 3 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, p: 2.5, mb: 2.5, borderRadius: 3, bgcolor: 'surface.subtle', flexWrap: 'wrap' }}>
         <Box>
-          <Typography variant="overline" color="text.secondary">Amount due</Typography>
-          <Typography sx={{ fontSize: '1.7rem', fontWeight: 800, lineHeight: 1.1, color: 'primary.main' }}>{formatKsh(amountDue)}</Typography>
+          <Typography variant="overline" color="text.secondary">{payNow < amountDue ? 'To pay now' : 'Amount due'}</Typography>
+          <Typography sx={{ fontSize: '1.7rem', fontWeight: 800, lineHeight: 1.1, color: 'primary.main' }}>{formatKsh(payNow)}</Typography>
+          {payNow < amountDue && <Typography variant="body2" color="text.secondary">of {formatKsh(amountDue)}{next && !plans.length ? ` · ${next.label}` : ''}</Typography>}
         </Box>
         {invoiceNumber && <Typography variant="body2" color="text.secondary">Invoice <strong>{invoiceNumber}</strong></Typography>}
       </Box>
@@ -232,6 +299,9 @@ export default function PaymentStep({ pay, amountDue, invoiceNumber, defaultPhon
         <Alert severity="info">Our team will contact you on the phone number you gave us about paying. You’ll also find your invoice when you sign in.</Alert>
       ) : (
         <>
+          {plans.length > 0 && (
+            <PlanChooser plans={plans} chosen={planKey} amountDue={amountDue} busy={planBusy} error={planError} onChoose={choosePlan} />
+          )}
           <Typography variant="h5" component="h3" sx={{ mb: 1.5 }}>How would you like to pay?</Typography>
           <Box role="radiogroup" aria-label="Payment method" sx={{ display: 'grid', gap: 1, gridTemplateColumns: { xs: '1fr', sm: methods.length > 2 ? '1fr 1fr' : '1fr' }, mb: 2 }}>
             {methods.map((m) => {
@@ -264,7 +334,7 @@ export default function PaymentStep({ pay, amountDue, invoiceNumber, defaultPhon
           {method && (
             <Box sx={{ p: { xs: 2, sm: 2.5 }, borderRadius: 3, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
               {method.key === 'paybill' && method.prompt && (
-                <MpesaPayNow bare pay={pay} amountDue={amountDue} defaultPhone={defaultPhone} paidMessage={paidMessage} />
+                <MpesaPayNow key={payNow} bare pay={pay} amountDue={payNow} defaultPhone={defaultPhone} paidMessage={paidMessage} />
               )}
               {method.key === 'paybill' && !method.prompt && (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5, flexWrap: 'wrap' }}>
@@ -272,11 +342,11 @@ export default function PaymentStep({ pay, amountDue, invoiceNumber, defaultPhon
                   <Typography variant="body2" color="text.secondary">Pay with a prompt straight to your phone.</Typography>
                 </Box>
               )}
-              <Instructions method={method} amountDue={amountDue} />
+              <Instructions method={method} amountDue={payNow} />
               {method.key === 'paybill' && method.automatic ? (
                 <Typography variant="body2" color="text.secondary" sx={{ mt: 1.5 }}>Payments with this account number are matched to your invoice by themselves — your accounts switch on within minutes.</Typography>
               ) : (
-                <NoticeForm key={method.key} method={method} token={pay.token} amountDue={amountDue} defaultPhone={defaultPhone} onSent={(n) => setNotices((list) => [n, ...list.filter((x) => x.id !== n.id)])} />
+                <NoticeForm key={`${method.key}-${payNow}`} method={method} token={pay.token} amountDue={payNow} defaultPhone={defaultPhone} onSent={(n) => setNotices((list) => [n, ...list.filter((x) => x.id !== n.id)])} />
               )}
             </Box>
           )}

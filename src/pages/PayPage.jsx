@@ -42,8 +42,10 @@ export default function PayPage() {
           )}
           {data && !data.paid && (
             <PaymentStep
-              pay={{ token, methods: data.methods || [], ...(data.mpesa?.enabled ? { paybill: data.mpesa.paybill, account: data.mpesa.account } : {}) }}
+              pay={{ token, methods: data.methods || [], plans: data.plans || [], ...(data.mpesa?.enabled ? { paybill: data.mpesa.paybill, account: data.mpesa.account } : {}) }}
               amountDue={data.amountDue}
+              chosenPlan={data.chosenPlan}
+              next={data.next}
               invoiceNumber={data.invoiceNumber}
               initialNotices={data.notices || []}
               paidMessage="Paid — thank you! We'll take it from here."

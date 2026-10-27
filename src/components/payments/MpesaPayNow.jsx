@@ -30,6 +30,8 @@ function formatKsh(amount) {
  * card and Paybill line, for use inside PaymentStep's Paybill option (which shows those itself).
  */
 export default function MpesaPayNow({ pay, amountDue, defaultPhone = '', paidMessage, bare = false }) {
+  // The prompt asks for `amountDue` — all that's owed, or the part of a payment plan due now.
+  // M-Pesa takes whole shillings.
   const [phone, setPhone] = useState(defaultPhone || '');
   const [stage, setStage] = useState('form'); // form | sending | waiting | done
   const [request, setRequest] = useState(null);
@@ -71,7 +73,7 @@ export default function MpesaPayNow({ pay, amountDue, defaultPhone = '', paidMes
     setError('');
     setStage('sending');
     try {
-      const sent = await publicApi.payByMpesa(pay.token, { phone });
+      const sent = await publicApi.payByMpesa(pay.token, { phone, ...(amountDue ? { amount: Math.ceil(Number(amountDue)) } : {}) });
       startedAt.current = Date.now();
       setRequest(sent);
       setStage('waiting');
