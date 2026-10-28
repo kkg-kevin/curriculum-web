@@ -13,6 +13,7 @@ import ColorModeToggle from '../common/ColorModeToggle.jsx';
 import MobileMenu from './MobileMenu.jsx';
 import { PAGE_MAX_WIDTH, PAGE_GUTTER } from '../../theme/layout.js';
 import CartButton from './CartButton.jsx';
+import { APP_URL } from '../../config/env.js';
 
 export const NAV_LINKS = [
   { label: 'Bootcamps', to: '/bootcamps' },
@@ -92,9 +93,15 @@ export default function Header() {
 
         <Box sx={{ justifySelf: 'end', display: 'flex', alignItems: 'center', gap: { xs: 0.5, md: 1.5 } }}>
           {!isMobile && (
-            <Button component={NavLink} to="/get-started" variant="contained" sx={enrollSx}>
-              Enroll
-            </Button>
+            <>
+              {/* People who already have an account sign in on the portal itself. */}
+              <Button href={`${APP_URL}/login`} sx={navLinkSx}>
+                Sign in
+              </Button>
+              <Button component={NavLink} to="/get-started" variant="contained" sx={enrollSx}>
+                Enroll
+              </Button>
+            </>
           )}
           <CartButton />
           <ColorModeToggle />
