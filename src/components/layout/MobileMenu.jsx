@@ -10,6 +10,7 @@ import Divider from '@mui/material/Divider';
 import CloseIcon from '@mui/icons-material/Close';
 import Logo from '../common/Logo.jsx';
 import ColorModeToggle from '../common/ColorModeToggle.jsx';
+import { APP_URL } from '../../config/env.js';
 
 export default function MobileMenu({ open, onClose, links }) {
   return (
@@ -42,9 +43,12 @@ export default function MobileMenu({ open, onClose, links }) {
         <ColorModeToggle variant="row" />
       </Box>
 
-      <Box sx={{ p: 2 }}>
+      <Box sx={{ p: 2, display: 'grid', gap: 1 }}>
         <Button component={NavLink} to="/get-started" onClick={onClose} variant="contained" fullWidth>
           Enroll a learner
+        </Button>
+        <Button href={`${APP_URL}/login`} variant="outlined" fullWidth>
+          Sign in
         </Button>
       </Box>
     </Drawer>
