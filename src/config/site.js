@@ -60,7 +60,7 @@ export const ORG = {
 
 /**
  * Static routes that always exist. Dynamic detail routes (/pathways/:slug,
- * /projects/:slug, /store/:slug) are appended by the sitemap / prerender
+ * /store/:slug, /store/projects/:slug) are appended by the sitemap / prerender
  * scripts — all three discovered from live API data (/api/public/*) at build
  * time, or from src/mocks/fixtures/* under VITE_USE_MOCK.
  *
@@ -71,7 +71,6 @@ export const ORG = {
 export const STATIC_ROUTES = [
   { path: '/' },
   { path: '/pathways' },
-  { path: '/projects' },
   { path: '/bootcamps' },
   { path: '/competitions' },
   { path: '/estate-tech-clubs' },

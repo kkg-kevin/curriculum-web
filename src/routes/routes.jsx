@@ -1,7 +1,13 @@
 import { lazy } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useParams } from 'react-router-dom';
 import MainLayout from '../layouts/MainLayout.jsx';
 import HomePage from '../pages/HomePage.jsx';
+import { projectPath, STORE_PROJECTS_PATH } from '../utils/storePaths.js';
+
+function OldProjectAddress() {
+  const { slug } = useParams();
+  return <Navigate to={projectPath(slug)} replace />;
+}
 
 /**
  * Route table (spec §5). Kept as a plain array so scripts/prerender.js can also
@@ -27,7 +33,6 @@ const CompetitionDetailPage = lazy(() => import('../pages/CompetitionDetailPage.
 const HomeSchoolingPage = lazy(() => import('../pages/HomeSchoolingPage.jsx'));
 const HomeSchoolingSignupPage = lazy(() => import('../pages/HomeSchoolingSignupPage.jsx'));
 const SchoolsPage = lazy(() => import('../pages/SchoolsPage.jsx'));
-const ProjectsListPage = lazy(() => import('../pages/ProjectsListPage.jsx'));
 const ProjectDetailPage = lazy(() => import('../pages/ProjectDetailPage.jsx'));
 const StoreListPage = lazy(() => import('../pages/StoreListPage.jsx'));
 const StoreItemPage = lazy(() => import('../pages/StoreItemPage.jsx'));
@@ -52,8 +57,10 @@ export const routes = [
       { path: 'pathways/:slug', element: <PathwayDetailPage /> },
       { path: 'pathways/:slug/diagnostic', element: <DiagnosticPage /> },
       { path: 'pathways/:slug/diagnostic/report/:attemptId', element: <DiagnosticReportPage /> },
-      { path: 'projects', element: <ProjectsListPage /> },
-      { path: 'projects/:slug', element: <ProjectDetailPage /> },
+      // Projects are sold in the Store (Oct 2026); their old addresses lead there. public/.htaccess
+      // does the same as real 301s.
+      { path: 'projects', element: <Navigate to={STORE_PROJECTS_PATH} replace /> },
+      { path: 'projects/:slug', element: <OldProjectAddress /> },
       { path: 'bootcamps', element: <BootcampsPage /> },
       { path: 'bootcamps/:slug', element: <BootcampDetailPage /> },
       { path: 'bootcamps/:slug/enroll', element: <BootcampEnrollPage /> },
@@ -68,6 +75,7 @@ export const routes = [
       { path: 'schools', element: <SchoolsPage /> },
       { path: 'store', element: <StoreListPage /> },
       { path: 'store/:slug', element: <StoreItemPage /> },
+      { path: 'store/projects/:slug', element: <ProjectDetailPage /> },
       // Buying: the cart, its checkout, and paying an order later from its email link.
       { path: 'cart', element: <CartPage /> },
       { path: 'checkout', element: <CheckoutPage /> },

@@ -38,7 +38,7 @@ export const valueProps = [
 ];
 
 // "Ways to learn with us" on the home page, in this order — the header's programmes first, then
-// Store. Projects and Competitions aren't cards here; they're in the footer's "More" column.
+// Store (which sells the projects too). Competitions isn't a card here; it's in the footer's "More" column.
 export const sectionSummaries = [
   {
     title: 'Bootcamps',
@@ -68,7 +68,7 @@ export const sectionSummaries = [
   {
     title: 'Store',
     to: '/store',
-    blurb: 'The hardware side — the Quarky robot, classroom bundles and accessories to build with.',
+    blurb: 'The Quarky robot, kits and guided build projects your child keeps for life — paid by M-Pesa, bank or cash.',
   },
 ];
 

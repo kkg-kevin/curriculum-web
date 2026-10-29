@@ -1,238 +1,44 @@
-import { Link as RouterLink } from 'react-router-dom';
-import Card from '@mui/material/Card';
-import CardActionArea from '@mui/material/CardActionArea';
-import CardContent from '@mui/material/CardContent';
-import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import SmartImage from '../common/SmartImage.jsx';
-import PhotoCountBadge from './PhotoCountBadge.jsx';
-import { formatPrice, ageLabel } from '../../utils/format.js';
+import BuildCircleOutlinedIcon from '@mui/icons-material/BuildCircleOutlined';
+import StoreCardShell from './StoreCardShell.jsx';
+import { ageLabel } from '../../utils/format.js';
+import { projectPath } from '../../utils/storePaths.js';
 
 const LEVEL_LABEL = { beginner: 'Beginner', intermediate: 'Intermediate', advanced: 'Advanced' };
 
 /**
- * One card in the Projects grid (`/projects`). A project is a guided build a child works
- * through at their own pace and keeps for life. Same visual language as PathwayCard — a
- * brand-blue band with a "PROJECT · BEGINNER" kicker and the name as the hero — but the body
- * leads with what you'll build (deliverable/step counts) and closes on the PRICE, since this
- * one is bought. Links to /projects/:slug.
+ * A project in the Store grid — a guided build a child works through at their own pace and keeps
+ * for life. Drawn by StoreCardShell, like the Store's goods, with the facts a parent weighs (age,
+ * steps, what gets built). Links to /store/projects/:slug.
  *
- * Data shape: { slug, name, tagline, level, ageMin, ageMax, coverImage, price, deliverableCount,
- * milestoneCount } (see usePublicProjects.js).
+ * Data shape: { id, slug, name, tagline, level, ageMin, ageMax, coverImage, photoCount, price,
+ * kitPrice, deliverableCount, milestoneCount } (see usePublicProjects.js).
  */
 export default function ProjectCard({ project }) {
   const {
-    slug, name, tagline, level, ageMin, ageMax, coverImage, price,
+    id, slug, name, tagline, level, ageMin, ageMax, coverImage, price, kitPrice = null,
     deliverableCount = 0, milestoneCount = 0,
   } = project;
 
-  const age = ageLabel(ageMin, ageMax);
-  const priceLabel = price ? formatPrice(price) : 'Enquire for pricing';
-  const kicker = ['Project', level && LEVEL_LABEL[level]].filter(Boolean).join(' · ').toUpperCase();
-
-  const buildLine =
-    [
-      milestoneCount > 0 && `${milestoneCount} guided ${milestoneCount === 1 ? 'step' : 'steps'}`,
-      deliverableCount > 0 && `${deliverableCount} ${deliverableCount === 1 ? 'thing' : 'things'} to build`,
-    ]
-      .filter(Boolean)
-      .join(' · ') || 'A guided build, at your own pace';
+  const facts = [
+    ageLabel(ageMin, ageMax),
+    milestoneCount > 0 && `${milestoneCount} ${milestoneCount === 1 ? 'step' : 'steps'}`,
+    deliverableCount > 0 && `${deliverableCount} ${deliverableCount === 1 ? 'thing' : 'things'} to build`,
+    kitPrice && 'Kit available',
+  ].filter(Boolean);
 
   return (
-    <Card
-      sx={{
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-        transition:
-          'transform 220ms cubic-bezier(0.2,0.8,0.2,1), box-shadow 220ms ease, border-color 220ms ease',
-        '&:hover': {
-          transform: 'translateY(-4px)',
-          boxShadow: 'shadow.lg',
-          borderColor: 'primary.main',
-        },
-        '&:hover .pj-arrow': { transform: 'translateX(4px)' },
-      }}
-    >
-      <CardActionArea
-        component={RouterLink}
-        to={`/projects/${slug}`}
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'stretch',
-          height: '100%',
-          '&:hover': { backgroundColor: 'transparent' },
-        }}
-      >
-        {/* header — the cover photo if there is one, else the brand band */}
-        {coverImage ? (
-          <Box sx={{ position: 'relative', width: '100%', flexShrink: 0 }}>
-            <SmartImage src={coverImage} alt={name} ratio="16 / 10" rounded={false} />
-            <PhotoCountBadge count={project.photoCount} />
-            <Box
-              sx={{
-                position: 'absolute',
-                inset: 0,
-                background:
-                  'linear-gradient(180deg, rgba(15,37,69,0) 45%, rgba(15,37,69,0.78) 100%)',
-              }}
-            />
-            <Box sx={{ position: 'absolute', left: 20, right: 20, bottom: 14, color: '#fff' }}>
-              <Typography
-                component="span"
-                sx={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.08em', color: 'rgba(255,255,255,0.85)' }}
-              >
-                {kicker}
-              </Typography>
-              <Typography
-                component="h3"
-                sx={{
-                  fontSize: '1.2rem', fontWeight: 800, lineHeight: 1.25, mt: 0.5,
-                  display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
-                }}
-              >
-                {name}
-              </Typography>
-            </Box>
-          </Box>
-        ) : (
-          <Box
-            sx={{
-              position: 'relative',
-              height: 138,
-              flexShrink: 0,
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'flex-end',
-              p: 2.5,
-              overflow: 'hidden',
-              color: '#fff',
-              background: (t) =>
-                `linear-gradient(150deg, ${t.palette.primary.dark} 0%, ${t.palette.primary.main} 100%)`,
-            }}
-          >
-            <Box
-              aria-hidden
-              sx={{
-                position: 'absolute',
-                right: '-20%',
-                top: '-55%',
-                width: '80%',
-                paddingBottom: '80%',
-                borderRadius: '50%',
-                background: 'radial-gradient(circle, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0) 70%)',
-              }}
-            />
-            <Typography
-              component="span"
-              sx={{
-                position: 'relative', fontSize: 11, fontWeight: 800, letterSpacing: '0.09em',
-                color: 'rgba(255,255,255,0.82)', mb: 0.75,
-              }}
-            >
-              {kicker}
-            </Typography>
-            <Typography
-              component="h3"
-              sx={{
-                position: 'relative', fontSize: '1.2rem', fontWeight: 800, lineHeight: 1.25,
-                display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
-              }}
-            >
-              {name}
-            </Typography>
-          </Box>
-        )}
-
-        {/* body */}
-        <CardContent
-          sx={{ flexGrow: 1, width: '100%', display: 'flex', flexDirection: 'column', p: 3 }}
-        >
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{
-              display: '-webkit-box',
-              WebkitLineClamp: 3,
-              WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
-              lineHeight: 1.6,
-              minHeight: '4.8em',
-            }}
-          >
-            {tagline || 'A guided build project a learner works through at their own pace.'}
-          </Typography>
-
-          <Box
-            sx={{
-              mt: 2,
-              pt: 2,
-              borderTop: '1px solid',
-              borderColor: 'divider',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 0.75,
-            }}
-          >
-            <Typography sx={{ fontSize: 12.5, fontWeight: 600, color: 'text.primary' }}>
-              {buildLine}
-            </Typography>
-            {age && (
-              <Typography sx={{ fontSize: 12, color: 'text.disabled' }}>{age}</Typography>
-            )}
-          </Box>
-
-          {/* footer — price on the left, "View" on the right, like the Store card */}
-          <Box
-            sx={{
-              mt: 'auto',
-              pt: 2.5,
-              display: 'flex',
-              alignItems: 'flex-end',
-              justifyContent: 'space-between',
-              gap: 1,
-            }}
-          >
-            <Box>
-              <Typography
-                sx={{
-                  fontSize: price ? '1.05rem' : '0.9rem',
-                  fontWeight: 800,
-                  color: (t) => (t.palette.mode === 'dark' ? t.palette.primary.light : t.palette.primary.dark),
-                  lineHeight: 1.2,
-                }}
-              >
-                {priceLabel}
-              </Typography>
-              {price?.note && (
-                <Typography sx={{ fontSize: 11, color: 'text.disabled', mt: 0.25 }}>
-                  {price.note}
-                </Typography>
-              )}
-            </Box>
-            <Box
-              sx={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 0.5,
-                fontWeight: 700,
-                fontSize: '0.875rem',
-                color: (t) => (t.palette.mode === 'dark' ? t.palette.primary.light : t.palette.primary.main),
-                flexShrink: 0,
-              }}
-            >
-              View
-              <ArrowForwardIcon
-                className="pj-arrow"
-                sx={{ fontSize: 18, transition: 'transform 200ms ease' }}
-              />
-            </Box>
-          </Box>
-        </CardContent>
-      </CardActionArea>
-    </Card>
+    <StoreCardShell
+      to={projectPath(slug)}
+      image={coverImage}
+      photoCount={project.photoCount}
+      kicker={['Project', level && LEVEL_LABEL[level]].filter(Boolean).join(' · ').toUpperCase()}
+      name={name}
+      tagline={tagline || 'A guided build project a learner works through at their own pace.'}
+      price={price}
+      facts={facts}
+      motif={<BuildCircleOutlinedIcon />}
+      badge={{ label: 'Lifetime access' }}
+      buy={price ? { kind: 'project', item: { id, slug, name, image: coverImage, price, kitPrice } } : null}
+    />
   );
 }

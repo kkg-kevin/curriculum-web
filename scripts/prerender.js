@@ -19,7 +19,7 @@
  *     home title, home canonical — until JS ran.
  *   - dist/404.html — the NotFound page, prerendered, served with a real 404 status.
  *
- * Dynamic routes — /pathways/:slug, /projects/:slug, /store/:slug,
+ * Dynamic routes — /pathways/:slug, /store/:slug, /store/projects/:slug,
  * /bootcamps/:slug and /competitions/:slug — are all discovered from the public API
  * (/api/public/{pathways,projects,store,bootcamps,competitions}), or from local fixtures when
  * VITE_USE_MOCK=true. In a real build, if the API is unreachable, those list +
@@ -47,7 +47,7 @@ const NOT_FOUND_ROUTE = '/__prerender-not-found__';
 // reachable, otherwise we'd bake a "couldn't load" / empty page into static HTML.
 // Skipped routes still work as a normal client-rendered SPA via the index.html
 // fallback.
-const DATA_DRIVEN_STATIC = new Set(['/pathways', '/projects', '/store', '/bootcamps', '/competitions', '/home-schooling', '/estate-tech-clubs']);
+const DATA_DRIVEN_STATIC = new Set(['/pathways', '/store', '/bootcamps', '/competitions', '/home-schooling', '/estate-tech-clubs']);
 
 // Most sections' items carry a slug; a learning hub doesn't, so an Estate Tech Club's address is
 // made from its name — the same rule as src/utils/clubs.js's clubSlug.
@@ -211,8 +211,8 @@ async function main() {
 
   const sections = {
     '/pathways': pathwaySlugs,
-    '/projects': projectSlugs,
-    '/store': storeSlugs,
+    // The Store lists the projects too (/store/projects/<slug>).
+    '/store': [...storeSlugs, ...projectSlugs.map((s) => `projects/${s}`)],
     '/bootcamps': bootcampSlugs,
     '/competitions': competitionSlugs,
     '/estate-tech-clubs': clubSlugs,
@@ -221,8 +221,8 @@ async function main() {
   const routes = [
     ...staticRoutes,
     ...pathwaySlugs.map((s) => `/pathways/${s}`),
-    ...projectSlugs.map((s) => `/projects/${s}`),
     ...storeSlugs.map((s) => `/store/${s}`),
+    ...projectSlugs.map((s) => `/store/projects/${s}`),
     ...bootcampSlugs.map((s) => `/bootcamps/${s}`),
     ...competitionSlugs.map((s) => `/competitions/${s}`),
     ...clubSlugs.map((s) => `/estate-tech-clubs/${s}`),

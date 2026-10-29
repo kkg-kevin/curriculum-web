@@ -231,7 +231,7 @@ export default function BootcampsPage() {
         heading="Not sure where to start?"
         body="Pathways and guided projects run all year — a bootcamp is a fast way in, but not the only one. Tell us about your learner and we'll point you the right way."
         primary={{ label: 'Talk to us', to: '/contact' }}
-        secondary={{ label: 'Browse projects', to: '/projects' }}
+        secondary={{ label: 'Browse projects', to: '/store?category=projects' }}
       />
     </>
   );
