@@ -202,6 +202,7 @@ export default function BootcampEnrollPage() {
                 onAnswersChange={setAnswers}
                 onSubmit={handleSubmit}
                 submitMutation={submitMutation}
+                onSkip={() => setStep(STEP.ENROLL)}
               />
             )}
           </Box>

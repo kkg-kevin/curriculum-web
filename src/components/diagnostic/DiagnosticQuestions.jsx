@@ -1,73 +1,135 @@
-import { useState } from 'react';
 import Box from '@mui/material/Box';
-import Card from '@mui/material/Card';
+import ButtonBase from '@mui/material/ButtonBase';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
-import Radio from '@mui/material/Radio';
-import RadioGroup from '@mui/material/RadioGroup';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@mui/material/IconButton';
+import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 
 /**
- * Public-diagnostic equivalent of client/src/modules/assessments/components/AssessmentTaker.jsx,
- * rebuilt with this site's own MUI theme rather than importing the admin app's inline styles.
- * Only handles the item kinds the public diagnostic API can ever send
- * (WEBSITE_INTEGRATION_CONTRACT.md §3.8) — no file uploads, no deliverables, no
- * open-ended text kinds.
+ * The answer controls for one public-diagnostic question, sized for a child on a phone or tablet:
+ * big tappable cards rather than small radios. Public-diagnostic equivalent of the portal's
+ * AssessmentTaker.jsx, rebuilt with this site's own MUI theme. Only the item kinds the public
+ * diagnostic API can send (auto-marked ones — WEBSITE_INTEGRATION_CONTRACT.md §3.8).
  *
- * Same [{itemId, response}] shape in/out as AssessmentTaker — response per kind:
- *   mcqSingle/trueFalse: string · mcqMultiple: string[] · fillBlank: string[]
+ * Same [{itemId, response}] shape as AssessmentTaker — response per kind:
+ *   mcqSingle/trueFalse/canDo: string · mcqMultiple: string[] · fillBlank: string[]
  *   ordering: string[] (a reordering of item.sequence) · matching: [{left, right}]
  */
 
-function QuestionCard({ index, item, children }) {
+// A friendly colour per answer letter — the same order everywhere, so "A" is always blue.
+const LETTER_COLORS = ['#2E7DB5', '#E8833A', '#2E9E6A', '#8B5CF6', '#D9467A', '#0E9AA7'];
+const letter = (i) => String.fromCharCode(65 + i);
+
+// The can-do levels, in the order the server marks them (builder.constants.js's CAN_DO_LEVELS);
+// a question's own levelLabels replace the wording only.
+const CAN_DO_LEVELS = [
+  { key: 'independent', label: 'I can do it on my own', color: '#2E9E6A' },
+  { key: 'withHelp', label: 'I can do it with help', color: '#E8833A' },
+  { key: 'cannot', label: 'I can’t do it yet', color: '#8B5CF6' },
+];
+
+/** Whether a question has an answer worth counting as "answered" on the progress dots. */
+export function isAnswered(item, value) {
+  if (value == null) return false;
+  if (typeof value === 'string') return value.trim() !== '';
+  if (Array.isArray(value)) {
+    if (item.kind === 'fillBlank') return value.some((v) => String(v || '').trim() !== '');
+    return value.length > 0;
+  }
+  return true;
+}
+
+// One big answer card. `multi` shows a tick box instead of the letter bubble once picked.
+function ChoiceCard({ index, label, selected, multi = false, color, onClick }) {
+  const tint = color || LETTER_COLORS[index % LETTER_COLORS.length];
   return (
-    <Card variant="outlined" sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3 }}>
-      <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start', mb: 1.5 }}>
-        <Typography sx={{ fontWeight: 700, color: 'primary.main', flexShrink: 0 }}>
-          {index + 1}.
-        </Typography>
-        <Box
-          sx={{ flex: 1, minWidth: 0, '& p': { m: 0 } }}
-          dangerouslySetInnerHTML={{ __html: item.question }}
-        />
+    <ButtonBase
+      onClick={onClick}
+      role={multi ? 'checkbox' : 'radio'}
+      aria-checked={selected}
+      sx={{
+        width: '100%',
+        justifyContent: 'flex-start',
+        textAlign: 'left',
+        gap: 1.75,
+        px: { xs: 1.75, sm: 2.25 },
+        py: { xs: 1.5, sm: 1.75 },
+        borderRadius: 4,
+        border: '2px solid',
+        borderColor: selected ? tint : 'divider',
+        backgroundColor: selected ? `${tint}1F` : 'background.paper',
+        boxShadow: selected ? `0 4px 14px ${tint}33` : 'none',
+        transition: 'transform .12s ease, border-color .12s ease, background-color .12s ease',
+        '&:hover': { borderColor: tint, transform: 'translateY(-1px)' },
+        '&:active': { transform: 'scale(0.99)' },
+        '&.Mui-focusVisible': { outline: `3px solid ${tint}`, outlineOffset: 2 },
+      }}
+    >
+      <Box
+        sx={{
+          width: 38,
+          height: 38,
+          borderRadius: multi ? 2 : '50%',
+          flexShrink: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontWeight: 900,
+          fontSize: 17,
+          color: selected ? '#fff' : tint,
+          backgroundColor: selected ? tint : `${tint}1A`,
+          border: `2px solid ${tint}`,
+        }}
+      >
+        {selected ? <CheckRoundedIcon sx={{ fontSize: 22 }} /> : letter(index)}
       </Box>
-      <Box sx={{ pl: { xs: 0, sm: 3.5 } }}>{children}</Box>
-    </Card>
+      <Typography sx={{ fontSize: { xs: 16, sm: 17 }, fontWeight: selected ? 800 : 600, color: 'text.primary', lineHeight: 1.35 }}>
+        {label}
+      </Typography>
+    </ButtonBase>
   );
 }
 
 function McqField({ item, value, onChange }) {
   const options = item.options?.length ? item.options : item.kind === 'trueFalse' ? ['True', 'False'] : [];
-
-  if (item.kind === 'mcqMultiple') {
-    const selected = Array.isArray(value) ? value : [];
-    const toggle = (opt) =>
-      onChange(selected.includes(opt) ? selected.filter((o) => o !== opt) : [...selected, opt]);
-    return (
-      <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-        {options.map((opt) => (
-          <FormControlLabel
-            key={opt}
-            control={<Checkbox checked={selected.includes(opt)} onChange={() => toggle(opt)} />}
-            label={opt}
-          />
-        ))}
-      </Box>
-    );
-  }
-
+  const multi = item.kind === 'mcqMultiple';
+  const selected = multi ? (Array.isArray(value) ? value : []) : value;
+  const pick = (opt) =>
+    multi ? onChange(selected.includes(opt) ? selected.filter((o) => o !== opt) : [...selected, opt]) : onChange(opt);
   return (
-    <RadioGroup value={value ?? ''} onChange={(e) => onChange(e.target.value)}>
-      {options.map((opt) => (
-        <FormControlLabel key={opt} value={opt} control={<Radio />} label={opt} />
+    <Box role={multi ? 'group' : 'radiogroup'} sx={{ display: 'grid', gap: 1.25, gridTemplateColumns: { xs: '1fr', md: options.length > 2 ? '1fr 1fr' : '1fr' } }}>
+      {options.map((opt, i) => (
+        <ChoiceCard
+          key={opt}
+          index={i}
+          label={opt}
+          multi={multi}
+          selected={multi ? selected.includes(opt) : selected === opt}
+          onClick={() => pick(opt)}
+        />
       ))}
-    </RadioGroup>
+    </Box>
+  );
+}
+
+function CanDoField({ item, value, onChange }) {
+  return (
+    <Box role="radiogroup" sx={{ display: 'grid', gap: 1.25 }}>
+      {CAN_DO_LEVELS.map((level, i) => (
+        <ChoiceCard
+          key={level.key}
+          index={i}
+          color={level.color}
+          label={item.levelLabels?.[i]?.trim() || level.label}
+          selected={value === level.key}
+          onClick={() => onChange(level.key)}
+        />
+      ))}
+    </Box>
   );
 }
 
@@ -75,18 +137,18 @@ function FillBlankField({ item, value, onChange }) {
   const blanks = item.blanks || [];
   const answers = Array.isArray(value) ? value : [];
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, maxWidth: 420 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, maxWidth: 460 }}>
       {blanks.map((_, i) => (
         <TextField
           key={i}
-          size="small"
-          placeholder={`Blank ${i + 1}`}
+          label={blanks.length > 1 ? `Answer ${i + 1}` : 'Your answer'}
           value={answers[i] || ''}
           onChange={(e) => {
             const next = [...answers];
             next[i] = e.target.value;
             onChange(next);
           }}
+          slotProps={{ htmlInput: { style: { fontSize: 18 }, autoComplete: 'off' } }}
         />
       ))}
     </Box>
@@ -103,44 +165,41 @@ function OrderingField({ item, value, onChange }) {
     onChange(next);
   };
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-      {order.map((step, i) => (
-        <Box
-          key={step}
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1.5,
-            px: 1.5,
-            py: 1,
-            border: '1px solid',
-            borderColor: 'divider',
-            borderRadius: 2,
-            backgroundColor: 'surface.subtle',
-          }}
-        >
-          <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.disabled', width: 18, flexShrink: 0 }}>
-            {i + 1}
-          </Typography>
-          <Typography sx={{ flex: 1, fontSize: 14 }}>{step}</Typography>
-          <Box sx={{ display: 'flex', flexShrink: 0 }}>
-            <IconButton size="small" onClick={() => move(i, -1)} disabled={i === 0} aria-label="Move up">
-              <KeyboardArrowUpIcon fontSize="small" />
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
+      <Typography sx={{ fontSize: 14, color: 'text.secondary', fontWeight: 600 }}>
+        Use the arrows to put these in the right order — first at the top.
+      </Typography>
+      {order.map((step, i) => {
+        const tint = LETTER_COLORS[i % LETTER_COLORS.length];
+        return (
+          <Box
+            key={step}
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1.5,
+              pl: 1.5,
+              pr: 0.75,
+              py: 1,
+              borderRadius: 4,
+              border: '2px solid',
+              borderColor: 'divider',
+              backgroundColor: 'background.paper',
+            }}
+          >
+            <Box sx={{ width: 34, height: 34, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: '#fff', backgroundColor: tint }}>
+              {i + 1}
+            </Box>
+            <Typography sx={{ flex: 1, fontSize: 16, fontWeight: 600 }}>{step}</Typography>
+            <IconButton onClick={() => move(i, -1)} disabled={i === 0} aria-label={`Move “${step}” up`} sx={{ border: '1px solid', borderColor: 'divider' }}>
+              <KeyboardArrowUpIcon />
             </IconButton>
-            <IconButton
-              size="small"
-              onClick={() => move(i, 1)}
-              disabled={i === order.length - 1}
-              aria-label="Move down"
-            >
-              <KeyboardArrowDownIcon fontSize="small" />
+            <IconButton onClick={() => move(i, 1)} disabled={i === order.length - 1} aria-label={`Move “${step}” down`} sx={{ border: '1px solid', borderColor: 'divider' }}>
+              <KeyboardArrowDownIcon />
             </IconButton>
           </Box>
-        </Box>
-      ))}
-      <Typography variant="caption" color="text.secondary" fontStyle="italic">
-        Use the arrows to put these in the correct order.
-      </Typography>
+        );
+      })}
     </Box>
   );
 }
@@ -156,23 +215,35 @@ function MatchingField({ item, value, onChange }) {
     onChange(next);
   };
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-      {pairs.map((p) => (
-        <Box key={p.left} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
-          <Typography sx={{ fontWeight: 600, minWidth: 140 }}>{p.left}</Typography>
-          <Typography color="text.disabled">↔</Typography>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
+      <Typography sx={{ fontSize: 14, color: 'text.secondary', fontWeight: 600 }}>Pick the one that goes with each.</Typography>
+      {pairs.map((p, i) => (
+        <Box
+          key={p.left}
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1.5,
+            flexWrap: 'wrap',
+            p: 1.25,
+            borderRadius: 4,
+            border: '2px solid',
+            borderColor: answerFor(p.left) ? LETTER_COLORS[i % LETTER_COLORS.length] : 'divider',
+            backgroundColor: 'background.paper',
+          }}
+        >
+          <Typography sx={{ fontWeight: 800, fontSize: 16, flex: '1 1 160px' }}>{p.left}</Typography>
           <Select
-            size="small"
             value={answerFor(p.left)}
             onChange={(e) => setAnswer(p.left, e.target.value)}
             displayEmpty
-            sx={{ minWidth: 180 }}
+            sx={{ flex: '1 1 200px', borderRadius: 3, fontSize: 16 }}
           >
             <MenuItem value="">
-              <em>Choose a match…</em>
+              <em>Choose…</em>
             </MenuItem>
             {rights.map((r) => (
-              <MenuItem key={r} value={r}>
+              <MenuItem key={r} value={r} sx={{ fontSize: 16 }}>
                 {r}
               </MenuItem>
             ))}
@@ -183,38 +254,22 @@ function MatchingField({ item, value, onChange }) {
   );
 }
 
-function ItemField({ item, value, onChange }) {
+/** The answer controls for one question; null for a kind the website can't show. */
+export function ItemField({ item, value, onChange }) {
   if (['mcqSingle', 'mcqMultiple', 'trueFalse'].includes(item.kind)) {
     return <McqField item={item} value={value} onChange={onChange} />;
   }
+  if (item.kind === 'canDo') return <CanDoField item={item} value={value} onChange={onChange} />;
   if (item.kind === 'fillBlank') return <FillBlankField item={item} value={value} onChange={onChange} />;
   if (item.kind === 'ordering') return <OrderingField item={item} value={value} onChange={onChange} />;
   if (item.kind === 'matching') return <MatchingField item={item} value={value} onChange={onChange} />;
   return null;
 }
 
-/**
- * Props: { items, onChange } — items from GET /api/public/diagnostics/:slug?age=
- * (the `.items` array). Emits the full [{itemId, response}] array on every change,
- * same as AssessmentTaker's onChange contract.
- */
-export default function DiagnosticQuestions({ items = [], onChange }) {
-  const [answers, setAnswers] = useState(() => new Map());
-
-  const setResponse = (itemId, response) => {
-    const next = new Map(answers);
-    next.set(itemId, response);
-    setAnswers(next);
-    onChange?.([...next.entries()].map(([id, resp]) => ({ itemId: id, response: resp })));
-  };
-
-  return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      {items.map((item, i) => (
-        <QuestionCard key={item.id} index={i} item={item}>
-          <ItemField item={item} value={answers.get(item.id)} onChange={(v) => setResponse(item.id, v)} />
-        </QuestionCard>
-      ))}
-    </Box>
-  );
+/** A short hint under the question for the kinds that need one. */
+export function kindHint(item) {
+  if (item.kind === 'mcqMultiple') return 'Pick all the answers you think are right.';
+  if (item.kind === 'canDo') return 'Be honest — there’s no wrong answer here.';
+  if (item.kind === 'fillBlank') return 'Type your answer.';
+  return null;
 }
