@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { publicApi } from '../services/api.js';
 
 /**
- * The Projects section (`/projects`) reads `GET /api/public/projects` — the designated
+ * The Store's projects (`/store?category=projects`, `/store/projects/:slug`) read `GET /api/public/projects` — the designated
  * curriculum admin's `type: "project"` assessments that were flipped "For sale" in the
  * Assessment Builder. Shape per item:
  *   { id, slug, name, tagline, level, ageMin, ageMax, coverImage, price, deliverableCount,

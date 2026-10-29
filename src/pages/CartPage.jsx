@@ -15,8 +15,9 @@ import SmartImage from '../components/common/SmartImage.jsx';
 import { EmptyBlock } from '../components/common/StateViews.jsx';
 import { cart, useCart } from '../cart/cartStore.js';
 import { formatKsh } from '../cart/format.js';
+import { projectPath, storeItemPath, STORE_PROJECTS_PATH } from '../utils/storePaths.js';
 
-const itemPath = (line) => (line.type === 'project' ? `/projects/${line.slug}` : `/store/${line.slug}`);
+const itemPath = (line) => (line.type === 'project' ? projectPath(line.slug) : storeItemPath(line.slug));
 
 /** /cart — what's in the cart: change quantities, add or drop a project's kit, remove, check out. */
 export default function CartPage() {
@@ -33,7 +34,7 @@ export default function CartPage() {
               <EmptyBlock title="Your cart is empty" body="Browse our kits and projects — add what you like and check out when you're ready." />
               <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center', flexWrap: 'wrap', mt: -4 }}>
                 <Button component={RouterLink} to="/store" variant="contained">Visit the store</Button>
-                <Button component={RouterLink} to="/projects" variant="outlined">See projects</Button>
+                <Button component={RouterLink} to={STORE_PROJECTS_PATH} variant="outlined">See projects</Button>
               </Box>
             </>
           ) : (

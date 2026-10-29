@@ -92,7 +92,7 @@ const PILLARS = [
   { label: 'Holiday bootcamps', to: '/bootcamps' },
   { label: 'Home schooling', to: '/home-schooling' },
   { label: 'Schools programme', to: '/schools' },
-  { label: 'Buildable projects', to: '/projects' },
+  { label: 'Buildable projects', to: '/store?category=projects' },
   { label: 'Competitions', to: '/competitions' },
   { label: 'The Quarky robot', to: '/store' },
 ];

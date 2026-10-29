@@ -29,6 +29,11 @@
   # --- Legacy: /quarky was the single-product page before the Store existed.
   RewriteRule ^quarky/?$ /store/ [L,R=301]
 
+  # --- Projects are sold in the Store (Oct 2026): /projects -> the Store's Projects, and each
+  #     /projects/<slug> -> /store/projects/<slug>.
+  RewriteRule ^projects/?$ /store/?category=projects [L,R=301]
+  RewriteRule ^projects/([^/]+)/?$ /store/projects/$1/ [L,R=301]
+
   # 1. Real files (assets, sitemap.xml, robots.txt) and real dirs — serve directly.
   #    A prerendered route is a real dir (dist/<route>/index.html), so `/pathways` gets the
   #    server's usual 301 to `/pathways/` — the form canonicals and sitemap.xml use.
@@ -49,7 +54,7 @@
   #    store item/bootcamp/competition/estate tech club added since the last build, the diagnostic and report
   #    pages, hub pages, sign-up — get the bare SPA shell (200.html), never the prerendered home
   #    page. A slug that turns out not to exist renders the NotFound page (noindex) client-side.
-  RewriteRule ^(pathways|projects|store|bootcamps|competitions|estate-tech-clubs)(/.*)?$ /200.html [L]
+  RewriteRule ^(pathways|store|bootcamps|competitions|estate-tech-clubs)(/.*)?$ /200.html [L]
   RewriteRule ^home-schooling(/signup)?/?$ /200.html [L]
   RewriteRule ^(about|contact|enroll|privacy|terms)/?$ /200.html [L]
   # Buying: the cart, its checkout, and paying an order later from the link in its email

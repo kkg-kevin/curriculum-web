@@ -28,6 +28,7 @@ import { cart, useCart } from '../cart/cartStore.js';
 import { formatKsh } from '../cart/format.js';
 import { publicApi } from '../services/api.js';
 import { APP_URL } from '../config/env.js';
+import { STORE_PROJECTS_PATH } from '../utils/storePaths.js';
 
 const sectionSx = { p: { xs: 2.5, sm: 3 }, borderRadius: 4, border: '1px solid', borderColor: 'surface.ring', bgcolor: 'surface.card', boxShadow: 'shadow.sm' };
 const gridSx = { display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } };
@@ -182,7 +183,7 @@ export default function CheckoutPage() {
           <EmptyBlock title="Your cart is empty" body="Add a kit or a project first, then come back here to check out." />
           <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center', flexWrap: 'wrap', mt: -4 }}>
             <Button component={RouterLink} to="/store" variant="contained">Visit the store</Button>
-            <Button component={RouterLink} to="/projects" variant="outlined">See projects</Button>
+            <Button component={RouterLink} to={STORE_PROJECTS_PATH} variant="outlined">See projects</Button>
           </Box>
         </Section>
       </>

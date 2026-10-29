@@ -4,7 +4,7 @@
  * Runs AFTER prerender.js in the pipeline (see package.json `postbuild`).
  *
  * Static routes come from src/config/site.js. Dynamic detail routes —
- * /pathways/:slug, /projects/:slug, /store/:slug, /bootcamps/:slug — are taken
+ * /pathways/:slug, /store/:slug, /store/projects/:slug, /bootcamps/:slug — are taken
  * from whatever prerender.js actually wrote under dist/<section>/*, NOT a fresh
  * API call.
  * prerender is the single authority on what shipped: if its API fetch failed and
@@ -107,7 +107,7 @@ async function main() {
 
   const [pathwaySlugs, projectSlugs, storeSlugs, bootcampSlugs, competitionSlugs, clubSlugs] = await Promise.all([
     getSectionSlugs('pathways', '../src/mocks/fixtures/pathways.js', 'pathways'),
-    getSectionSlugs('projects', '../src/mocks/fixtures/projects.js', 'projects'),
+    getSectionSlugs('store/projects', '../src/mocks/fixtures/projects.js', 'projects'),
     getSectionSlugs('store', '../src/mocks/fixtures/store.js', 'storeList'),
     getSectionSlugs('bootcamps', '../src/mocks/fixtures/bootcamps.js', 'bootcampList'),
     getSectionSlugs('competitions', '../src/mocks/fixtures/competitions.js', 'competitionList'),
@@ -118,8 +118,8 @@ async function main() {
   const routes = [
     ...STATIC_ROUTES.filter((r) => r.sitemap !== false).map((r) => r.path),
     ...pathwaySlugs.map((s) => `/pathways/${s}`),
-    ...projectSlugs.map((s) => `/projects/${s}`),
     ...storeSlugs.map((s) => `/store/${s}`),
+    ...projectSlugs.map((s) => `/store/projects/${s}`),
     ...bootcampSlugs.map((s) => `/bootcamps/${s}`),
     ...competitionSlugs.map((s) => `/competitions/${s}`),
     ...clubSlugs.map((s) => `/estate-tech-clubs/${s}`),

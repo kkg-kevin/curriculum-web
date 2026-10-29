@@ -3,8 +3,7 @@
  *
  * A project is sold the way an online course is: one purchase unlocks all its
  * lessons, checkpoints and challenges for a learner, with no time limit. This is
- * its own top-level section (`/projects`), separate from the Store, which sells
- * physical goods (the Quarky robot, bundles, accessories — src/content/store.js).
+ * sold in the Store (`/store/projects/<slug>`) alongside the physical goods (the Quarky robot, bundles, accessories — src/content/store.js).
  *
  * Static fallback content — the live list comes from GET /api/public/projects (see catalog.js).
  * Buying goes through the cart checkout (POST /api/public/orders).

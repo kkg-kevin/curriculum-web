@@ -37,8 +37,7 @@ export const about = {
   programmes: [
     { title: 'Pathways', body: 'Structured multi-course tracks.', to: '/pathways', icon: 'route' },
     { title: 'Schools', body: 'Robotics, AI and coding in your school.', to: '/schools', icon: 'school' },
-    { title: 'Projects', body: 'Guided builds you buy and keep.', to: '/projects', icon: 'code' },
     { title: 'Competitions', body: 'Team-based, mentor-supported.', to: '/competitions', icon: 'trophy' },
-    { title: 'Store', body: 'The Quarky robot, kits and bundles.', to: '/store', icon: 'rocket' },
+    { title: 'Store', body: 'The Quarky robot, kits and guided build projects you keep.', to: '/store', icon: 'rocket' },
   ],
 };

@@ -19,12 +19,13 @@ import { resolveMediaUrl } from '../utils/media.js';
 import Section from '../components/common/Section.jsx';
 import MediaGallery from '../components/media/MediaGallery.jsx';
 import BuyBox from '../components/catalog/BuyBox.jsx';
+import BuyAside from '../components/catalog/BuyAside.jsx';
 import CTABanner from '../components/home/CTABanner.jsx';
 import { ErrorBlock } from '../components/common/StateViews.jsx';
 import { usePublicStoreItem } from '../hooks/usePublicStore.js';
 import { PROSE_MAX_WIDTH } from '../theme/layout.js';
 import DetailLayout from '../components/common/DetailLayout.jsx';
-import { RelatedStoreItems } from '../components/common/Related.jsx';
+import { RelatedInStore } from '../components/common/Related.jsx';
 import { PRICING_IS_PLACEHOLDER } from '../content/catalog.js';
 
 const CATEGORY_LABEL = { kit: 'Robots & kits', bundle: 'Bundle', accessory: 'Accessory' };
@@ -168,28 +169,16 @@ export default function StoreItemPage() {
 
       <Section>
         <DetailLayout
-          aside={
-            <Box>
-              <Box
-                sx={{
-                  p: 3,
-                  borderRadius: 2,
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  bgcolor: 'background.paper',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 2,
-                  boxShadow: 'shadow.md',
-                }}
-              >
-                <Typography variant="h4" component="p">
-                  {notAvailable && stockStatus === 'coming_soon' ? `Get notified about ${name}` : `Get ${name}`}
-                </Typography>
-                <BuyBox kind="store_item" item={buyItem} status={stockStatus || 'available'} enquireTo={enquireTo} contactTo={contactTo} compact />
-              </Box>
-            </Box>
-          }
+          aside={(
+            <BuyAside
+              title={notAvailable && stockStatus === 'coming_soon' ? `Get notified about ${name}` : `Get ${name}`}
+              kind="store_item"
+              item={buyItem}
+              status={stockStatus || 'available'}
+              enquireTo={enquireTo}
+              contactTo={contactTo}
+            />
+          )}
         >
           {description && (
             <Box sx={{ maxWidth: 760, mb: 6 }}>
@@ -282,7 +271,7 @@ export default function StoreItemPage() {
         </DetailLayout>
       </Section>
 
-      <RelatedStoreItems currentSlug={slug} />
+      <RelatedInStore currentKey={`store_item:${slug}`} />
 
       <CTABanner
         heading="Buying for a school or club?"

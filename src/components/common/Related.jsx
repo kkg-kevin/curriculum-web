@@ -11,8 +11,7 @@ import StoreItemCard from '../cards/StoreItemCard.jsx';
 import { usePublicBootcamps } from '../../hooks/usePublicBootcamps.js';
 import { usePublicCompetitions } from '../../hooks/usePublicCompetitions.js';
 import { usePathways } from '../../hooks/usePathways.js';
-import { usePublicProjects } from '../../hooks/usePublicProjects.js';
-import { usePublicStore } from '../../hooks/usePublicStore.js';
+import { useStoreCatalog } from '../../hooks/useStoreCatalog.js';
 import { hasEnded } from '../../utils/dates.js';
 import { CARD_GRID_COLUMNS, shortListSx } from '../../theme/layout.js';
 
@@ -94,28 +93,24 @@ export function RelatedPathways({ currentSlug }) {
   );
 }
 
-export function RelatedProjects({ currentSlug }) {
-  const { data } = usePublicProjects();
-  return (
-    <RelatedRow
-      title="Other projects"
-      to="/projects"
-      linkLabel="All projects"
-      items={others(data, currentSlug)}
-      renderCard={(p) => <ProjectCard project={p} />}
-    />
-  );
-}
-
-export function RelatedStoreItems({ currentSlug }) {
-  const { data } = usePublicStore();
+/**
+ * The rest of the Store — goods and projects together. `currentKey` is the entry being viewed
+ * (`store_item:<slug>` or `project:<slug>`, as useStoreCatalog keys them); things of the same kind
+ * come first, so a project page leads with other projects.
+ */
+export function RelatedInStore({ currentKey }) {
+  const { entries } = useStoreCatalog();
+  const kind = currentKey.split(':')[0];
+  const rest = entries
+    .filter((e) => e.key !== currentKey)
+    .sort((a, b) => (a.kind !== kind) - (b.kind !== kind));
   return (
     <RelatedRow
       title="More from the store"
       to="/store"
       linkLabel="Visit the store"
-      items={others(data, currentSlug)}
-      renderCard={(it) => <StoreItemCard item={it} />}
+      items={rest.map((e) => ({ ...e, id: e.key }))}
+      renderCard={(e) => (e.kind === 'project' ? <ProjectCard project={e.data} /> : <StoreItemCard item={e.data} />)}
     />
   );
 }

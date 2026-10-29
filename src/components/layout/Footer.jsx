@@ -45,7 +45,6 @@ const COLUMNS = [
   {
     heading: 'More',
     links: [
-      { label: 'Projects', to: '/projects' },
       { label: 'Competitions', to: '/competitions' },
       { label: 'Store', to: '/store' },
       { label: 'About', to: '/about' },
