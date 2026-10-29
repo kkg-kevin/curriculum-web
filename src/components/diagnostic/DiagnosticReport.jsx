@@ -11,8 +11,11 @@
  * pills, then stacked sections divided by hairlines — "Snapshot", a score ring, and
  * "Competency areas" (each competency expandable to the indicators that fed it).
  * There is deliberately NO per-question section. Icons are inline SVG (no react-icons
- * dependency here) and every colour is literal hex — so html2canvas can capture it for
- * the "Download PDF" button, which lives inside the card's hero.
+ * dependency here) and every colour is literal hex.
+ *
+ * The "Download PDF" button (in the card's hero) doesn't capture this card: it lays the same
+ * report out as a printed document (DiagnosticReportDocument, every competency expanded) off
+ * screen, and reportPdf.js puts it on branded A4 pages.
  *
  * Props:
  *   report — { pathwayName, assessmentName, totalScore, maxScore,
@@ -22,7 +25,10 @@
  *              childName?, childAge?, completedAt? }
  */
 import { useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { downloadReportPdf, reportFilename } from '../../utils/reportPdf.js';
+import DiagnosticReportDocument from './DiagnosticReportDocument.jsx';
+import { bandFor, pct, scoreColor } from './reportBands.js';
 
 // Palette lifted from PublicLearnerProfilePage.jsx so the two pages read as one system.
 const GRAD_FROM = '#1a3550';
@@ -32,27 +38,11 @@ const BORDER = '#E5E7EB';
 const INK = '#111827';
 const INK_MUTED = '#6B7280';
 const INK_FAINT = '#9CA3AF';
-const GOOD = '#059669';
-const WARN = '#D97706';
-const BAD = '#DC2626';
 
 const HERO_GRADIENT = `linear-gradient(135deg, ${GRAD_FROM} 0%, ${ACCENT} 45%, ${GRAD_TO} 100%)`;
 const sectionStyle = { padding: '20px 24px', borderTop: '1px solid #F3F4F6' };
 
-function pct(earned, possible) {
-  return possible > 0 ? Math.round((earned / possible) * 100) : 0;
-}
-
-function bandLabel(percent) {
-  if (percent >= 80) return 'Strong start';
-  if (percent >= 60) return 'On track';
-  if (percent >= 40) return 'Getting started';
-  return 'Early days';
-}
-
-function scoreColor(percent) {
-  return percent >= 60 ? GOOD : percent >= 40 ? WARN : BAD;
-}
+const bandLabel = (percent) => bandFor(percent).label;
 
 /* ---- inline icons (12px, currentColor) ------------------------------------ */
 const Icon = {
@@ -385,14 +375,19 @@ export default function DiagnosticReport({ report }) {
     ? new Date(completedAt).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })
     : null;
 
-  const cardRef = useRef(null);
+  const docRef = useRef(null);
   const [downloading, setDownloading] = useState(false);
 
   const handleDownload = async () => {
     if (downloading) return;
     setDownloading(true);
     try {
-      await downloadReportPdf(cardRef.current, reportFilename(report));
+      // Let the off-screen document (rendered while `downloading`) mount and lay out first.
+      await new Promise((resolve) => window.requestAnimationFrame(() => window.requestAnimationFrame(resolve)));
+      await downloadReportPdf(docRef.current, reportFilename(report), {
+        title: `${subjectLabel} diagnostic report`,
+        subtitle: [childName, subjectName].filter(Boolean).join(' · '),
+      });
     } catch {
       // PDF generation failed (rare) — fall back to the browser's own print-to-PDF.
       window.print();
@@ -403,7 +398,6 @@ export default function DiagnosticReport({ report }) {
 
   return (
     <div
-      ref={cardRef}
       style={{
         fontFamily: 'Inter, system-ui, sans-serif',
         width: '100%',
@@ -558,6 +552,25 @@ export default function DiagnosticReport({ report }) {
       >
         Digifunzi · Diagnostic report
       </p>
+
+      {/* The printed layout, mounted only while a PDF is being made — off screen, never seen. */}
+      {downloading &&
+        createPortal(
+          <div aria-hidden="true" style={{ position: 'fixed', top: 0, left: -10000, pointerEvents: 'none' }}>
+            <DiagnosticReportDocument
+              ref={docRef}
+              report={report}
+              groups={groups}
+              subjectName={subjectName}
+              subjectLabel={subjectLabel}
+              completedLabel={
+                completedLabel ||
+                new Date().toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })
+              }
+            />
+          </div>,
+          document.body
+        )}
     </div>
   );
 }

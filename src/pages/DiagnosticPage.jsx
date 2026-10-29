@@ -5,7 +5,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
-import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Link from '@mui/material/Link';
@@ -16,14 +15,15 @@ import { ErrorBlock, LoadingBlock } from '../components/common/StateViews.jsx';
 import { usePathway } from '../hooks/usePathways.js';
 import { usePublicBootcamp } from '../hooks/usePublicBootcamps.js';
 import { useDiagnostic, useSubmitDiagnostic } from '../hooks/useDiagnostic.js';
-import { diagnosticAgeSchema, diagnosticContactSchema } from '../components/forms/schemas.js';
+import { diagnosticContactSchema } from '../components/forms/schemas.js';
 import { whatsAppUrl } from '../config/site.js';
 import { ageLabel } from '../utils/format.js';
 import DiagnosticAnswerForm from '../components/diagnostic/DiagnosticAnswerForm.jsx';
 import DiagnosticReport from '../components/diagnostic/DiagnosticReport.jsx';
 import NextStepsPanel from '../components/diagnostic/NextStepsPanel.jsx';
+import BirthDateStep from '../components/diagnostic/BirthDateStep.jsx';
 
-// Flow: pick a pathway -> age (only to fetch the right question set) -> answer the questions,
+// Flow: pick a pathway -> date of birth (its age fetches the right question set) -> answer the questions,
 // giving a name + phone -> submit -> SEE THE REPORT. The name + phone are required before
 // submitting; they become a `source: "diagnostic"` lead so the team can follow up. The report
 // itself never exposes them.
@@ -43,47 +43,6 @@ const groupForAge = (groups, age) =>
 
 const groupLabel = (g) => [g.name, ageLabel(g.minAge, g.maxAge)].filter(Boolean).join(' · ');
 
-// The visitor only ever gives an age — which age group's diagnostic that means is worked out
-// from it, never chosen.
-function AgeStep({ onSubmit, minAge, maxAge, groups, defaultAge }) {
-  const hasRange = Number.isFinite(minAge) && Number.isFinite(maxAge);
-  const {
-    register,
-    handleSubmit,
-    setError,
-    formState: { errors },
-  } = useForm({ resolver: zodResolver(diagnosticAgeSchema), defaultValues: { age: defaultAge ?? '' } });
-
-  return (
-    <Box
-      component="form"
-      onSubmit={handleSubmit((values) => {
-        if (groups.length > 0 && !groupForAge(groups, values.age)) {
-          setError('age', { message: 'There is no diagnostic for that age yet.' });
-          return;
-        }
-        onSubmit(values.age);
-      })}
-      sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 420 }}
-    >
-      <Typography color="text.secondary">
-        Enter the learner’s age and we’ll give them the diagnostic for their age.
-      </Typography>
-      <TextField
-        label="Learner's age"
-        type="number"
-        inputProps={{ min: hasRange ? minAge : 3, max: hasRange ? maxAge : 19 }}
-        {...register('age')}
-        error={!!errors.age}
-        helperText={errors.age?.message}
-      />
-      <Button type="submit" variant="contained" size="large">
-        Continue
-      </Button>
-    </Box>
-  );
-}
-
 export default function DiagnosticPage() {
   const { slug } = useParams();
   const [searchParams] = useSearchParams();
@@ -91,10 +50,9 @@ export default function DiagnosticPage() {
   const { data: pathway, isLoading: pathwayLoading } = usePathway(slug);
   const { data: bootcamp } = usePublicBootcamp(bootcampSlug);
 
-  // `?age=` (from an age group's own button on the pathway page) pre-fills the age step.
-  const presetAge = Number.parseInt(searchParams.get('age') ?? '', 10);
   const [step, setStep] = useState(STEP.AGE);
   const [age, setAge] = useState(null);
+  const [dateOfBirth, setDateOfBirth] = useState('');
   const [answers, setAnswers] = useState([]);
   const [report, setReport] = useState(null);
 
@@ -110,7 +68,8 @@ export default function DiagnosticPage() {
   const diagnosticQuery = useDiagnostic(slug, step === STEP.QUESTIONS ? age : null);
   const submitMutation = useSubmitDiagnostic(slug);
 
-  const handleAgeSubmit = (submittedAge) => {
+  const handleBirthDateSubmit = (submittedDateOfBirth, submittedAge) => {
+    setDateOfBirth(submittedDateOfBirth);
     setAge(submittedAge);
     setStep(STEP.QUESTIONS);
   };
@@ -125,6 +84,7 @@ export default function DiagnosticPage() {
       parentPhone,
       childName: cn || undefined,
       childAge: age,
+      childDateOfBirth: dateOfBirth,
     });
     setReport(result.data);
     setStep(STEP.REPORT);
@@ -208,12 +168,17 @@ export default function DiagnosticPage() {
 
       <Section maxWidth={isReport ? 'xl' : 'md'}>
         {step === STEP.AGE && (
-          <AgeStep
-            onSubmit={handleAgeSubmit}
-            minAge={diagMinAge}
-            maxAge={diagMaxAge}
-            groups={diagGroups}
-            defaultAge={Number.isFinite(age) ? age : Number.isFinite(presetAge) ? presetAge : undefined}
+          <BirthDateStep
+            onSubmit={handleBirthDateSubmit}
+            defaultDateOfBirth={dateOfBirth}
+            checkAge={(a) => {
+              if (diagGroups.length > 0) return groupForAge(diagGroups, a) ? null : 'There is no diagnostic for that age yet.';
+              if (Number.isFinite(diagMinAge) && Number.isFinite(diagMaxAge) && (a < diagMinAge || a > diagMaxAge)) {
+                return `This diagnostic is for ages ${diagMinAge}–${diagMaxAge}.`;
+              }
+              return null;
+            }}
+            intro="Choose the learner’s date of birth and we’ll give them the diagnostic for their age."
           />
         )}
 
@@ -224,7 +189,7 @@ export default function DiagnosticPage() {
                 {ageGroup ? `${groupLabel(ageGroup)} diagnostic` : 'Diagnostic'} — for a learner aged {age}
               </Typography>
               <Button size="small" onClick={changeAge}>
-                Change age
+                Change date of birth
               </Button>
             </Box>
 
@@ -283,7 +248,8 @@ export default function DiagnosticPage() {
                         defaultParentName: contactForm.getValues('parentName'),
                         defaultParentPhone: contactForm.getValues('parentPhone'),
                         defaultLearnerName: childName,
-                        defaultLearnerAge: age,
+                        defaultLearnerDateOfBirth: dateOfBirth,
+                        attemptId: report?.attemptId || null,
                       }
                     : null
                 }

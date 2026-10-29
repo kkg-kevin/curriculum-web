@@ -13,6 +13,19 @@ const phone = z
 // bot check happens in the form's onSubmit (see Honeypot.jsx).
 const honeypot = { [HONEYPOT_FIELD]: z.string().optional() };
 
+// A learner's date of birth ("YYYY-MM-DD", from DateOfBirthField) — every form that needs a
+// child's age asks for this and works the age out from it. Our programmes are for ages 3–19.
+const learnerDateOfBirth = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, 'Choose the learner’s date of birth')
+  .superRefine((dateOfBirth, ctx) => {
+    const age = ageOn(dateOfBirth);
+    const issue = (message) => ctx.addIssue({ code: z.ZodIssueCode.custom, message });
+    if (age === null) issue('The date of birth can’t be in the future');
+    else if (age < 3) issue('Our programmes start from age 3');
+    else if (age > 19) issue('This programme is for under-19s');
+  });
+
 // What the form's "Interested in" <select> can hold: the lead API's `interestedIn` enum
 // (WEBSITE_INTEGRATION_CONTRACT §4.1) plus 'pathway' and 'competition', which EnrollForm sends
 // as 'general' with the choice in the note. It must be part of the schema — z.object() strips
@@ -30,11 +43,7 @@ export const enrollSchema = z.object({
   parentEmail: z.string().trim().email('Enter a valid email address').max(160),
   parentPhone: phone,
   learnerName: z.string().trim().min(2, 'Please enter the learner’s name').max(120),
-  learnerAge: z.coerce
-    .number({ invalid_type_error: 'Enter an age' })
-    .int('Enter a whole number')
-    .min(3, 'Age looks too low')
-    .max(19, 'This programme is for under-19s'),
+  learnerDateOfBirth,
   interestedIn,
   message: z.string().trim().max(1000).optional().or(z.literal('')),
   ...honeypot,
@@ -53,24 +62,15 @@ export const pathwayEnrollSchema = enrollSchema.extend({
 /**
  * Store enquiry variant of the Enroll form → same POST /api/public/leads.
  * A product/project enquiry ("I'd like to buy a Quarky for my class") isn't
- * always about one named child, so learner name is optional and learner age is
- * optional (empty allowed). Everything else — and the endpoint — is identical.
+ * always about one named child, so learner name and date of birth are optional
+ * (empty allowed). Everything else — and the endpoint — is identical.
  */
 export const storeEnquirySchema = z.object({
   parentName: z.string().trim().min(2, 'Please enter your name').max(120),
   parentEmail: z.string().trim().email('Enter a valid email address').max(160),
   parentPhone: phone,
   learnerName: z.string().trim().max(120).optional().or(z.literal('')),
-  learnerAge: z
-    .union([
-      z.literal(''),
-      z.coerce
-        .number({ invalid_type_error: 'Enter an age' })
-        .int('Enter a whole number')
-        .min(3, 'Age looks too low')
-        .max(19, 'This programme is for under-19s'),
-    ])
-    .optional(),
+  learnerDateOfBirth: z.union([z.literal(''), learnerDateOfBirth]).optional(),
   interestedIn,
   message: z.string().trim().max(1000).optional().or(z.literal('')),
   ...honeypot,
@@ -89,30 +89,10 @@ export const contactSchema = z.object({
 });
 
 /**
- * Public diagnostic — age gate step. Mirrors the age range every diagnostic
- * question set is offered within (WEBSITE_INTEGRATION_CONTRACT.md §3.8).
+ * A diagnostic's first step (a pathway's, or a bootcamp's Enroll): the learner's date of birth,
+ * from which the age — and so the diagnostic — is worked out.
  */
-export const diagnosticAgeSchema = z.object({
-  age: z.coerce
-    .number({ invalid_type_error: 'Enter an age' })
-    .int('Enter a whole number')
-    .min(3, 'Age looks too low')
-    .max(19, 'This diagnostic is for under-19s'),
-});
-
-/**
- * A bootcamp's Enroll step: the learner's date of birth, from which the age (and so the
- * diagnostic) is worked out. Same 3–19 range as diagnosticAgeSchema.
- */
-export const learnerBirthDateSchema = z
-  .object({ dateOfBirth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Choose the learner’s date of birth') })
-  .superRefine(({ dateOfBirth }, ctx) => {
-    const age = ageOn(dateOfBirth);
-    const issue = (message) => ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['dateOfBirth'], message });
-    if (age === null) issue('The date of birth can’t be in the future');
-    else if (age < 3) issue('Our programmes start from age 3');
-    else if (age > 19) issue('This programme is for under-19s');
-  });
+export const learnerBirthDateSchema = z.object({ dateOfBirth: learnerDateOfBirth });
 
 /**
  * Public diagnostic — contact details, collected on the questions step before
@@ -155,11 +135,7 @@ export const bootcampEnrollmentSchema = z
     parentPassword: z.string().min(6, 'At least 6 characters').max(72),
     confirmParentPassword: z.string().min(1, 'Please confirm your password'),
     learnerName: z.string().trim().min(2, 'Please enter the learner’s name').max(120),
-    learnerAge: z.coerce
-      .number({ invalid_type_error: 'Enter an age' })
-      .int('Enter a whole number')
-      .min(3, 'Age looks too low')
-      .max(19, 'This programme is for under-19s'),
+    learnerDateOfBirth,
     username,
     password: z.string().min(6, 'Password must be at least 6 characters').max(72),
     confirmPassword: z.string().min(1, 'Please confirm your password'),

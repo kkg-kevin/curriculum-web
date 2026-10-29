@@ -11,6 +11,8 @@ import StepLabel from '@mui/material/StepLabel';
 import Chip from '@mui/material/Chip';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { enrollSchema, pathwayEnrollSchema, storeEnquirySchema } from './schemas.js';
+import DateOfBirthField from './DateOfBirthField.jsx';
+import { ageOn } from '../../utils/dates.js';
 import { useLeadSubmission } from '../../hooks/useLeadSubmission.js';
 import { HUB_TYPE_LABELS } from '../../hooks/usePublicHubs.js';
 import FormStatus from './FormStatus.jsx';
@@ -87,7 +89,7 @@ export default function EnrollForm({
       parentEmail: '',
       parentPhone: '',
       learnerName: '',
-      learnerAge: '',
+      learnerDateOfBirth: '',
       interestedIn: defaultInterest,
       message: defaultMessage,
       ...(withHub ? { hubType: '', hubId: '', hubName: '' } : {}),
@@ -128,7 +130,9 @@ export default function EnrollForm({
       parentEmail: values.parentEmail,
       parentPhone: values.parentPhone,
       learnerName: values.learnerName || '',
-      learnerAge: values.learnerAge === '' || values.learnerAge == null ? null : values.learnerAge,
+      // The date of birth, and the age it gives for anything that still reads an age.
+      learnerDateOfBirth: values.learnerDateOfBirth || null,
+      learnerAge: values.learnerDateOfBirth ? ageOn(values.learnerDateOfBirth) : null,
       interestedIn: interest?.wire || values.interestedIn,
       referenceId: referenceId || null,
       note,
@@ -271,14 +275,12 @@ export default function EnrollForm({
             error={!!errors.learnerName}
             helperText={errors.learnerName?.message}
           />
-          <TextField
-            label={isEnquiry ? 'Learner’s age (optional)' : 'Learner’s age'}
-            type="number"
+          <DateOfBirthField
+            label={isEnquiry ? 'Date of birth (optional)' : 'Learner’s date of birth'}
             required={!isEnquiry}
-            inputProps={{ min: 3, max: 19 }}
-            {...register('learnerAge')}
-            error={!!errors.learnerAge}
-            helperText={errors.learnerAge?.message}
+            registration={register('learnerDateOfBirth')}
+            value={watch('learnerDateOfBirth')}
+            error={errors.learnerDateOfBirth}
           />
         </Box>
       )}

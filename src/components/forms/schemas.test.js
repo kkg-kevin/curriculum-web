@@ -2,21 +2,29 @@ import { describe, it, expect } from 'vitest';
 import { enrollSchema, pathwayEnrollSchema, contactSchema, storeEnquirySchema } from './schemas.js';
 import { HONEYPOT_FIELD } from './Honeypot.jsx';
 
+// A date of birth `years` old today (a day short of the next birthday).
+const bornYearsAgo = (years) => {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() - years);
+  d.setDate(d.getDate() - 1);
+  return d.toISOString().slice(0, 10);
+};
+
 const validEnroll = {
   parentName: 'Alex Doe',
   parentEmail: 'alex@example.com',
   parentPhone: '0712345678',
   learnerName: 'Kid Doe',
-  learnerAge: '9',
+  learnerDateOfBirth: bornYearsAgo(9),
   interestedIn: 'bootcamp',
   message: '',
 };
 
 describe('enrollSchema', () => {
-  it('accepts a valid payload and coerces age to a number', () => {
+  it('accepts a valid payload with the learner’s date of birth', () => {
     const r = enrollSchema.safeParse(validEnroll);
     expect(r.success).toBe(true);
-    expect(r.data.learnerAge).toBe(9);
+    expect(r.data.learnerDateOfBirth).toBe(validEnroll.learnerDateOfBirth);
   });
 
   it('keeps interestedIn (it is a real select, not stripped) and rejects an off-enum value', () => {
@@ -33,9 +41,11 @@ describe('enrollSchema', () => {
     expect(enrollSchema.safeParse({ ...validEnroll, parentEmail: 'nope' }).success).toBe(false);
   });
 
-  it('rejects an out-of-range age', () => {
-    expect(enrollSchema.safeParse({ ...validEnroll, learnerAge: '25' }).success).toBe(false);
-    expect(enrollSchema.safeParse({ ...validEnroll, learnerAge: '2' }).success).toBe(false);
+  it('rejects a date of birth outside ages 3–19, in the future, or missing', () => {
+    expect(enrollSchema.safeParse({ ...validEnroll, learnerDateOfBirth: bornYearsAgo(25) }).success).toBe(false);
+    expect(enrollSchema.safeParse({ ...validEnroll, learnerDateOfBirth: bornYearsAgo(2) }).success).toBe(false);
+    expect(enrollSchema.safeParse({ ...validEnroll, learnerDateOfBirth: '2999-01-01' }).success).toBe(false);
+    expect(enrollSchema.safeParse({ ...validEnroll, learnerDateOfBirth: '' }).success).toBe(false);
   });
 
   it('rejects a phone with letters', () => {
@@ -77,16 +87,15 @@ describe('storeEnquirySchema', () => {
     interestedIn: 'quarky',
   };
 
-  it('accepts a store enquiry with no learner name or age', () => {
-    const r = storeEnquirySchema.safeParse({ ...base, learnerName: '', learnerAge: '' });
+  it('accepts a store enquiry with no learner name or date of birth', () => {
+    const r = storeEnquirySchema.safeParse({ ...base, learnerName: '', learnerDateOfBirth: '' });
     expect(r.success).toBe(true);
   });
 
-  it('still validates a learner age when one is given', () => {
-    expect(storeEnquirySchema.safeParse({ ...base, learnerAge: '25' }).success).toBe(false);
-    const ok = storeEnquirySchema.safeParse({ ...base, learnerAge: '11' });
+  it('still validates a date of birth when one is given', () => {
+    expect(storeEnquirySchema.safeParse({ ...base, learnerDateOfBirth: bornYearsAgo(25) }).success).toBe(false);
+    const ok = storeEnquirySchema.safeParse({ ...base, learnerDateOfBirth: bornYearsAgo(11) });
     expect(ok.success).toBe(true);
-    expect(ok.data.learnerAge).toBe(11);
   });
 
   it('still requires a valid parent email and phone', () => {
