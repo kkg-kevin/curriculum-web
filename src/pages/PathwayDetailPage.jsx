@@ -9,79 +9,16 @@ import SeoHead from '../components/seo/SeoHead.jsx';
 import DetailHero from '../components/common/DetailHero.jsx';
 import JsonLd, { organizationSchema, pathwayCourseSchema, breadcrumbSchema } from '../components/seo/JsonLd.jsx';
 import Section from '../components/common/Section.jsx';
-import SmartImage from '../components/common/SmartImage.jsx';
 import { ErrorBlock } from '../components/common/StateViews.jsx';
 import { usePathway } from '../hooks/usePathways.js';
 import { useDiagnosticAvailability } from '../hooks/useDiagnostic.js';
-import { ageLabel } from '../utils/format.js';
-import { PROSE_MAX_WIDTH } from '../theme/layout.js';
+import PathwayCourseStep from '../components/pathway/PathwayCourseStep.jsx';
+import StageCard from '../components/pathway/StageCard.jsx';
 import DetailLayout from '../components/common/DetailLayout.jsx';
 import { RelatedPathways } from '../components/common/Related.jsx';
 import { actionRowSx } from '../components/common/ActionRow.jsx';
 
 const FALLBACK_ACCENT = '#25476a';
-
-function PathwayStep({ index, total, course, accent, headingLevel = 'h3' }) {
-  const isFirst = index === 0;
-  const isLast = index === total - 1;
-  const age = ageLabel(course.ageMin, course.ageMax);
-
-  return (
-    <Box sx={{ display: 'flex', gap: { xs: 2, sm: 3 }, position: 'relative' }}>
-      {/* rail: number bubble + connecting line */}
-      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
-        <Box
-          sx={{
-            width: 40,
-            height: 40,
-            borderRadius: '50%',
-            display: 'grid',
-            placeItems: 'center',
-            fontWeight: 700,
-            color: '#fff',
-            bgcolor: accent,
-            zIndex: 1,
-          }}
-        >
-          {index + 1}
-        </Box>
-        {!isLast && (
-          <Box sx={{ flexGrow: 1, width: '2px', bgcolor: 'divider', minHeight: 24, mt: 0.5 }} />
-        )}
-      </Box>
-
-      {/* step body */}
-      <Box sx={{ pb: isLast ? 0 : 4, minWidth: 0 }}>
-        {isFirst && (
-          <Typography
-            variant="overline"
-            sx={{ color: accent, fontWeight: 700, letterSpacing: '0.08em' }}
-          >
-            Start here
-          </Typography>
-        )}
-        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'flex-start' }}>
-          {course.coverImage && (
-            <Box sx={{ width: { xs: '100%', sm: 160 }, flexShrink: 0 }}>
-              <SmartImage src={course.coverImage} alt={`${course.name}`} />
-            </Box>
-          )}
-          <Box sx={{ flex: 1, minWidth: 200 }}>
-            <Typography variant="h4" component={headingLevel} gutterBottom>
-              {course.name}
-            </Typography>
-            {age && <Chip size="small" variant="outlined" label={age} sx={{ mb: 1 }} />}
-            {course.description && (
-              <Typography sx={{ color: 'text.secondary', whiteSpace: 'pre-line', maxWidth: PROSE_MAX_WIDTH }}>
-                {course.description}
-              </Typography>
-            )}
-          </Box>
-        </Box>
-      </Box>
-    </Box>
-  );
-}
 
 export default function PathwayDetailPage() {
   const { slug } = useParams();
@@ -135,9 +72,11 @@ export default function PathwayDetailPage() {
 
   const { name, description, color, courses = [] } = data;
   const accent = color || FALLBACK_ACCENT;
-  // The pathway's courses grouped by developmental stage (age group), youngest first. An older
-  // backend sends only the flat `courses` list — shown as one unnamed group.
-  const stages = data.stages?.length ? data.stages : [{ name: null, courses }];
+  // The pathway's developmental stages (age groups), youngest first — each a card leading to its
+  // own page of courses. A pathway with no named stages (or an older backend sending only the
+  // flat `courses` list) shows its courses here instead.
+  const stages = (data.stages || []).filter((st) => st.slug);
+  const byStage = stages.length > 0 && stages.some((st) => st.name);
   const enrollTo = `/enroll?flow=pathway&referenceId=${encodeURIComponent(slug)}`;
 
   return (
@@ -159,6 +98,9 @@ export default function PathwayDetailPage() {
       <DetailHero accent={accent} crumbs={[{ label: 'Home', to: '/' }, { label: 'Pathways', to: '/pathways' }, { label: name }]}>
 
           <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
+            {byStage && (
+              <Chip label={`${stages.length} stages`} sx={{ bgcolor: `${accent}1A`, color: 'text.primary', fontWeight: 600 }} />
+            )}
             <Chip
               label={`${courses.length} ${courses.length === 1 ? 'course' : 'courses'}`}
               sx={{ bgcolor: `${accent}1A`, color: 'text.primary', fontWeight: 600 }}
@@ -231,43 +173,40 @@ export default function PathwayDetailPage() {
             </Box>
           }
         >
-          <Typography variant="h2" component="h2" sx={{ mb: 1 }}>
-            The pathway
-          </Typography>
-          <Typography sx={{ color: 'text.secondary', mb: 5, maxWidth: 720 }}>
-            Courses are worked through in order — each one builds on the last.
-            {diagnostic?.available
-              ? ' A learner can start at the beginning or, after a short diagnostic, join further along.'
-              : ' A learner starts at the beginning, or our team places them further along based on their age and experience.'}
-          </Typography>
-
-          {stages.map((stage, s) => {
-            const stageAge = ageLabel(stage.minAge, stage.maxAge);
-            return (
-              <Box key={`${stage.name}-${s}`} sx={{ mb: s === stages.length - 1 ? 0 : 6 }}>
-                {stage.name && (
-                  <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', flexWrap: 'wrap', mb: 3 }}>
-                    <Typography variant="h3" component="h3">
-                      {stage.name}
-                    </Typography>
-                    {stageAge && (
-                      <Chip label={stageAge} sx={{ bgcolor: `${accent}1A`, color: 'text.primary', fontWeight: 600 }} />
-                    )}
-                  </Box>
-                )}
-                {stage.courses.map((course, i) => (
-                  <PathwayStep
-                    key={`${course.name}-${i}`}
-                    index={i}
-                    total={stage.courses.length}
-                    course={course}
-                    accent={accent}
-                    headingLevel={stage.name ? 'h4' : 'h3'}
-                  />
+          {byStage ? (
+            <>
+              <Typography variant="h2" component="h2" sx={{ mb: 1 }}>
+                Developmental stages
+              </Typography>
+              <Typography sx={{ color: 'text.secondary', mb: 4, maxWidth: 720 }}>
+                {name} runs through {stages.length} stages, each for its own age group with its own courses. Pick a
+                stage to see its courses.
+                {diagnostic?.available
+                  ? ' Not sure which one? The short diagnostic places a learner at the right stage and course.'
+                  : ' Our team places each learner at the right stage for their age and experience.'}
+              </Typography>
+              <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', sm: 'repeat(auto-fill, minmax(min(100%, 260px), 1fr))' } }}>
+                {stages.map((stage, i) => (
+                  <StageCard key={stage.slug} pathwaySlug={slug} stage={stage} index={i} accent={accent} />
                 ))}
               </Box>
-            );
-          })}
+            </>
+          ) : (
+            <>
+              <Typography variant="h2" component="h2" sx={{ mb: 1 }}>
+                The pathway
+              </Typography>
+              <Typography sx={{ color: 'text.secondary', mb: 5, maxWidth: 720 }}>
+                Courses are worked through in order — each one builds on the last.
+                {diagnostic?.available
+                  ? ' A learner can start at the beginning or, after a short diagnostic, join further along.'
+                  : ' A learner starts at the beginning, or our team places them further along based on their age and experience.'}
+              </Typography>
+              {courses.map((course, i) => (
+                <PathwayCourseStep key={`${course.name}-${i}`} index={i} total={courses.length} course={course} accent={accent} />
+              ))}
+            </>
+          )}
         </DetailLayout>
       </Section>
 

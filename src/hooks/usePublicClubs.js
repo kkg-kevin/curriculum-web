@@ -15,10 +15,15 @@ function normalise(list) {
   if (!Array.isArray(list)) return [];
   const bySlug = new Map();
   for (const pkg of list) {
-    if (!pkg?.slug || !pkg?.name || !Number.isFinite(Number(pkg.monthlyAmount))) continue;
+    // `amount` per `billingPeriod` (an older API sent only monthlyAmount, always monthly); a daily
+    // package is never offered on the website.
+    const amount = Number(pkg?.amount ?? pkg?.monthlyAmount);
+    if (!pkg?.slug || !pkg?.name || !Number.isFinite(amount) || pkg.billingPeriod === 'daily') continue;
     if (!bySlug.has(pkg.slug)) {
       bySlug.set(pkg.slug, {
         ...pkg,
+        amount,
+        billingPeriod: pkg.billingPeriod || 'monthly',
         features: Array.isArray(pkg.features) ? pkg.features : [],
         hubIds: Array.isArray(pkg.hubIds) ? pkg.hubIds : [],
         allClubs: Boolean(pkg.allClubs),

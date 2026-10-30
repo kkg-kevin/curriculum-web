@@ -19,6 +19,7 @@ import FormStatus from './FormStatus.jsx';
 import PrivacyNote from './PrivacyNote.jsx';
 import Honeypot, { HONEYPOT_DEFAULT, isBot } from './Honeypot.jsx';
 import HubTypeSchedule from './HubTypeSchedule.jsx';
+import useScrollToFlowTop from '../../hooks/useScrollToFlowTop.js';
 
 // `value` must stay within the lead API's enum (bootcamp | project | quarky | home_schooling |
 // general — WEBSITE_INTEGRATION_CONTRACT §4.1); labels are free to be broader.
@@ -101,7 +102,7 @@ export default function EnrollForm({
   const hubName = watch('hubName');
 
   const goToDetails = async () => {
-    const ok = await trigger('hubType');
+    const ok = await trigger('hubType', { shouldFocus: true });
     if (ok) setStage('details');
   };
 
@@ -143,6 +144,10 @@ export default function EnrollForm({
   const status =
     mutation.isSuccess || spamBlocked ? 'success' : mutation.isError ? 'error' : 'idle';
 
+  // Moving between the hub and details steps, and the result (shown at the top of the form —
+  // FormStatus), each start at the top of the form.
+  const flowRef = useScrollToFlowTop(`${stage}:${status}`);
+
   const defaultSuccess = isEnquiry
     ? 'Thanks! Our team will be in touch to confirm pricing and next steps.'
     : 'Thanks! Our team will contact you to arrange next steps.';
@@ -150,7 +155,7 @@ export default function EnrollForm({
   // ---- Step 1 (withHub only): choose a hub -----------------------------------
   if (withHub && stage === 'hub' && status !== 'success') {
     return (
-      <Box sx={{ display: 'grid', gap: 3 }}>
+      <Box ref={flowRef} sx={{ display: 'grid', gap: 3 }}>
         <Stepper activeStep={0} alternativeLabel sx={{ mb: 1 }}>
           <Step><StepLabel>Choose a hub</StepLabel></Step>
           <Step><StepLabel>Your details</StepLabel></Step>
@@ -201,7 +206,7 @@ export default function EnrollForm({
 
   // ---- Step 2 / the single form: details ------------------------------------
   return (
-    <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate sx={{ display: 'grid', gap: 2 }}>
+    <Box ref={flowRef} component="form" onSubmit={handleSubmit(onSubmit)} noValidate sx={{ display: 'grid', gap: 2 }}>
       {withHub && status !== 'success' && (
         <>
           <Stepper activeStep={1} alternativeLabel sx={{ mb: 1 }}>

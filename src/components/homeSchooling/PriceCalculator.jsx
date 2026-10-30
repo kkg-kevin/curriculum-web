@@ -9,9 +9,7 @@ import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import RemoveRoundedIcon from '@mui/icons-material/RemoveRounded';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import ChildIcons from './ChildIcons.jsx';
-import {
-  bestPackageFor, childrenLabel, formatKsh, homeSchoolingEnquiryPath, homeSchoolingSignupPath, maxChildrenOffered,
-} from '../../content/homeSchooling.js';
+import { bestPackageFor, childrenLabel, formatKsh, homeSchoolingEnquiryPath, homeSchoolingSignupPath, maxChildrenOffered, periodUnit } from '../../content/homeSchooling.js';
 
 const panelSx = {
   position: 'relative',
@@ -27,7 +25,7 @@ const panelSx = {
 
 /**
  * "How much for my family?" — pick a number of children and see the cheapest package that
- * covers them, the monthly total and the cost per child, with an enquiry link that carries both
+ * covers them, the total per billing period and the cost per child, with an enquiry link that carries both
  * the package and the child count through to the enquiry form.
  */
 export default function PriceCalculator({ packages, isLoading }) {
@@ -75,13 +73,13 @@ export default function PriceCalculator({ packages, isLoading }) {
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, flexWrap: 'wrap' }}>
             <Typography sx={{ fontSize: { xs: '2.2rem', sm: '2.6rem' }, fontWeight: 800, lineHeight: 1.1, color: 'primary.main', letterSpacing: '-0.02em' }}>
-              {formatKsh(best.price.monthlyAmount)}
+              {formatKsh(best.price.amount)}
             </Typography>
-            <Typography color="text.secondary">/ month</Typography>
+            <Typography color="text.secondary">/ {periodUnit(best.price.billingPeriod)}</Typography>
           </Box>
           {children > 1 && (
             <Typography variant="body2" sx={{ mt: 0.5, color: 'success.main', fontWeight: 700 }}>
-              That’s about {formatKsh(Math.round(best.price.monthlyAmount / children))} per child
+              That’s about {formatKsh(Math.round(best.price.amount / children))} per child
             </Typography>
           )}
           {sparePlaces > 0 && (

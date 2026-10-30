@@ -1,5 +1,4 @@
 import { ORG, isPlaceholderPhone } from '../config/site.js';
-import { SITE_URL } from '../config/env.js';
 
 /**
  * Renders a DOM node to a real, downloadable multi-page A4 PDF — used by the diagnostic
@@ -86,7 +85,7 @@ function drawHeader(pdf, { pageW, wordmark, title, subtitle }) {
   pdf.line(MARGIN_X, HEADER_H - 4, right, HEADER_H - 4);
 }
 
-function drawFooter(pdf, { pageW, pageH, page, pages, contactLine, addressLine }) {
+function drawFooter(pdf, { pageW, pageH, page, pages, contactLine, tagline }) {
   const right = pageW - MARGIN_X;
   const top = pageH - FOOTER_H + 10;
 
@@ -101,7 +100,7 @@ function drawFooter(pdf, { pageW, pageH, page, pages, contactLine, addressLine }
   pdf.setFont('helvetica', 'normal');
   pdf.setFontSize(8);
   pdf.setTextColor(...MUTED);
-  pdf.text(addressLine, MARGIN_X, top + 28);
+  pdf.text(tagline, MARGIN_X, top + 28);
 
   pdf.setFont('helvetica', 'bold');
   pdf.setFontSize(8.5);
@@ -120,6 +119,16 @@ function drawFooter(pdf, { pageW, pageH, page, pages, contactLine, addressLine }
  * @param {string}      filename
  * @param {object}      meta      { title, subtitle } — the letterhead's right-hand text
  */
+/**
+ * The footer's two lines — the office and its phone; the tagline — shared by the PDF and the
+ * on-screen report (DiagnosticReport), so both say the same.
+ */
+export function reportContactLines(separator = '   ·   ') {
+  const phone = isPlaceholderPhone(ORG.telephone) ? null : ORG.telephone;
+  const contactLine = [ORG.address?.streetAddress, phone].filter(Boolean).join(separator);
+  return { contactLine, tagline: ORG.tagline || '' };
+}
+
 export async function downloadReportPdf(node, filename = 'diagnostic-report.pdf', meta = {}) {
   if (!node) return;
 
@@ -189,10 +198,7 @@ export async function downloadReportPdf(node, filename = 'diagnostic-report.pdf'
     renderedPx = cutPx;
   }
 
-  const host = (SITE_URL || '').replace(/^https?:\/\//, '');
-  const contactLine = [host, ORG.email, isPlaceholderPhone(ORG.telephone) ? null : ORG.telephone].filter(Boolean).join('   ·   ');
-  const { streetAddress, addressLocality, addressRegion } = ORG.address || {};
-  const addressLine = [streetAddress, addressLocality, addressRegion, 'Kenya'].filter(Boolean).join(', ');
+  const { contactLine, tagline } = reportContactLines();
   const title = meta.title || 'Diagnostic report';
 
   slices.forEach(([fromPx, heightPx], i) => {
@@ -218,7 +224,7 @@ export async function downloadReportPdf(node, filename = 'diagnostic-report.pdf'
       page: i + 1,
       pages: slices.length,
       contactLine,
-      addressLine,
+      tagline,
     });
   });
 

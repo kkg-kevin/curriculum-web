@@ -29,8 +29,9 @@ import PrivacyNote from '../forms/PrivacyNote.jsx';
 import PaymentStep from '../payments/PaymentStep.jsx';
 import { clubSignupSchema } from '../forms/schemas.js';
 import { useClubSignup } from '../../hooks/usePublicClubs.js';
+import useScrollToFlowTop from '../../hooks/useScrollToFlowTop.js';
 import { APP_URL } from '../../config/env.js';
-import { bestPackageFor, childrenLabel, formatKsh, maxChildrenOffered, priceForPackage } from '../../content/homeSchooling.js';
+import { bestPackageFor, childrenLabel, formatKsh, maxChildrenOffered, priceForPackage, periodUnit } from '../../content/homeSchooling.js';
 
 const STEPS = ['Package', 'Parent', 'Children', 'Review', 'Payment'];
 const REVIEW = 3; // submitting here creates the accounts, then the Payment step opens
@@ -159,14 +160,17 @@ export default function ClubSignupForm({ hub, packages, initialSlug, initialChil
   const price = priceForPackage(pkg, count);
   const better = !price ? bestPackageFor(packages, count) : null;
 
-  if (result) return <Confirmation result={result} />;
+  // Every step change (Next, Back, Edit) and the confirmation start at the top of the form.
+  const flowRef = useScrollToFlowTop(result ? 'done' : step);
+
+  if (result) return <Box ref={flowRef}><Confirmation result={result} /></Box>;
 
   // Validate just the current step before moving on.
   const next = async () => {
     let ok = true;
     if (step === 0) ok = Boolean(pkg && price);
     if (step === 1) {
-      ok = await trigger('parent');
+      ok = await trigger('parent', { shouldFocus: true });
       const { password, confirmPassword } = getValues('parent');
       if (ok && password !== confirmPassword) {
         setError('parent.confirmPassword', { message: 'Passwords don’t match' });
@@ -174,7 +178,7 @@ export default function ClubSignupForm({ hub, packages, initialSlug, initialChil
       }
     }
     if (step === 2) {
-      ok = await trigger('children');
+      ok = await trigger('children', { shouldFocus: true });
       const names = getValues('children').map((c) => c.username.trim().toLowerCase());
       names.forEach((name, i) => {
         if (name && names.indexOf(name) !== i) {
@@ -183,10 +187,7 @@ export default function ClubSignupForm({ hub, packages, initialSlug, initialChil
         }
       });
     }
-    if (ok) {
-      setStep((s) => s + 1);
-      window.scrollTo?.({ top: 0, behavior: 'smooth' });
-    }
+    if (ok) setStep((s) => s + 1);
   };
   const back = () => setStep((s) => Math.max(0, s - 1));
 
@@ -207,7 +208,6 @@ export default function ClubSignupForm({ hub, packages, initialSlug, initialChil
         hp_field: values.hp_field,
       });
       setResult({ ...data, parentPhone: values.parent.phone });
-      window.scrollTo?.({ top: 0, behavior: 'smooth' });
     } catch {
       // Shown below from signup.error.
     }
@@ -223,7 +223,7 @@ export default function ClubSignupForm({ hub, packages, initialSlug, initialChil
   const emailTaken = signup.error?.status === 409 && /email/i.test(signup.error?.message || '');
 
   return (
-    <Box component="form" noValidate onSubmit={handleSubmit(onSubmit)} sx={{ position: 'relative' }}>
+    <Box ref={flowRef} component="form" noValidate onSubmit={handleSubmit(onSubmit)} sx={{ position: 'relative' }}>
       <Honeypot register={register} />
       <Stepper activeStep={step} alternativeLabel sx={{ mb: 4 }}>
         {STEPS.map((label) => <Step key={label}><StepLabel>{label}</StepLabel></Step>)}
@@ -232,7 +232,7 @@ export default function ClubSignupForm({ hub, packages, initialSlug, initialChil
       {step === 0 && (
         <Box sx={sectionSx}>
           <Typography variant="h4" component="h2" sx={{ mb: 0.5 }}>Choose your package</Typography>
-          <Typography color="text.secondary" sx={{ mb: 2.5 }}>How many of your children will join {hub.name}, and which monthly package suits your family?</Typography>
+          <Typography color="text.secondary" sx={{ mb: 2.5 }}>How many of your children will join {hub.name}, and which package suits your family?</Typography>
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 1.25, mb: 2.5, borderRadius: 3, bgcolor: 'surface.subtle', maxWidth: 360 }}>
             <IconButton aria-label="Fewer children" onClick={() => setCount(count - 1)} disabled={count <= 1} sx={{ bgcolor: 'background.paper' }}><RemoveRoundedIcon /></IconButton>
@@ -269,8 +269,8 @@ export default function ClubSignupForm({ hub, packages, initialSlug, initialChil
                     </Typography>
                   </Box>
                   <Box sx={{ textAlign: 'right' }}>
-                    <Typography sx={{ fontWeight: 800 }}>{fits ? formatKsh(fits.monthlyAmount) : '—'}</Typography>
-                    <Typography variant="caption" color="text.secondary">{fits ? 'per month' : `not for ${count}`}</Typography>
+                    <Typography sx={{ fontWeight: 800 }}>{fits ? formatKsh(fits.amount) : '—'}</Typography>
+                    <Typography variant="caption" color="text.secondary">{fits ? `per ${periodUnit(fits.billingPeriod)}` : `not for ${count}`}</Typography>
                   </Box>
                 </Box>
               );
@@ -279,12 +279,12 @@ export default function ClubSignupForm({ hub, packages, initialSlug, initialChil
 
           {pkg && !price && (
             <Alert severity="warning" sx={{ mt: 2 }} action={better && <Button color="inherit" size="small" onClick={() => setValue('packageSlug', better.pkg.slug)}>Switch to {better.pkg.name}</Button>}>
-              {pkg.name} doesn’t cover {childrenLabel(count)}.{better ? ` ${better.pkg.name} does, for ${formatKsh(better.price.monthlyAmount)} a month.` : ''}
+              {pkg.name} doesn’t cover {childrenLabel(count)}.{better ? ` ${better.pkg.name} does, for ${formatKsh(better.price.amount)} a ${periodUnit(better.price.billingPeriod)}.` : ''}
             </Alert>
           )}
           {pkg && price && (
             <Alert severity="info" icon={false} sx={{ mt: 2 }}>
-              <strong>{formatKsh(price.monthlyAmount)} a month</strong> for {childrenLabel(count)}
+              <strong>{formatKsh(price.amount)} a {periodUnit(price.billingPeriod)}</strong> for {childrenLabel(count)}
               {price.childCount > count ? ` — includes ${childrenLabel(price.childCount)}, so there’s room for more at no extra cost` : ''}.
             </Alert>
           )}
@@ -380,7 +380,7 @@ export default function ClubSignupForm({ hub, packages, initialSlug, initialChil
             <Typography variant="h4" component="h2" sx={{ mb: 2 }}>Check your details</Typography>
             {[
               { title: 'Club', to: 0, lines: [hub.name] },
-              { title: 'Package', to: 0, lines: [`${pkg?.name || ''} for ${childrenLabel(count)}`, price ? `${formatKsh(price.monthlyAmount)} a month` : ''] },
+              { title: 'Package', to: 0, lines: [`${pkg?.name || ''} for ${childrenLabel(count)}`, price ? `${formatKsh(price.amount)} a ${periodUnit(price.billingPeriod)}` : ''] },
               { title: 'Parent', to: 1, lines: [values.parent.name, values.parent.email, values.parent.phone] },
               { title: 'Children', to: 2, lines: values.children.map((c) => `${c.firstName} ${c.lastName} — username ${c.username}`) },
             ].map((section) => (
@@ -397,7 +397,7 @@ export default function ClubSignupForm({ hub, packages, initialSlug, initialChil
           <Box sx={{ ...sectionSx, bgcolor: 'surface.subtle' }}>
             <Typography sx={{ fontWeight: 800, mb: 0.5 }}>How payment works</Typography>
             <Typography variant="body2" color="text.secondary">
-              Confirming creates your family’s accounts and your first month’s invoice of <strong>{price ? formatKsh(price.monthlyAmount) : '—'}</strong>.
+              Confirming creates your family’s accounts and your first invoice of <strong>{price ? formatKsh(price.amount) : '—'}</strong>, for your first {price ? periodUnit(price.billingPeriod) : 'period'} from today. After that an invoice comes every {price ? periodUnit(price.billingPeriod) : 'period'}.
               Next you choose how to pay. Once the payment is confirmed your logins unlock and we place each child in a club class; until then, signing in shows “payment pending”.
             </Typography>
           </Box>

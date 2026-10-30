@@ -10,6 +10,55 @@ export function childrenLabel(count) {
   return `${count} ${Number(count) === 1 ? 'child' : 'children'}`;
 }
 
+/*
+ * How often a package is billed (`billingPeriod`, set by the team in the curriculum system):
+ * weekly, monthly, quarterly or yearly on the website (a daily package is never published).
+ * `amount` is the price per period. Packages on different periods are compared by what they come
+ * to over a month.
+ */
+const UNIT = { daily: 'day', weekly: 'week', monthly: 'month', quarterly: 'quarter', annually: 'year' };
+const PER_MONTH = { daily: 30, weekly: 52 / 12, monthly: 1, quarterly: 1 / 3, annually: 1 / 12 };
+
+export const periodOf = (pkg) => pkg?.billingPeriod || 'monthly';
+
+/** "month", "week", … for a package or a billingPeriod. */
+export function periodUnit(pkgOrPeriod) {
+  const period = typeof pkgOrPeriod === 'string' ? pkgOrPeriod : periodOf(pkgOrPeriod);
+  return UNIT[period] || 'month';
+}
+
+/** What an amount on `billingPeriod` comes to over a month — only for comparing packages. */
+export function monthlyEquivalent(amount, billingPeriod) {
+  return Number(amount) * (PER_MONTH[billingPeriod] ?? 1);
+}
+
+/** The cheapest package price on offer: { amount, billingPeriod } or null. */
+export function cheapestPrice(packages) {
+  let best = null;
+  for (const pkg of packages || []) {
+    const price = { amount: pkg.amount, billingPeriod: periodOf(pkg) };
+    if (!best || monthlyEquivalent(price.amount, price.billingPeriod) < monthlyEquivalent(best.amount, best.billingPeriod)) best = price;
+  }
+  return best;
+}
+
+/** The cheapest extra-child price on offer: { amount, billingPeriod } or null. */
+export function cheapestExtra(packages) {
+  return cheapestPrice((packages || []).filter((p) => p.allowExtraChildren && p.extraChildAmount != null).map((p) => ({ ...p, amount: p.extraChildAmount })));
+}
+
+/** "From KSh 2,500 a week" — `price` from cheapestPrice. */
+export function fromLabel(price, joiner = ' a ') {
+  return price ? `From ${formatKsh(price.amount)}${joiner}${periodUnit(price.billingPeriod)}` : '';
+}
+
+/** "monthly", "weekly", … when every package shares one period, else null. */
+export function sharedPeriodWord(packages) {
+  const periods = new Set((packages || []).map(periodOf));
+  if (periods.size !== 1) return null;
+  return { weekly: 'weekly', monthly: 'monthly', quarterly: 'quarterly', annually: 'yearly' }[[...periods][0]] || null;
+}
+
 /**
  * What a package costs for `requested` children — mirrors the curriculum system's
  * priceForPackage (server/src/modules/home-learning/home-learning.pricing.js). A family smaller
@@ -20,9 +69,10 @@ export function priceForPackage(pkg, requested) {
   if (!pkg) return null;
   const count = requested == null || requested === '' ? pkg.childrenIncluded : Number(requested);
   if (!Number.isInteger(count) || count < 1) return null;
-  if (count <= pkg.childrenIncluded) return { childCount: pkg.childrenIncluded, monthlyAmount: pkg.monthlyAmount };
+  const billingPeriod = periodOf(pkg);
+  if (count <= pkg.childrenIncluded) return { childCount: pkg.childrenIncluded, amount: pkg.amount, billingPeriod };
   if (!pkg.allowExtraChildren || count > pkg.maxChildren) return null;
-  return { childCount: count, monthlyAmount: pkg.monthlyAmount + (count - pkg.childrenIncluded) * (pkg.extraChildAmount || 0) };
+  return { childCount: count, amount: pkg.amount + (count - pkg.childrenIncluded) * (pkg.extraChildAmount || 0), billingPeriod };
 }
 
 /** The cheapest package for a family of `count` children: { pkg, price } or null. */
@@ -30,7 +80,8 @@ export function bestPackageFor(packages, count) {
   let best = null;
   for (const pkg of packages) {
     const price = priceForPackage(pkg, count);
-    if (price && (!best || price.monthlyAmount < best.price.monthlyAmount)) best = { pkg, price };
+    const cost = price && monthlyEquivalent(price.amount, price.billingPeriod);
+    if (price && (!best || cost < monthlyEquivalent(best.price.amount, best.price.billingPeriod))) best = { pkg, price };
   }
   return best;
 }
@@ -40,8 +91,26 @@ export function maxChildrenOffered(packages) {
   return packages.reduce((max, pkg) => Math.max(max, pkg.allowExtraChildren ? pkg.maxChildren || pkg.childrenIncluded : pkg.childrenIncluded), 0);
 }
 
+/** A package's price per child, per its own period. */
 export function perChildAmount(pkg) {
-  return Math.round(pkg.monthlyAmount / pkg.childrenIncluded);
+  return Math.round(pkg.amount / pkg.childrenIncluded);
+}
+
+/**
+ * What a child costs on the smallest package billed on the same period as `pkg` — what a bigger
+ * family package's per-child price is compared with ("Save KSh … per child"). Never compares
+ * packages on different periods.
+ */
+export function perChildBaseline(packages, pkg) {
+  const same = (packages || []).filter((p) => periodOf(p) === periodOf(pkg));
+  const minIncluded = Math.min(...same.map((p) => p.childrenIncluded));
+  if (!same.length || pkg.childrenIncluded <= minIncluded) return perChildAmount(pkg);
+  return Math.max(0, ...same.filter((p) => p.childrenIncluded === minIncluded).map(perChildAmount));
+}
+
+/** Whether a bigger family pays less per child on any published package. */
+export function hasVolumeDiscount(packages) {
+  return (packages || []).some((p) => perChildBaseline(packages, p) > perChildAmount(p));
 }
 
 /**
@@ -65,20 +134,21 @@ export function homeSchoolingSignupPath(packageSlug, children) {
  * number of children when turning the enquiry into a household.
  */
 export function packageEnquiryNote(pkg, children) {
+  const unit = periodUnit(pkg);
   const extra = pkg.allowExtraChildren && pkg.extraChildAmount != null
-    ? ` Additional children are ${formatKsh(pkg.extraChildAmount)} per month each.`
+    ? ` Additional children are ${formatKsh(pkg.extraChildAmount)} per ${unit} each.`
     : '';
   const price = children ? priceForPackage(pkg, children) : null;
   if (price) {
-    return `Home Schooling for ${childrenLabel(Number(children))}: ${pkg.name} package at ${formatKsh(price.monthlyAmount)} per month.${extra}`;
+    return `Home Schooling for ${childrenLabel(Number(children))}: ${pkg.name} package at ${formatKsh(price.amount)} per ${unit}.${extra}`;
   }
-  return `Home Schooling package: ${pkg.name} (${childrenLabel(pkg.childrenIncluded)}) at ${formatKsh(pkg.monthlyAmount)} per month.${extra}`;
+  return `Home Schooling package: ${pkg.name} (${childrenLabel(pkg.childrenIncluded)}) at ${formatKsh(pkg.amount)} per ${unit}.${extra}`;
 }
 
 /*
  * Page copy. Every claim here describes something the Home Learning programme actually does in
  * the curriculum system (a visiting educator, a class per child at their own grade, attendance /
- * assessments / reports, one monthly household invoice) — keep it that way when editing.
+ * assessments / reports, one household invoice per billing period) — keep it that way when editing.
  */
 
 export const homeSchoolingHero = {
@@ -105,19 +175,19 @@ export const homeSchoolingBenefits = [
   },
   {
     icon: 'billing',
-    title: 'One simple monthly fee',
-    body: 'One package price for the whole family, with a single invoice each month.',
+    title: 'One simple family fee',
+    body: 'One package price for the whole family, with a single invoice each billing period — weekly, monthly, quarterly or yearly, depending on the package.',
   },
 ];
 
 export const homeSchoolingSteps = [
   { title: 'Sign up', body: 'Choose your package and create logins for you and your children — it takes a few minutes.' },
-  { title: 'Pay and get approved', body: 'Pay the first month in cash to our team. As soon as we confirm it, your logins unlock.' },
+  { title: 'Pay and get approved', body: 'Pay your first invoice. As soon as we confirm it, your logins unlock.' },
   { title: 'Meet your educator', body: 'We place each child at the right level and assign an educator to teach them at home.' },
   { title: 'Watch them grow', body: 'Lessons, assessments and reports build a clear picture of each child’s progress, month after month.' },
 ];
 
-/** FAQ entries. `lowestExtra` is the cheapest extra-child price on offer (or null). */
+/** FAQ entries. `lowestExtra` is the cheapest extra-child price on offer — { amount, billingPeriod } (or null). */
 export function homeSchoolingFaqs(lowestExtra) {
   return [
     {
@@ -131,12 +201,12 @@ export function homeSchoolingFaqs(lowestExtra) {
     {
       q: 'Can I add another child later?',
       a: lowestExtra != null
-        ? `Yes. Some packages let you add children for ${formatKsh(lowestExtra)} per month each, or you can move to a larger package. Our team will confirm the new monthly total.`
-        : 'Yes — you can move to a larger package at any time. Our team will confirm the new monthly total.',
+        ? `Yes. Some packages let you add children for ${formatKsh(lowestExtra.amount)} per ${periodUnit(lowestExtra.billingPeriod)} each, or you can move to a larger package. Our team will confirm the new total, which starts from your next billing period.`
+        : 'Yes — you can move to a larger package at any time. Our team will confirm the new total, which starts from your next billing period.',
     },
     {
       q: 'How does payment work?',
-      a: 'Your family receives one invoice each month for your package — the first one when you sign up. Payment is in cash to our team for now.',
+      a: 'Your family receives one invoice for each billing period of your package (every week, month, quarter or year) — the first one when you sign up, then automatically from the day you joined.',
     },
     {
       q: 'How do I sign up and pay?',

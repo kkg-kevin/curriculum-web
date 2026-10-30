@@ -31,6 +31,7 @@ import { formatKsh } from '../cart/format.js';
 import { publicApi } from '../services/api.js';
 import { APP_URL } from '../config/env.js';
 import { STORE_PROJECTS_PATH } from '../utils/storePaths.js';
+import useScrollToFlowTop from '../hooks/useScrollToFlowTop.js';
 
 const sectionSx = { p: { xs: 2.5, sm: 3 }, borderRadius: 4, border: '1px solid', borderColor: 'surface.ring', bgcolor: 'surface.card', boxShadow: 'shadow.sm' };
 const gridSx = { display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } };
@@ -158,6 +159,8 @@ export default function CheckoutPage() {
   const method = form.method || (pickup?.enabled ? 'pickup' : delivery?.enabled ? 'delivery' : '');
   const deliveryFee = hasPhysical && method === 'delivery' ? Number(delivery?.fee || 0) : 0;
   const stepName = steps[step];
+  // Every step change (Next, Back, Edit) and the order confirmation start at the top of checkout.
+  const flowRef = useScrollToFlowTop(result ? 'done' : step);
 
   if (result) {
     return (
@@ -165,7 +168,7 @@ export default function CheckoutPage() {
         <SeoHead title="Order placed" noindex />
         <PageHeader title="Checkout" />
         <Section py={{ xs: 5, md: 8 }}>
-          <Box sx={{ maxWidth: 820, mx: 'auto' }}>
+          <Box ref={flowRef} sx={{ maxWidth: 820, mx: 'auto' }}>
             <Stepper activeStep={result.steps.length - 1} alternativeLabel sx={{ mb: 4 }}>
               {result.steps.map((label) => <Step key={label}><StepLabel>{label}</StepLabel></Step>)}
             </Stepper>
@@ -223,7 +226,6 @@ export default function CheckoutPage() {
     if (current.length) return;
     setTouched(false);
     setStep((s) => s + 1);
-    window.scrollTo?.({ top: 0, behavior: 'smooth' });
   };
 
   const placeOrder = async () => {
@@ -249,7 +251,6 @@ export default function CheckoutPage() {
       });
       cart.clear();
       setResult({ ...data, steps });
-      window.scrollTo?.({ top: 0, behavior: 'smooth' });
     } catch (err) {
       setError(err.message || 'We couldn’t place your order. Please try again.');
     } finally {
@@ -264,7 +265,7 @@ export default function CheckoutPage() {
       <SeoHead title="Checkout" noindex />
       <PageHeader title="Checkout" lead="A few details and you're done. You'll pay on the last step — by M-Pesa, bank or cash." />
       <Section py={{ xs: 5, md: 8 }}>
-        <Box sx={{ maxWidth: 1080, mx: 'auto' }}>
+        <Box ref={flowRef} sx={{ maxWidth: 1080, mx: 'auto' }}>
           <Stepper activeStep={step} alternativeLabel sx={{ mb: 4 }}>
             {steps.map((label) => <Step key={label}><StepLabel>{label}</StepLabel></Step>)}
           </Stepper>

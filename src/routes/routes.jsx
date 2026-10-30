@@ -19,6 +19,7 @@ function OldProjectAddress() {
  */
 const PathwaysListPage = lazy(() => import('../pages/PathwaysListPage.jsx'));
 const PathwayDetailPage = lazy(() => import('../pages/PathwayDetailPage.jsx'));
+const PathwayStagePage = lazy(() => import('../pages/PathwayStagePage.jsx'));
 const DiagnosticPage = lazy(() => import('../pages/DiagnosticPage.jsx'));
 const DiagnosticReportPage = lazy(() => import('../pages/DiagnosticReportPage.jsx'));
 const BootcampsPage = lazy(() => import('../pages/BootcampsPage.jsx'));
@@ -57,6 +58,8 @@ export const routes = [
       { path: 'pathways/:slug', element: <PathwayDetailPage /> },
       { path: 'pathways/:slug/diagnostic', element: <DiagnosticPage /> },
       { path: 'pathways/:slug/diagnostic/report/:attemptId', element: <DiagnosticReportPage /> },
+      // A developmental stage of a pathway (after the fixed diagnostic routes, which outrank it anyway).
+      { path: 'pathways/:slug/:stageSlug', element: <PathwayStagePage /> },
       // Projects are sold in the Store (Oct 2026); their old addresses lead there. public/.htaccess
       // does the same as real 301s.
       { path: 'projects', element: <Navigate to={STORE_PROJECTS_PATH} replace /> },

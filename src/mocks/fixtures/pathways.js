@@ -5,9 +5,11 @@ import { diagnosticInfoForSlug } from './diagnostics.js';
  * Mock data for GET /api/public/pathways (Learning Pathways).
  *
  * Shape mirrors the main system's server/src/modules/public-site contract exactly:
- *   list item: { id, slug, name, description, color, courseCount }
+ *   list item: { id, slug, name, description, color, courseCount,
+ *               stages: [{ slug, name, minAge, maxAge, courseCount }] }
  *   detail:    list item + `diagnostic: { available, minAge, maxAge }`
  *              + courses: [{ name, description, ageMin, ageMax, coverImage }]
+ *              + stages: [{ slug, name, description, minAge, maxAge, diagnostic, courses[] }]
  * so flipping VITE_USE_MOCK to false needs no page changes.
  *
  * A Pathway is a curriculum-agnostic roadmap — an ordered list of courses a learner
@@ -123,6 +125,30 @@ const raw = [
   },
 ];
 
+// The real system groups a pathway's courses by Developmental Stage; offline, each course goes to
+// the stage its youngest age falls in.
+const MOCK_STAGES = [
+  { slug: 'junior-coders-academy', name: 'Junior Coders Academy', minAge: 5, maxAge: 9, description: 'Playful exploration — stories, games and first steps with blocks and bots.' },
+  { slug: 'digital-creators-academy', name: 'Digital Creators Academy', minAge: 10, maxAge: 12, description: 'Guided creation — learners build their own projects and learn why they work.' },
+  { slug: 'tech-builders-academy', name: 'Tech Builders Academy', minAge: 13, maxAge: 18, description: 'Engineering practice — real tools, teamwork and a project shown on demo day.' },
+];
+
+function stagesFor(courses) {
+  return MOCK_STAGES.map((st) => ({
+    ...st,
+    diagnostic: { available: false, minAge: null, maxAge: null },
+    courses: courses.filter((c) => (c.ageMin ?? 10) >= st.minAge && (c.ageMin ?? 10) <= st.maxAge),
+  })).filter((st) => st.courses.length > 0);
+}
+
+const publicCourse = (c) => ({
+  name: c.name,
+  description: c.description,
+  ageMin: c.ageMin ?? null,
+  ageMax: c.ageMax ?? null,
+  coverImage: c.coverImage ?? null,
+});
+
 export const pathways = raw.map((p) => ({
   id: p.id,
   slug: slugify(p.name),
@@ -130,6 +156,7 @@ export const pathways = raw.map((p) => ({
   description: p.description,
   color: p.color,
   courseCount: p.courses.length,
+  stages: stagesFor(p.courses).map(({ slug, name, minAge, maxAge, courses }) => ({ slug, name, minAge, maxAge, courseCount: courses.length })),
 }));
 
 export function pathwayDetail(idOrSlug) {
@@ -145,12 +172,7 @@ export function pathwayDetail(idOrSlug) {
     color: item.color,
     courseCount: item.courses.length,
     diagnostic: diagnosticInfoForSlug(slug),
-    courses: item.courses.map((c) => ({
-      name: c.name,
-      description: c.description,
-      ageMin: c.ageMin ?? null,
-      ageMax: c.ageMax ?? null,
-      coverImage: c.coverImage ?? null,
-    })),
+    courses: item.courses.map(publicCourse),
+    stages: stagesFor(item.courses.map(publicCourse)),
   };
 }

@@ -3,7 +3,7 @@ import Typography from '@mui/material/Typography';
 import SellIcon from '@mui/icons-material/Sell';
 import DetailSection from '../common/DetailSection.jsx';
 import PackageCard from '../homeSchooling/PackageCard.jsx';
-import { childrenLabel, formatKsh, perChildAmount } from '../../content/homeSchooling.js';
+import { childrenLabel, perChildBaseline, hasVolumeDiscount, cheapestPrice, sharedPeriodWord, fromLabel } from '../../content/homeSchooling.js';
 import { clubJoinPath } from '../../utils/clubs.js';
 
 /**
@@ -18,20 +18,19 @@ import { clubJoinPath } from '../../utils/clubs.js';
 export default function ClubPackages({ hub, packages }) {
   // "Save … per child" is measured against the smallest package (usually one child), and shown
   // only on the bigger family packages — never one single-child package against another.
-  const minIncluded = packages.length ? Math.min(...packages.map((p) => p.childrenIncluded)) : 1;
-  const baseline = Math.max(0, ...packages.filter((p) => p.childrenIncluded === minIncluded).map(perChildAmount));
-  const savingBase = (pkg) => (pkg.childrenIncluded > minIncluded ? baseline : perChildAmount(pkg));
-  const volumeDiscount = packages.some((p) => p.childrenIncluded > minIncluded && perChildAmount(p) < baseline);
+  const savingBase = (pkg) => perChildBaseline(packages, pkg);
+  const volumeDiscount = hasVolumeDiscount(packages);
   const withExtras = packages.filter((p) => p.allowExtraChildren && p.extraChildAmount != null);
   const extraSlug = withExtras.length ? withExtras.reduce((big, p) => (p.childrenIncluded > big.childrenIncluded ? p : big)).slug : null;
-  const lowest = packages.length ? Math.min(...packages.map((p) => p.monthlyAmount)) : null;
+  const lowest = cheapestPrice(packages);
+  const sharedPeriod = sharedPeriodWord(packages);
 
   return (
     <DetailSection
       id="packages"
       title="Membership & prices"
       icon={<SellIcon />}
-      lead={`One monthly price covers your family’s place in the club.${volumeDiscount ? ' The more children joining, the less you pay per child.' : ''}`}
+      lead={`One ${sharedPeriod ? `${sharedPeriod} ` : ''}price covers your family’s place in the club.${volumeDiscount ? ' The more children joining, the less you pay per child.' : ''}`}
       sx={{ scrollMarginTop: 96 }}
     >
       {/* At most two cards a row in this column, so the big price never wraps. */}
@@ -48,8 +47,8 @@ export default function ClubPackages({ hub, packages }) {
         ))}
       </Box>
       <Typography variant="body2" color="text.secondary" sx={{ mt: 2.5 }}>
-        Prices are per month, in Kenyan shillings{lowest != null ? `, from ${formatKsh(lowest)}` : ''}. You pay the first month when
-        you sign up; after that, one invoice each month.
+        Prices are in Kenyan shillings, per the period shown on each package{lowest ? ` — ${fromLabel(lowest).toLowerCase()}` : ''}. You pay the
+        first period when you sign up; after that, one invoice each period, from the day you joined.
       </Typography>
     </DetailSection>
   );
