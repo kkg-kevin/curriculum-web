@@ -23,6 +23,8 @@ import Section from '../components/common/Section.jsx';
 import { EmptyBlock, LoadingBlock } from '../components/common/StateViews.jsx';
 import Honeypot from '../components/forms/Honeypot.jsx';
 import PrivacyNote from '../components/forms/PrivacyNote.jsx';
+import DateOfBirthField from '../components/forms/DateOfBirthField.jsx';
+import { ageOn } from '../utils/dates.js';
 import PaymentStep from '../components/payments/PaymentStep.jsx';
 import { cart, useCart } from '../cart/cartStore.js';
 import { formatKsh } from '../cart/format.js';
@@ -141,7 +143,7 @@ export default function CheckoutPage() {
   const [form, setForm] = useState({
     name: '', email: '', phone: '',
     parentPassword: '', parentPasswordAgain: '',
-    childMode: 'new', childName: '', childAge: '', childUsername: '', childPassword: '',
+    childMode: 'new', childName: '', childDateOfBirth: '', childUsername: '', childPassword: '',
     method: '', hubId: '', address: '', town: '', county: '', note: '',
     consent: false, hp_field: '',
   });
@@ -201,7 +203,7 @@ export default function CheckoutPage() {
         form.parentPassword !== form.parentPasswordAgain && 'The two parent passwords don’t match.',
         ...(form.childMode === 'new' ? [
           form.childName.trim().length < 2 && 'Enter your child’s name.',
-          !(Number(form.childAge) >= 3 && Number(form.childAge) <= 19) && 'Enter your child’s age (3–19).',
+          !(ageOn(form.childDateOfBirth) >= 3 && ageOn(form.childDateOfBirth) <= 19) && 'Enter your child’s date of birth (ages 3–19).',
           !looksLikeUsername(form.childUsername) && 'Choose a username for your child: 3–30 letters, numbers, dots, dashes or underscores.',
           form.childPassword.length < 6 && 'Choose your child’s password, at least 6 characters.',
         ] : [!looksLikeUsername(form.childUsername) && 'Enter your child’s username.']),
@@ -239,7 +241,7 @@ export default function CheckoutPage() {
         ...(hasProjects ? {
           parentPassword: form.parentPassword,
           child: form.childMode === 'new'
-            ? { mode: 'new', name: form.childName.trim(), age: Number(form.childAge), username: form.childUsername.trim(), password: form.childPassword }
+            ? { mode: 'new', name: form.childName.trim(), dateOfBirth: form.childDateOfBirth, age: ageOn(form.childDateOfBirth), username: form.childUsername.trim(), password: form.childPassword }
             : { mode: 'existing', username: form.childUsername.trim() },
         } : {}),
         consent: true,
@@ -307,7 +309,7 @@ export default function CheckoutPage() {
                           <Box sx={{ display: 'grid', gap: 2 }}>
                             <Box sx={{ ...gridSx, gridTemplateColumns: { xs: '1fr', sm: '2fr 1fr' } }}>
                               <TextField label="Child’s name" value={form.childName} onChange={set('childName')} />
-                              <TextField label="Age" type="number" value={form.childAge} onChange={set('childAge')} slotProps={{ htmlInput: { min: 3, max: 19 } }} />
+                              <DateOfBirthField label="Date of birth" registration={{ value: form.childDateOfBirth, onChange: set('childDateOfBirth') }} value={form.childDateOfBirth} />
                             </Box>
                             <Box sx={gridSx}>
                               <TextField label="Choose a username" value={form.childUsername} onChange={set('childUsername')} autoComplete="off" helperText="Letters, numbers, dots, dashes, underscores" />
@@ -363,7 +365,7 @@ export default function CheckoutPage() {
                   <Typography variant="h4" component="h2" sx={{ mb: 2 }}>Check your order</Typography>
                   {[
                     { title: 'You', to: 0, lines: [form.name, form.email, form.phone] },
-                    ...(hasProjects ? [{ title: 'Projects for', to: 0, lines: [form.childMode === 'new' ? `${form.childName} (age ${form.childAge}) — username ${form.childUsername}` : `Your child @${form.childUsername}`] }] : []),
+                    ...(hasProjects ? [{ title: 'Projects for', to: 0, lines: [form.childMode === 'new' ? `${form.childName} (age ${ageOn(form.childDateOfBirth)}) — username ${form.childUsername}` : `Your child @${form.childUsername}`] }] : []),
                     ...(hasPhysical ? [{
                       title: 'Getting it', to: 1,
                       lines: method === 'pickup'

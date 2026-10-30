@@ -23,6 +23,8 @@ import { APP_URL } from '../../config/env.js';
 import FormStatus from './FormStatus.jsx';
 import PrivacyNote from './PrivacyNote.jsx';
 import Honeypot, { HONEYPOT_DEFAULT, isBot } from './Honeypot.jsx';
+import DateOfBirthField from './DateOfBirthField.jsx';
+import { ageOn } from '../../utils/dates.js';
 
 /** One selectable "Running at" hub card for the hub-choice step. */
 function HubOption({ run, selected, onSelect }) {
@@ -132,7 +134,7 @@ function CopyableField({ label, value }) {
  * submitted automatically.
  *
  * Props: bootcampSlug, bootcampName, defaultParentName?, defaultParentPhone?,
- * defaultLearnerName?, defaultLearnerAge?
+ * defaultLearnerName?, defaultLearnerDateOfBirth?
  */
 export default function BootcampEnrollForm({
   bootcampSlug,
@@ -140,7 +142,10 @@ export default function BootcampEnrollForm({
   defaultParentName = '',
   defaultParentPhone = '',
   defaultLearnerName = '',
-  defaultLearnerAge = '',
+  defaultLearnerDateOfBirth = '',
+  // The website diagnostic they just took (its report's attemptId) — places the learner on that
+  // pathway at the course their score earns once they're enrolled.
+  attemptId = null,
 }) {
   const mutation = useSubmitBootcampEnrollment();
   const [spamBlocked, setSpamBlocked] = useState(false);
@@ -177,6 +182,7 @@ export default function BootcampEnrollForm({
     register,
     handleSubmit,
     reset,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(bootcampEnrollmentSchema),
@@ -188,7 +194,7 @@ export default function BootcampEnrollForm({
       parentPassword: '',
       confirmParentPassword: '',
       learnerName: defaultLearnerName,
-      learnerAge: defaultLearnerAge,
+      learnerDateOfBirth: defaultLearnerDateOfBirth,
       username: '',
       password: '',
       confirmPassword: '',
@@ -212,10 +218,12 @@ export default function BootcampEnrollForm({
       parentPhone: values.parentPhone,
       parentPassword: values.parentPassword,
       learnerName: values.learnerName,
-      learnerAge: values.learnerAge,
+      learnerDateOfBirth: values.learnerDateOfBirth,
+      learnerAge: ageOn(values.learnerDateOfBirth),
       username: values.username,
       password: values.password,
       hubId: hubId || undefined,
+      attemptId: attemptId || undefined,
     });
   };
 
@@ -455,14 +463,11 @@ export default function BootcampEnrollForm({
           error={!!errors.learnerName}
           helperText={errors.learnerName?.message}
         />
-        <TextField
-          label="Learner's age"
-          type="number"
+        <DateOfBirthField
           required
-          inputProps={{ min: 3, max: 19 }}
-          {...register('learnerAge')}
-          error={!!errors.learnerAge}
-          helperText={errors.learnerAge?.message}
+          registration={register('learnerDateOfBirth')}
+          value={watch('learnerDateOfBirth')}
+          error={errors.learnerDateOfBirth}
         />
       </Box>
 

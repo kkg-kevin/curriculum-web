@@ -27,7 +27,7 @@ import BootcampEnrollForm from '../forms/BootcampEnrollForm.jsx';
  *   3. Talk it through  → WhatsApp (wa.me) if a number is configured, else /contact
  *
  * Props: enrollTo, pathwayName, courses[], accent, mentorHref, mentorIsExternal,
- * bootcamp?: { slug, name, defaultParentName?, defaultParentPhone?, defaultLearnerName?, defaultLearnerAge? }
+ * bootcamp?: { slug, name, defaultParentName?, defaultParentPhone?, defaultLearnerName?, defaultLearnerDateOfBirth?, attemptId? }
  */
 
 function OptionCard({ icon, title, body, onClick, to, href, external, trailingIcon, highlighted }) {
@@ -144,7 +144,8 @@ export default function NextStepsPanel({
         defaultParentName={bootcamp.defaultParentName}
         defaultParentPhone={bootcamp.defaultParentPhone}
         defaultLearnerName={bootcamp.defaultLearnerName}
-        defaultLearnerAge={bootcamp.defaultLearnerAge}
+        defaultLearnerDateOfBirth={bootcamp.defaultLearnerDateOfBirth}
+        attemptId={bootcamp.attemptId}
       />
     );
   }

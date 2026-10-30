@@ -5,7 +5,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
-import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Link from '@mui/material/Link';
@@ -15,13 +14,13 @@ import Section from '../components/common/Section.jsx';
 import { ErrorBlock, LoadingBlock } from '../components/common/StateViews.jsx';
 import { usePublicBootcamp } from '../hooks/usePublicBootcamps.js';
 import { useDiagnostic, useSubmitDiagnostic } from '../hooks/useDiagnostic.js';
-import { learnerBirthDateSchema, diagnosticContactSchema } from '../components/forms/schemas.js';
-import { ageOn, todayStr } from '../utils/dates.js';
+import { diagnosticContactSchema } from '../components/forms/schemas.js';
 import { whatsAppUrl } from '../config/site.js';
 import DiagnosticAnswerForm from '../components/diagnostic/DiagnosticAnswerForm.jsx';
 import DiagnosticReport from '../components/diagnostic/DiagnosticReport.jsx';
 import NextStepsPanel from '../components/diagnostic/NextStepsPanel.jsx';
 import BootcampEnrollForm from '../components/forms/BootcampEnrollForm.jsx';
+import BirthDateStep from '../components/diagnostic/BirthDateStep.jsx';
 
 // A bootcamp's Enroll button: date of birth (-> age) -> the diagnostic -> the report -> enrol. The visitor never
 // picks a pathway: the bootcamp's pathways (pathwayDiagnostics, in the bootcamp's own order, each
@@ -39,50 +38,6 @@ const pathwayForAge = (pathwayDiagnostics, age) =>
   pathwayDiagnostics.find(
     (pd) => Number.isFinite(pd.minAge) && Number.isFinite(pd.maxAge) && age >= pd.minAge && age <= pd.maxAge,
   ) || null;
-
-// The parent picks the learner's date of birth; the age it gives (shown as they pick) decides
-// which diagnostic they take.
-function BirthDateStep({ onSubmit, defaultDateOfBirth }) {
-  const today = todayStr();
-  const earliest = `${Number(today.slice(0, 4)) - 20}${today.slice(4)}`;
-  const {
-    register,
-    handleSubmit,
-    watch,
-    formState: { errors },
-  } = useForm({
-    resolver: zodResolver(learnerBirthDateSchema),
-    defaultValues: { dateOfBirth: defaultDateOfBirth || '' },
-    mode: 'onTouched',
-  });
-  const age = ageOn(watch('dateOfBirth'));
-
-  return (
-    <Box
-      component="form"
-      onSubmit={handleSubmit((values) => onSubmit(values.dateOfBirth))}
-      noValidate
-      sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 420 }}
-    >
-      <Typography color="text.secondary">
-        Choose the learner’s date of birth. They’ll take a short diagnostic for their age, then you can
-        enrol.
-      </Typography>
-      <TextField
-        label="Learner's date of birth"
-        type="date"
-        {...register('dateOfBirth')}
-        error={!!errors.dateOfBirth}
-        helperText={errors.dateOfBirth?.message || (age !== null && age >= 0 ? `Age ${age}` : ' ')}
-        slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: earliest, max: today } }}
-        fullWidth
-      />
-      <Button type="submit" variant="contained" size="large">
-        Continue
-      </Button>
-    </Box>
-  );
-}
 
 export default function BootcampEnrollPage() {
   const { slug } = useParams();
@@ -133,8 +88,7 @@ export default function BootcampEnrollPage() {
     );
   }
 
-  const handleBirthDateSubmit = (submittedDateOfBirth) => {
-    const submittedAge = ageOn(submittedDateOfBirth);
+  const handleBirthDateSubmit = (submittedDateOfBirth, submittedAge) => {
     const match = pathwayForAge(bootcamp.pathwayDiagnostics || [], submittedAge);
     setDateOfBirth(submittedDateOfBirth);
     setAge(submittedAge);
@@ -154,6 +108,7 @@ export default function BootcampEnrollPage() {
       parentPhone,
       childName: cn || undefined,
       childAge: age,
+      childDateOfBirth: dateOfBirth,
     });
     setReport(result.data);
     setStep(STEP.REPORT);
@@ -172,7 +127,8 @@ export default function BootcampEnrollPage() {
     defaultParentName: contactForm.getValues('parentName'),
     defaultParentPhone: contactForm.getValues('parentPhone'),
     defaultLearnerName: childName,
-    defaultLearnerAge: age ?? '',
+    defaultLearnerDateOfBirth: dateOfBirth,
+    attemptId: report?.attemptId || null,
   };
 
   return (
@@ -212,7 +168,13 @@ export default function BootcampEnrollPage() {
       </Box>
 
       <Section maxWidth={isReport ? 'xl' : 'md'}>
-        {step === STEP.AGE && <BirthDateStep onSubmit={handleBirthDateSubmit} defaultDateOfBirth={dateOfBirth} />}
+        {step === STEP.AGE && (
+          <BirthDateStep
+            onSubmit={handleBirthDateSubmit}
+            defaultDateOfBirth={dateOfBirth}
+            intro="Choose the learner’s date of birth. They’ll take a short diagnostic for their age, then you can enrol."
+          />
+        )}
 
         {step === STEP.QUESTIONS && (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -240,6 +202,7 @@ export default function BootcampEnrollPage() {
                 onAnswersChange={setAnswers}
                 onSubmit={handleSubmit}
                 submitMutation={submitMutation}
+                onSkip={() => setStep(STEP.ENROLL)}
               />
             )}
           </Box>
