@@ -22,10 +22,7 @@ import { ErrorBlock, EmptyBlock } from '../components/common/StateViews.jsx';
 import PriceCalculator from '../components/homeSchooling/PriceCalculator.jsx';
 import PackageCard from '../components/homeSchooling/PackageCard.jsx';
 import { usePublicHomeLearningPackages } from '../hooks/usePublicHomeLearning.js';
-import {
-  formatKsh, homeSchoolingBenefits, homeSchoolingEnquiryPath, homeSchoolingFaqs, homeSchoolingHero, homeSchoolingSignupPath, homeSchoolingSteps,
-  maxChildrenOffered, perChildAmount,
-} from '../content/homeSchooling.js';
+import { formatKsh, homeSchoolingBenefits, homeSchoolingEnquiryPath, homeSchoolingFaqs, homeSchoolingHero, homeSchoolingSignupPath, homeSchoolingSteps, maxChildrenOffered, cheapestPrice, cheapestExtra, fromLabel, hasVolumeDiscount, perChildBaseline, periodUnit, sharedPeriodWord } from '../content/homeSchooling.js';
 
 const BENEFIT_ICONS = { home: HomeRoundedIcon, level: SchoolRoundedIcon, progress: AutoGraphRoundedIcon, billing: ReceiptLongRoundedIcon };
 
@@ -51,10 +48,10 @@ function PackageSkeleton() {
 }
 
 function Hero({ packages, isLoading }) {
-  const lowest = packages.length ? Math.min(...packages.map((p) => p.monthlyAmount)) : null;
+  const lowest = cheapestPrice(packages);
   const largestFamily = maxChildrenOffered(packages);
   const facts = [
-    lowest != null && `From ${formatKsh(lowest)} a month`,
+    lowest && fromLabel(lowest),
     largestFamily > 1 && `Families of up to ${largestFamily} children`,
     'Sign up online in minutes',
   ].filter(Boolean);
@@ -165,19 +162,18 @@ function Benefits() {
 }
 
 function Packages({ packages, isLoading, isError, error, refetch }) {
-  const perChildPrices = packages.map(perChildAmount);
-  const highestPerChild = packages.length ? Math.max(...perChildPrices) : 0;
-  // Only claim bigger families pay less per child when the published prices actually say so.
-  const volumeDiscount = packages.length > 1 && Math.min(...perChildPrices) < highestPerChild;
-  const extraPrices = packages.filter((p) => p.allowExtraChildren && p.extraChildAmount != null).map((p) => p.extraChildAmount);
-  const lowestExtra = extraPrices.length ? Math.min(...extraPrices) : null;
+  // Only claim bigger families pay less per child when the published prices actually say so
+  // (compared only between packages on the same billing period).
+  const volumeDiscount = hasVolumeDiscount(packages);
+  const lowestExtra = cheapestExtra(packages);
+  const sharedPeriod = sharedPeriodWord(packages);
 
   return (
     <Section id="packages" tone="subtle" dots sx={{ scrollMarginTop: 72 }}>
       <SectionHeading
         eyebrow="Packages"
-        title="Simple monthly packages"
-        lead={`One price covers the whole family each month.${volumeDiscount ? ' The more children learning, the less you pay per child.' : ''}`}
+        title={`Simple ${sharedPeriod ? `${sharedPeriod} ` : ''}packages`}
+        lead={`One price covers the whole family each ${sharedPeriod ? periodUnit(packages[0]) : 'billing period'}.${volumeDiscount ? ' The more children learning, the less you pay per child.' : ''}`}
         align="center"
       />
 
@@ -201,7 +197,7 @@ function Packages({ packages, isLoading, isError, error, refetch }) {
           <Box sx={packagesGridSx}>
             {packages.map((pkg, i) => (
               <Reveal key={pkg.slug} delay={i * 90} sx={{ height: '100%' }}>
-                <PackageCard pkg={pkg} highestPerChild={highestPerChild} />
+                <PackageCard pkg={pkg} highestPerChild={perChildBaseline(packages, pkg)} />
               </Reveal>
             ))}
           </Box>
@@ -230,7 +226,7 @@ function Packages({ packages, isLoading, isError, error, refetch }) {
             </Typography>
             <Typography color="text.secondary">
               {lowestExtra != null
-                ? `Extra children start from ${formatKsh(lowestExtra)} a month each. Use the price calculator above, or ask and our team will confirm your family's total.`
+                ? `Extra children start from ${formatKsh(lowestExtra.amount)} a ${periodUnit(lowestExtra.billingPeriod)} each. Use the price calculator above, or ask and our team will confirm your family's total.`
                 : 'Tell us about your family and our team will recommend the right package.'}
             </Typography>
           </Box>
@@ -240,7 +236,7 @@ function Packages({ packages, isLoading, isError, error, refetch }) {
         </Box>
       </Reveal>
       <Typography variant="body2" color="text.secondary" sx={{ mt: 2, textAlign: 'center' }}>
-        Prices are per month, in Kenyan shillings. Signing up creates your family’s accounts; you pay the first month in cash and we unlock them once it’s confirmed.
+        Prices are in Kenyan shillings, per the period shown on each package. Signing up creates your family’s accounts; you pay the first invoice and we unlock them once it’s confirmed. After that, an invoice comes each period from the day you joined.
       </Typography>
     </Section>
   );
@@ -317,7 +313,7 @@ export default function HomeSchoolingPage() {
     <>
       <SeoHead
         title="Home Schooling Packages for Families in Kenya"
-        description="An educator teaches your children at home, each at the right level. Simple monthly family packages — see prices and enquire for free."
+        description="An educator teaches your children at home, each at the right level. Simple family packages — see prices and enquire for free."
       />
       <JsonLd data={organizationSchema()} />
 

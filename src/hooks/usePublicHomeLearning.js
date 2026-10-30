@@ -4,7 +4,7 @@ import { publicApi } from '../services/api.js';
 /**
  * The Home Schooling page (`/home-schooling`) reads `GET /api/public/home-learning/packages` —
  * the packages the team publishes from the curriculum system's Home Learning → Packages. Shape:
- *   { id, slug, name, summary, description, childrenIncluded, monthlyAmount, currency,
+ *   { id, slug, name, summary, description, childrenIncluded, amount, billingPeriod, currency,
  *     allowExtraChildren, extraChildAmount, maxChildren, features[], badge }
  * already sorted in the order the team set.
  *
@@ -15,8 +15,11 @@ function normalise(list) {
   if (!Array.isArray(list)) return [];
   const bySlug = new Map();
   for (const pkg of list) {
-    if (!pkg?.slug || !pkg?.name || !Number.isFinite(Number(pkg.monthlyAmount))) continue;
-    if (!bySlug.has(pkg.slug)) bySlug.set(pkg.slug, { ...pkg, features: Array.isArray(pkg.features) ? pkg.features : [] });
+    // `amount` per `billingPeriod` (an older API sent only monthlyAmount, always monthly); a daily
+    // package is never offered on the website.
+    const amount = Number(pkg?.amount ?? pkg?.monthlyAmount);
+    if (!pkg?.slug || !pkg?.name || !Number.isFinite(amount) || pkg.billingPeriod === 'daily') continue;
+    if (!bySlug.has(pkg.slug)) bySlug.set(pkg.slug, { ...pkg, amount, billingPeriod: pkg.billingPeriod || 'monthly', features: Array.isArray(pkg.features) ? pkg.features : [] });
   }
   return [...bySlug.values()];
 }

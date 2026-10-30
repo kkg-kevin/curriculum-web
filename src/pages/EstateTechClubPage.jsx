@@ -19,7 +19,7 @@ import { usePublicHubList, usePublicHub } from '../hooks/usePublicHubs.js';
 import { packagesForClub, useClubPackages } from '../hooks/usePublicClubs.js';
 import ClubPackages from '../components/clubs/ClubPackages.jsx';
 import { ClubFaq, ClubJoinSteps, ClubPriceCard, ClubQuickFacts } from '../components/clubs/ClubSections.jsx';
-import { formatKsh } from '../content/homeSchooling.js';
+import { cheapestPrice, fromLabel } from '../content/homeSchooling.js';
 import { CLUBS_PATH, clubJoinPath, clubSlug, scheduleLabel, sessionLines, sortDays } from '../utils/clubs.js';
 
 /**
@@ -80,10 +80,10 @@ export default function EstateTechClubPage() {
     operatingHours: profile.operatingHours && { ...profile.operatingHours, days: sortDays(profile.operatingHours.days) },
   };
   const where = hub.isVirtual ? 'Online' : profile.address || hub.town;
-  const fromAmount = canJoin ? Math.min(...packages.map((p) => p.monthlyAmount)) : null;
+  const fromPrice = canJoin ? cheapestPrice(packages) : null;
   const facts = [
     { key: 'where', Icon: PlaceIcon, label: where, href: hub.isVirtual ? undefined : profile.mapLink || undefined },
-    { key: 'price', Icon: SellIcon, label: fromAmount != null ? `From ${formatKsh(fromAmount)} / month` : '' },
+    { key: 'price', Icon: SellIcon, label: fromPrice ? fromLabel(fromPrice, ' / ') : '' },
   ];
   const enquire = `/enroll?club=${encodeURIComponent(hub.name)}`;
   const joinPath = clubJoinPath(hub);
@@ -152,7 +152,7 @@ export default function EstateTechClubPage() {
         compactMap
         // With session times set, they replace the venue's opening hours in the side card.
         hideHours={hasSessions}
-        sideTop={canJoin ? <ClubPriceCard fromAmount={fromAmount} details={details} joinPath={joinPath} /> : null}
+        sideTop={canJoin ? <ClubPriceCard fromPrice={fromPrice} details={details} joinPath={joinPath} /> : null}
         sideAction={canJoin ? null : (
           <Button component={RouterLink} to={enquire} variant="contained" fullWidth sx={{ mt: 3 }}>
             Enquire about this club

@@ -25,6 +25,7 @@ import PrivacyNote from './PrivacyNote.jsx';
 import Honeypot, { HONEYPOT_DEFAULT, isBot } from './Honeypot.jsx';
 import DateOfBirthField from './DateOfBirthField.jsx';
 import { ageOn } from '../../utils/dates.js';
+import useScrollToFlowTop from '../../hooks/useScrollToFlowTop.js';
 
 /** One selectable "Running at" hub card for the hub-choice step. */
 function HubOption({ run, selected, onSelect }) {
@@ -116,9 +117,9 @@ function CopyableField({ label, value }) {
 
 /**
  * Bootcamp enrollment form (auto-provisioned account) — POST /api/public/bootcamp-enrollments.
- * Rendered inline on a pathway diagnostic's report when it was reached from a bootcamp (see
- * NextStepsPanel.jsx's `bootcamp` prop and its "Enroll now" option), not navigated to as a
- * separate page, so the visitor's already-given diagnostic contact details can be passed straight
+ * Rendered inline beside a bootcamp diagnostic's report (BootcampEnrollPage.jsx, and an older
+ * `?bootcamp=` pathway diagnostic through NextStepsPanel.jsx's "Enroll now" option), not navigated
+ * to as a separate page, so the visitor's already-given diagnostic contact details can be passed straight
  * in as pre-fill defaults instead of round-tripping through a URL.
  *
  * The learner's OWN login (username + password) is chosen right here on the form, not minted by
@@ -173,6 +174,10 @@ export default function BootcampEnrollForm({
   // go straight to 'details' and submit whichever hub (if any) resolved automatically.
   const [stage, setStage] = useState('details');
   const [hubId, setHubId] = useState('');
+  // The visitor's own moves between steps (not the hub step switching on once the bootcamp
+  // loads): each, and the enrolment going through, starts at the top of the form.
+  const [moves, setMoves] = useState(0);
+  const goTo = (next) => { setStage(next); setMoves((n) => n + 1); };
 
   useEffect(() => {
     if (needsHubChoice) setStage('hub');
@@ -228,6 +233,7 @@ export default function BootcampEnrollForm({
   };
 
   const selectedRun = runs.find((r) => r.hub.id === hubId);
+  const flowRef = useScrollToFlowTop(`${moves}:${mutation.isSuccess}:${spamBlocked}`);
 
   // ---- Success: the account is ready with the login they just chose --------
   if (mutation.isSuccess) {
@@ -236,6 +242,7 @@ export default function BootcampEnrollForm({
     const hasPrice = payment?.amount != null;
     return (
       <Box
+        ref={flowRef}
         sx={{
           p: { xs: 2.5, md: 3.5 },
           borderRadius: 4,
@@ -315,7 +322,7 @@ export default function BootcampEnrollForm({
 
   if (spamBlocked) {
     return (
-      <Box sx={{ p: { xs: 2.5, md: 3.5 }, borderRadius: 4, border: '1px solid', borderColor: 'divider', bgcolor: 'surface.subtle' }}>
+      <Box ref={flowRef} sx={{ p: { xs: 2.5, md: 3.5 }, borderRadius: 4, border: '1px solid', borderColor: 'divider', bgcolor: 'surface.subtle' }}>
         <Alert severity="success">Thanks! We’ll be in touch shortly.</Alert>
       </Box>
     );
@@ -324,7 +331,7 @@ export default function BootcampEnrollForm({
   // ---- Step 1 (only when the bootcamp runs at more than one hub): choose a hub ----
   if (stage === 'hub') {
     return (
-      <Box sx={{ display: 'grid', gap: 2, p: { xs: 2.5, md: 3.5 }, borderRadius: 4, border: '1px solid', borderColor: 'divider', bgcolor: 'surface.subtle' }}>
+      <Box ref={flowRef} sx={{ display: 'grid', gap: 2, p: { xs: 2.5, md: 3.5 }, borderRadius: 4, border: '1px solid', borderColor: 'divider', bgcolor: 'surface.subtle' }}>
         {stepper(0)}
 
         <Box>
@@ -349,7 +356,7 @@ export default function BootcampEnrollForm({
           </Box>
         </Box>
 
-        <Button variant="contained" size="large" disabled={!hubId} onClick={() => setStage('details')}>
+        <Button variant="contained" size="large" disabled={!hubId} onClick={() => goTo('details')}>
           Continue
         </Button>
       </Box>
@@ -359,6 +366,7 @@ export default function BootcampEnrollForm({
   // ---- The form --------------------------------------------------------------
   return (
     <Box
+      ref={flowRef}
       component="form"
       onSubmit={handleSubmit(onSubmit)}
       noValidate
@@ -386,7 +394,7 @@ export default function BootcampEnrollForm({
       {needsHubChoice && (
         <>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-            <Button size="small" onClick={() => setStage('hub')} sx={{ px: 1 }}>
+            <Button size="small" onClick={() => goTo('hub')} sx={{ px: 1 }}>
               Change hub
             </Button>
             {selectedRun && (

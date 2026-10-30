@@ -114,10 +114,21 @@ async function main() {
     getSectionSlugs('estate-tech-clubs', '../src/mocks/fixtures/hubs.js', 'hubs', (x) => slugify(x.name)),
   ]);
 
+  // Each pathway's developmental stages: the prerendered /pathways/<slug>/<stage>/ pages (never its
+  // /diagnostic page); offline, the mock pathways' stages.
+  let stagePaths;
+  if (useMock) {
+    const mod = await import('../src/mocks/fixtures/pathways.js');
+    stagePaths = (mod.pathways || []).flatMap((p) => (p.stages || []).map((st) => `/pathways/${p.slug}/${st.slug}`));
+  } else {
+    stagePaths = pathwaySlugs.flatMap((s) => prerenderedSlugs(`pathways/${s}`).filter((st) => st !== 'diagnostic').map((st) => `/pathways/${s}/${st}`));
+  }
+
   // `sitemap: false` routes (deliberately noindex, e.g. /enroll) are prerendered but not listed.
   const routes = [
     ...STATIC_ROUTES.filter((r) => r.sitemap !== false).map((r) => r.path),
     ...pathwaySlugs.map((s) => `/pathways/${s}`),
+    ...stagePaths,
     ...storeSlugs.map((s) => `/store/${s}`),
     ...projectSlugs.map((s) => `/store/projects/${s}`),
     ...bootcampSlugs.map((s) => `/bootcamps/${s}`),

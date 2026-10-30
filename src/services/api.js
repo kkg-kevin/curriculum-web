@@ -157,9 +157,9 @@ export const publicApi = {
 
   // ---- Home Schooling sign-up (creates the family's accounts) ----------------------
   // Creates the household, the parent's login (email + password) and each child's login
-  // (username + password), plus the first month's invoice. The logins show "payment pending"
+  // (username + password), plus the first billing period's invoice. The logins show "payment pending"
   // until an admin approves the (cash) payment (see server: home-learning-signup.service.js).
-  // Resolves to { householdId, packageName, childCount, monthlyAmount, currency, invoiceNumber,
+  // Resolves to { householdId, packageName, childCount, amount, billingPeriod, currency, invoiceNumber,
   // amountDue, parentEmail, children: [{ name, username }] }.
   submitHomeLearningSignup: (payload) =>
     api.post('/api/public/home-learning/signups', payload).then((r) => r.data.data),
@@ -172,7 +172,7 @@ export const publicApi = {
   // Same as the Home Schooling sign-up, for a club (no home address): creates the membership, the
   // parent's login, each child's login and the first month's invoice, locked until an admin
   // approves the (cash) payment (see server: tech-clubs/club-signup.service.js). Resolves to
-  // { membershipId, clubName, packageName, childCount, monthlyAmount, currency, invoiceNumber,
+  // { membershipId, clubName, packageName, childCount, amount, billingPeriod, currency, invoiceNumber,
   //   amountDue, parentEmail, children: [{ name, username }] }.
   submitClubSignup: (payload) =>
     api.post('/api/public/clubs/signups', payload).then((r) => r.data.data),

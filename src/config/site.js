@@ -23,6 +23,8 @@ export const ORG = {
   legalName: 'Digifunzi',
   description:
     'Digifunzi is an impact-driven digital literacy programme. We foster creativity, collaboration and leadership in kids aged 5–17 and give them the skills to compete for opportunities in the digital economy.',
+  // Shown at the foot of the diagnostic report (screen and PDF).
+  tagline: 'Learn better, Live better',
   email: 'info@digifunzi.com',
   telephone: '+254 790 252 523',
   // Digits only, full international format, no "+" or spaces — used to build wa.me links

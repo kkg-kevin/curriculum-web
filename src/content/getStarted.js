@@ -20,7 +20,7 @@ export const getStarted = {
       key: 'homeSchooling',
       title: 'Home Schooling',
       hint: 'An educator at home',
-      body: 'A Digifunzi educator teaches your children at home, each at their own level, on a simple monthly family package.',
+      body: 'A Digifunzi educator teaches your children at home, each at their own level, on a simple family package.',
       steps: ['Choose a family package', 'Add your children and home details', 'Accounts unlock once payment is confirmed'],
       cta: 'Sign up for Home Schooling',
       to: '/home-schooling/signup',

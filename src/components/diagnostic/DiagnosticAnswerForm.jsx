@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
@@ -14,6 +14,7 @@ import QuizRoundedIcon from '@mui/icons-material/QuizRounded';
 import PrivacyNote from '../forms/PrivacyNote.jsx';
 import FormStatus from '../forms/FormStatus.jsx';
 import { ItemField, isAnswered, kindHint } from './DiagnosticQuestions.jsx';
+import useScrollToFlowTop from '../../hooks/useScrollToFlowTop.js';
 
 /**
  * The questions step of a public diagnostic, made for the child taking it: a welcome card (their
@@ -78,13 +79,9 @@ export default function DiagnosticAnswerForm({ diagnostic, contactForm, onAnswer
   const [stage, setStage] = useState(STAGE.WELCOME);
   const [current, setCurrent] = useState(0);
   const [answers, setAnswers] = useState(() => new Map());
-  const topRef = useRef(null);
-
-  // Each new screen starts at its top — on a phone the Next button sits below the fold.
-  useEffect(() => {
-    const el = topRef.current;
-    if (el && el.getBoundingClientRect().top < 0) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, [stage, current]);
+  // Each new screen (welcome, every question, the grown-up hand-over) starts at its top, just under
+  // the header — on a phone the Next button sits below the fold.
+  const topRef = useScrollToFlowTop(`${stage}:${current}`);
 
   const setResponse = (itemId, response) => {
     const next = new Map(answers);

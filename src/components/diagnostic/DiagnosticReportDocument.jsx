@@ -1,7 +1,9 @@
 /**
- * The diagnostic report laid out as a printed document — what "Download PDF" captures, instead
- * of the on-screen card. Rendered off-screen only while a PDF is being made (DiagnosticReport),
- * at a fixed A4-proportioned width, so it always lays out the same whatever the visitor's screen.
+ * The diagnostic report laid out as a document — the ONE layout for both the report on screen and
+ * the PDF, so the two always match (DiagnosticReport):
+ *   - variant "screen": inside the on-screen card, as wide as the card, rows wrapping on a phone;
+ *   - variant "print" (default): what "Download PDF" captures — rendered off-screen at a fixed
+ *     A4-proportioned width, so the PDF lays out the same whatever the visitor's screen.
  *
  * Unlike the card, nothing here is collapsed: every competency is listed with each of its skills,
  * so the parent has the whole picture on paper. The branded header and footer (logo, contact
@@ -118,14 +120,18 @@ function ScoreRing({ percent }) {
   );
 }
 
-function Fact({ label, value }) {
+// On screen, rows of side-by-side boxes wrap on a narrow phone; in the PDF they never do.
+const wrapRow = (screen) => (screen ? { flexWrap: 'wrap' } : {});
+const cell = (screen, basis) => ({ flex: screen ? `1 1 ${basis}px` : '1 1 0', minWidth: 0 });
+
+function Fact({ label, value, first = false, screen = false }) {
   return (
     <div
       style={{
-        flex: '1 1 0',
-        minWidth: 0,
+        ...cell(screen, 130),
         padding: '10px 14px',
-        borderLeft: `1px solid ${LINE}`,
+        borderLeft: first ? 'none' : `1px solid ${LINE}`,
+        ...(screen ? { borderTop: `1px solid ${LINE}`, marginTop: -1 } : {}),
       }}
     >
       <div
@@ -177,17 +183,17 @@ function Bar({ score, color, height = 8 }) {
 }
 
 // The four result bands as one scale, with the learner's band picked out.
-function BandScale({ percent }) {
+function BandScale({ percent, screen }) {
   const current = bandFor(percent);
   return (
-    <div style={{ display: 'flex', gap: 6 }}>
+    <div style={{ display: 'flex', gap: 6, ...wrapRow(screen) }}>
       {BANDS.map((b) => {
         const active = b.label === current.label;
         return (
           <div
             key={b.label}
             style={{
-              flex: '1 1 0',
+              ...cell(screen, 120),
               padding: '10px 10px 9px',
               borderRadius: 10,
               backgroundColor: active ? b.soft : '#FFFFFF',
@@ -220,7 +226,7 @@ function BandScale({ percent }) {
   );
 }
 
-function CompetencyBlock({ group, index }) {
+function CompetencyBlock({ group, index, screen }) {
   const score = pct(group.marksEarned, group.marksPossible);
   const color = scoreColor(score);
   const indicators = group.indicators || [];
@@ -315,7 +321,7 @@ function CompetencyBlock({ group, index }) {
                 >
                   {ind.name || 'Skill'}
                 </span>
-                <div style={{ width: 120, flexShrink: 0 }}>
+                <div style={{ width: screen ? 'clamp(56px, 22%, 120px)' : 120, flexShrink: 0 }}>
                   <Bar score={s} color={c} height={6} />
                 </div>
                 <span
@@ -349,12 +355,11 @@ function CompetencyBlock({ group, index }) {
   );
 }
 
-function HighlightList({ title, tone, items, empty }) {
+function HighlightList({ title, tone, items, empty, screen }) {
   return (
     <div
       style={{
-        flex: '1 1 0',
-        minWidth: 0,
+        ...cell(screen, 240),
         padding: '12px 14px',
         borderRadius: 12,
         backgroundColor: tone.soft,
@@ -405,9 +410,10 @@ function HighlightList({ title, tone, items, empty }) {
 }
 
 const DiagnosticReportDocument = forwardRef(function DiagnosticReportDocument(
-  { report, groups, subjectName, subjectLabel, completedLabel },
+  { report, groups, subjectName, subjectLabel, completedLabel, variant = 'print' },
   ref,
 ) {
+  const screen = variant === 'screen';
   const { assessmentName, totalScore = 0, maxScore = 0, childName, childAge, pathwayName } = report || {};
   const percent = pct(totalScore, maxScore);
   const band = bandFor(percent);
@@ -427,7 +433,7 @@ const DiagnosticReportDocument = forwardRef(function DiagnosticReportDocument(
     <div
       ref={ref}
       style={{
-        width: DOCUMENT_WIDTH,
+        width: screen ? '100%' : DOCUMENT_WIDTH,
         fontFamily: 'Inter, system-ui, sans-serif',
         color: INK,
         backgroundColor: '#FFFFFF',
@@ -441,8 +447,8 @@ const DiagnosticReportDocument = forwardRef(function DiagnosticReportDocument(
     >
       {/* title + headline score */}
       <div data-pdf-block style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 22 }}>
-          <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 22, ...wrapRow(screen) }}>
+          <div style={{ flex: screen ? '1 1 240px' : 1, minWidth: 0 }}>
             <div
               style={{
                 fontSize: 11,
@@ -516,41 +522,20 @@ const DiagnosticReportDocument = forwardRef(function DiagnosticReportDocument(
             borderRadius: 12,
             backgroundColor: PANEL,
             overflow: 'hidden',
+            ...wrapRow(screen),
           }}
         >
-          <div style={{ flex: '1 1 0', minWidth: 0, padding: '10px 14px' }}>
-            <div
-              style={{
-                fontSize: 10,
-                fontWeight: 700,
-                color: INK_FAINT,
-                textTransform: 'uppercase',
-                letterSpacing: '0.06em',
-              }}
-            >
-              Learner
-            </div>
-            <div
-              style={{
-                marginTop: 3,
-                fontSize: 13,
-                fontWeight: 700,
-                color: INK,
-              }}
-            >
-              {childName || '—'}
-            </div>
-          </div>
-          <Fact label="Age" value={childAge != null ? String(childAge) : null} />
-          <Fact label="Diagnostic" value={assessmentName} />
-          <Fact label="Completed" value={completedLabel} />
+          <Fact first label="Learner" value={childName} screen={screen} />
+          <Fact label="Age" value={childAge != null ? String(childAge) : null} screen={screen} />
+          <Fact label="Diagnostic" value={assessmentName} screen={screen} />
+          <Fact label="Completed" value={completedLabel} screen={screen} />
         </div>
       </div>
 
       {/* what the result means */}
       <div data-pdf-block>
         <SectionTitle sub={`Where ${learner}'s overall score sits.`}>What the result means</SectionTitle>
-        <BandScale percent={percent} />
+        <BandScale percent={percent} screen={screen} />
         <p
           style={{
             margin: '12px 0 0',
@@ -568,18 +553,20 @@ const DiagnosticReportDocument = forwardRef(function DiagnosticReportDocument(
       {scored.length > 0 && (
         <div data-pdf-block>
           <SectionTitle>At a glance</SectionTitle>
-          <div style={{ display: 'flex', gap: 10 }}>
+          <div style={{ display: 'flex', gap: 10, ...wrapRow(screen) }}>
             <HighlightList
               title="Doing well"
               tone={{ color: '#047857', soft: '#ECFDF5', border: '#A7F3D0' }}
               items={strengths}
               empty="No area reached 60% yet — every area is a place to grow."
+              screen={screen}
             />
             <HighlightList
               title="Areas to work on"
               tone={{ color: '#B45309', soft: '#FFFBEB', border: '#FDE68A' }}
               items={focus}
               empty="Every area scored 60% or more — a strong start across the board."
+              screen={screen}
             />
           </div>
         </div>
@@ -618,7 +605,7 @@ const DiagnosticReportDocument = forwardRef(function DiagnosticReportDocument(
             <SectionTitle sub="Each area's score, and how each skill within it went.">Competency areas</SectionTitle>
           </div>
           {groups.map((g, i) => (
-            <CompetencyBlock key={g.competencyId || i} group={g} index={i} />
+            <CompetencyBlock key={g.competencyId || i} group={g} index={i} screen={screen} />
           ))}
         </div>
       )}

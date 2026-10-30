@@ -48,7 +48,7 @@ export const sectionSummaries = [
   {
     title: 'Home Schooling',
     to: '/home-schooling',
-    blurb: 'A Digifunzi educator teaches your children at home, each at their own level, on a simple monthly family package.',
+    blurb: 'A Digifunzi educator teaches your children at home, each at their own level, on a simple family package.',
   },
   {
     title: 'Estate Tech Clubs',

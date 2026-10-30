@@ -24,7 +24,8 @@ import BootcampEnrollForm from '../forms/BootcampEnrollForm.jsx';
  *       real learner account for that bootcamp (see server: bootcamp-enrollment.service.js) —
  *       same as the bootcamp-scoped diagnostic used to offer before it was folded in here.
  *   2. See the pathway  → expands the ordered course roadmap in place (progressive disclosure)
- *   3. Talk it through  → WhatsApp (wa.me) if a number is configured, else /contact
+ *   3. Talk it through  → WhatsApp (wa.me) if a number is configured, else /contact — only when
+ *      `mentorHref` is passed (the bootcamp Enroll flow leaves it out)
  *
  * Props: enrollTo, pathwayName, courses[], accent, mentorHref, mentorIsExternal,
  * bootcamp?: { slug, name, defaultParentName?, defaultParentPhone?, defaultLearnerName?, defaultLearnerDateOfBirth?, attemptId? }
@@ -225,17 +226,19 @@ export default function NextStepsPanel({
           </>
         )}
 
-        <OptionCard
-          icon={<WhatsAppIcon />}
-          title="Talk it through with a mentor"
-          body={
-            mentorIsExternal
-              ? 'Chat on WhatsApp about the result and the best place to start.'
-              : 'Send us a message and we’ll talk you through the result and next steps.'
-          }
-          href={mentorHref}
-          external={mentorIsExternal}
-        />
+        {mentorHref && (
+          <OptionCard
+            icon={<WhatsAppIcon />}
+            title="Talk it through with a mentor"
+            body={
+              mentorIsExternal
+                ? 'Chat on WhatsApp about the result and the best place to start.'
+                : 'Send us a message and we’ll talk you through the result and next steps.'
+            }
+            href={mentorHref}
+            external={mentorIsExternal}
+          />
+        )}
       </Box>
     </Box>
   );

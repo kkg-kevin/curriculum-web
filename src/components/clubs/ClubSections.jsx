@@ -14,7 +14,7 @@ import PlaceIcon from '@mui/icons-material/Place';
 import RouteIcon from '@mui/icons-material/Route';
 import DetailSection from '../common/DetailSection.jsx';
 import FaqList from '../common/FaqList.jsx';
-import { formatKsh } from '../../content/homeSchooling.js';
+import { formatKsh, periodUnit } from '../../content/homeSchooling.js';
 import { agesLabel, sessionLines } from '../../utils/clubs.js';
 
 // The parent-facing parts of an Estate Tech Club's page (EstateTechClubPage): quick facts under
@@ -53,15 +53,16 @@ export function ClubQuickFacts({ hub, details, fallbackSchedule }) {
 }
 
 /** Top of the side card: what it costs, when it meets, and Join. Only when the club takes sign-ups. */
-export function ClubPriceCard({ fromAmount, details, joinPath }) {
+// `fromPrice` — the cheapest package's { amount, billingPeriod }.
+export function ClubPriceCard({ fromPrice, details, joinPath }) {
   const lines = sessionLines(details);
   return (
     <Box sx={{ mb: 2.5, pb: 2.5, borderBottom: '1px solid', borderColor: 'divider' }}>
       <Typography variant="overline" sx={{ color: 'text.secondary', lineHeight: 1.6 }}>Membership</Typography>
       <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.75, flexWrap: 'wrap' }}>
         <Typography variant="body2" color="text.secondary">From</Typography>
-        <Typography component="p" sx={{ m: 0, fontSize: '1.7rem', fontWeight: 800, lineHeight: 1.1, color: 'primary.main' }}>{formatKsh(fromAmount)}</Typography>
-        <Typography variant="body2" color="text.secondary">/ month</Typography>
+        <Typography component="p" sx={{ m: 0, fontSize: '1.7rem', fontWeight: 800, lineHeight: 1.1, color: 'primary.main' }}>{formatKsh(fromPrice.amount)}</Typography>
+        <Typography variant="body2" color="text.secondary">/ {periodUnit(fromPrice.billingPeriod)}</Typography>
       </Box>
       {lines.length > 0 && (
         <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0, mt: 1.5, display: 'grid', gap: 0.5 }}>

@@ -19,7 +19,7 @@
  *     home title, home canonical — until JS ran.
  *   - dist/404.html — the NotFound page, prerendered, served with a real 404 status.
  *
- * Dynamic routes — /pathways/:slug, /store/:slug, /store/projects/:slug,
+ * Dynamic routes — /pathways/:slug (and each of its stages, /pathways/:slug/:stage), /store/:slug, /store/projects/:slug,
  * /bootcamps/:slug and /competitions/:slug — are all discovered from the public API
  * (/api/public/{pathways,projects,store,bootcamps,competitions}), or from local fixtures when
  * VITE_USE_MOCK=true. In a real build, if the API is unreachable, those list +
@@ -201,6 +201,16 @@ async function main() {
     getApiSlugs('/api/public/hubs', '../src/mocks/fixtures/hubs.js', 'hubs', byNameSlug),
   ]);
 
+  // Each pathway's developmental stages (/pathways/<slug>/<stage>) — from the same list, which
+  // carries each pathway's stages.
+  const stageRoutes = (
+    await getApiSlugs('/api/public/pathways', '../src/mocks/fixtures/pathways.js', 'pathways', (p) =>
+      (p.stages || []).filter((st) => st.slug).map((st) => `${p.slug}/${st.slug}`).join('|'),
+    )
+  )
+    .flatMap((x) => x.split('|'))
+    .filter(Boolean);
+
   // Static routes: prerender all, except the data-driven ones when the API is
   // unreachable in a real build (they'd snapshot an empty/error state).
   const staticRoutes = STATIC_ROUTES.map((r) => r.path).filter((p) => {
@@ -221,6 +231,7 @@ async function main() {
   const routes = [
     ...staticRoutes,
     ...pathwaySlugs.map((s) => `/pathways/${s}`),
+    ...stageRoutes.map((r) => `/pathways/${r}`),
     ...storeSlugs.map((s) => `/store/${s}`),
     ...projectSlugs.map((s) => `/store/projects/${s}`),
     ...bootcampSlugs.map((s) => `/bootcamps/${s}`),

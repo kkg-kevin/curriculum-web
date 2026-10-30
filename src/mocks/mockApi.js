@@ -213,7 +213,7 @@ export async function mockAdapter(config) {
       success: true,
       data: {
         membershipId: 'mock-membership', clubName: 'Mock club', packageName: body.packageSlug, childCount: body.children.length,
-        monthlyAmount: 0, currency: 'KES', invoiceNumber: 'INV-MOCK-000002', amountDue: 0, parentEmail: body.parent.email,
+        amount: 0, billingPeriod: 'monthly', currency: 'KES', invoiceNumber: 'INV-MOCK-000002', amountDue: 0, parentEmail: body.parent.email,
         children: body.children.map((c) => ({ name: `${c.firstName} ${c.lastName}`, username: c.username })),
       },
     }, config, 201);
@@ -230,7 +230,7 @@ export async function mockAdapter(config) {
       success: true,
       data: {
         householdId: 'mock-household', packageName: body.packageSlug, childCount: body.children.length,
-        monthlyAmount: 0, currency: 'KES', invoiceNumber: 'INV-MOCK-000001', amountDue: 0, parentEmail: body.parent.email,
+        amount: 0, billingPeriod: 'monthly', currency: 'KES', invoiceNumber: 'INV-MOCK-000001', amountDue: 0, parentEmail: body.parent.email,
         children: body.children.map((c) => ({ name: `${c.firstName} ${c.lastName}`, username: c.username })),
       },
     }, config, 201);

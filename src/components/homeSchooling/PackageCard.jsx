@@ -6,7 +6,7 @@ import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import AddCircleOutlineRoundedIcon from '@mui/icons-material/AddCircleOutlineRounded';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import ChildIcons from './ChildIcons.jsx';
-import { childrenLabel, formatKsh, homeSchoolingSignupPath, perChildAmount } from '../../content/homeSchooling.js';
+import { childrenLabel, formatKsh, homeSchoolingSignupPath, perChildAmount, periodUnit } from '../../content/homeSchooling.js';
 
 function Point({ icon: Icon = CheckCircleRoundedIcon, children }) {
   return (
@@ -89,14 +89,14 @@ export default function PackageCard({ pkg, highestPerChild, to, fallbackFeature,
 
         <Box sx={{ mt: 2.5, display: 'flex', alignItems: 'baseline', gap: 0.75, flexWrap: 'wrap' }}>
           <Typography component="p" sx={{ fontSize: { xs: '2.3rem', sm: '2.6rem' }, fontWeight: 800, lineHeight: 1.05, letterSpacing: '-0.02em', color: featured ? 'primary.main' : 'text.primary' }}>
-            {formatKsh(pkg.monthlyAmount)}
+            {formatKsh(pkg.amount)}
           </Typography>
-          <Typography color="text.secondary">/ month</Typography>
+          <Typography color="text.secondary">/ {periodUnit(pkg)}</Typography>
         </Box>
 
         <Box sx={{ mt: 1, minHeight: 26, display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
           {pkg.childrenIncluded > 1 && (
-            <Typography variant="body2" color="text.secondary">{formatKsh(perChild)} per child</Typography>
+            <Typography variant="body2" color="text.secondary">{formatKsh(perChild)} per child / {periodUnit(pkg)}</Typography>
           )}
           {saving > 0 && (
             <Box component="span" sx={{ px: 1, py: 0.25, borderRadius: 999, fontSize: '0.75rem', fontWeight: 800, color: 'success.dark', bgcolor: (t) => `${t.palette.success.main}1f` }}>
@@ -112,7 +112,7 @@ export default function PackageCard({ pkg, highestPerChild, to, fallbackFeature,
           {points.map((point) => <Point key={point}>{point}</Point>)}
           {showExtra && pkg.allowExtraChildren && pkg.extraChildAmount != null && (
             <Point icon={AddCircleOutlineRoundedIcon}>
-              Add more children for {formatKsh(pkg.extraChildAmount)} / month each (up to {pkg.maxChildren})
+              Add more children for {formatKsh(pkg.extraChildAmount)} / {periodUnit(pkg)} each (up to {pkg.maxChildren})
             </Point>
           )}
         </Box>

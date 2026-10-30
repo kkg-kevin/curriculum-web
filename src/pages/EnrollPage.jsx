@@ -75,7 +75,7 @@ export default function EnrollPage() {
         title={isHomeSchooling ? 'Home Schooling Enquiry' : isEnquiry ? 'Purchase Enquiry' : 'Enroll a Learner'}
         description={
           isHomeSchooling
-            ? 'Enquire about Digifunzi Home Schooling monthly family packages.'
+            ? 'Enquire about Digifunzi Home Schooling family packages.'
             : isEnquiry
             ? 'Ask about buying a Digifunzi project, robot or classroom bundle. Our team will confirm pricing and arrange payment.'
             : 'Register your interest in a Digifunzi robotics or coding programme. Our team will follow up to arrange a place for your child.'

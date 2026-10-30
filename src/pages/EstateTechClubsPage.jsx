@@ -1,4 +1,5 @@
 import Box from '@mui/material/Box';
+import { cheapestPrice } from '../content/homeSchooling.js';
 import Skeleton from '@mui/material/Skeleton';
 import Typography from '@mui/material/Typography';
 import SeoHead from '../components/seo/SeoHead.jsx';
@@ -37,10 +38,7 @@ export default function EstateTechClubsPage() {
   const profiles = usePublicHubProfiles(hubs.map((h) => h.id));
   // The cheapest package at each club, for its card. Optional — the cards work without it.
   const { data: packages = [] } = useClubPackages();
-  const fromAmount = (hubId) => {
-    const offered = packagesForClub(packages, hubId);
-    return offered.length ? Math.min(...offered.map((p) => p.monthlyAmount)) : null;
-  };
+  const fromPrice = (hubId) => cheapestPrice(packagesForClub(packages, hubId));
   const count = hubs.length;
 
   return (
@@ -104,7 +102,7 @@ export default function EstateTechClubsPage() {
         {!isLoading && !isError && count > 0 && (
           <Box sx={{ ...GRID_SX, ...shortListSx(count) }}>
             {hubs.map((hub) => (
-              <ClubCard key={hub.id} hub={hub} profile={profiles[hub.id]} fromAmount={fromAmount(hub.id)} />
+              <ClubCard key={hub.id} hub={hub} profile={profiles[hub.id]} fromPrice={fromPrice(hub.id)} />
             ))}
           </Box>
         )}

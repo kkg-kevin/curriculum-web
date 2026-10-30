@@ -22,6 +22,7 @@ import DiagnosticAnswerForm from '../components/diagnostic/DiagnosticAnswerForm.
 import DiagnosticReport from '../components/diagnostic/DiagnosticReport.jsx';
 import NextStepsPanel from '../components/diagnostic/NextStepsPanel.jsx';
 import BirthDateStep from '../components/diagnostic/BirthDateStep.jsx';
+import useScrollToFlowTop from '../hooks/useScrollToFlowTop.js';
 
 // Flow: pick a pathway -> date of birth (its age fetches the right question set) -> answer the questions,
 // giving a name + phone -> submit -> SEE THE REPORT. The name + phone are required before
@@ -55,6 +56,8 @@ export default function DiagnosticPage() {
   const [dateOfBirth, setDateOfBirth] = useState('');
   const [answers, setAnswers] = useState([]);
   const [report, setReport] = useState(null);
+  // Each step (date of birth → questions → report) starts at the top of the page, under its heading.
+  const flowRef = useScrollToFlowTop(step);
 
   // Contact details (name + phone required, learner name optional) — collected on the questions
   // step; submit is blocked until this validates.
@@ -129,6 +132,7 @@ export default function DiagnosticPage() {
       <SeoHead title={`${pathwayName} Diagnostic`} noindex />
 
       <Box
+        ref={flowRef}
         sx={{
           backgroundColor: 'surface.subtle',
           borderBottom: '1px solid',
