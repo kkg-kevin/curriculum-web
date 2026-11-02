@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useFieldArray, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
@@ -15,7 +15,11 @@ import Skeleton from '@mui/material/Skeleton';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import PlaceIcon from '@mui/icons-material/Place';
-import { bootcampEnrollmentSchema } from './schemas.js';
+import AddRoundedIcon from '@mui/icons-material/AddRounded';
+import PersonAddAltRoundedIcon from '@mui/icons-material/PersonAddAltRounded';
+import RemoveCircleOutlineRoundedIcon from '@mui/icons-material/RemoveCircleOutlineRounded';
+import { bootcampEnrollmentSchema, parentSignInSchema } from './schemas.js';
+import { publicApi } from '../../services/api.js';
 import { useSubmitBootcampEnrollment } from '../../hooks/useBootcampEnrollment.js';
 import PaymentStep from '../payments/PaymentStep.jsx';
 import { usePublicBootcamp } from '../../hooks/usePublicBootcamps.js';
@@ -135,9 +139,62 @@ function CopyableField({ label, value }) {
  * hub (or none published yet) skips straight to the details/login step and that hub (if any) is
  * submitted automatically.
  *
+ * One enrolment can take several children (siblings) — "+ Add another child" — each with their
+ * own login, all under the one parent login and on one invoice. A parent who already has an
+ * account signs in instead of typing their details and password ("Already have a Digifunzi
+ * account? Sign in"), and after an enrolment "Enrol another child" starts again signed in: both
+ * hold the short-lived parent token the server hands back (server: auth/parent-signup.js).
+ *
  * Props: bootcampSlug, bootcampName, defaultParentName?, defaultParentPhone?,
- * defaultLearnerName?, defaultLearnerDateOfBirth?
+ * defaultLearnerName?, defaultLearnerDateOfBirth? (the first learner's)
  */
+const emptyChild = (name = '', dateOfBirth = '') => ({ learnerName: name, learnerDateOfBirth: dateOfBirth, username: '', password: '', confirmPassword: '' });
+const MAX_CHILDREN = 6;
+
+/**
+ * "Already have a Digifunzi account? Sign in" — the parent's email + password checked once
+ * (POST /api/public/parent-sign-in); the form then skips their details and password, keeping the
+ * short-lived parent token it got back for the enrolment.
+ */
+function ParentSignIn({ onSignedIn, onCancel }) {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+  const signIn = async () => {
+    const check = parentSignInSchema.safeParse({ email, password });
+    if (!check.success) { setError(check.error.issues[0].message); return; }
+    setBusy(true);
+    setError('');
+    try {
+      const { data } = await publicApi.parentSignIn(check.data);
+      onSignedIn(data);
+    } catch (err) {
+      setError(err?.response?.data?.message || 'We couldn’t sign you in. Check your email and password.');
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <Box sx={{ p: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', display: 'grid', gap: 1.5 }}>
+      <Typography sx={{ fontWeight: 700 }}>Sign in to your Digifunzi account</Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ mt: -1 }}>
+        The account you use for your other children — we’ll fill in your details.
+      </Typography>
+      {error && <Alert severity="error">{error}</Alert>}
+      <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
+        <TextField label="Your email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+        <PasswordField label="Your password" value={password} onChange={(e) => setPassword(e.target.value)} inputProps={{ autoComplete: 'current-password' }}
+          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); signIn(); } }} />
+      </Box>
+      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+        <Button variant="contained" onClick={signIn} disabled={busy}>{busy ? 'Signing in…' : 'Sign in'}</Button>
+        <Button onClick={onCancel}>I’m new here</Button>
+      </Box>
+    </Box>
+  );
+}
+
 export default function BootcampEnrollForm({
   bootcampSlug,
   bootcampName,
@@ -145,20 +202,22 @@ export default function BootcampEnrollForm({
   defaultParentPhone = '',
   defaultLearnerName = '',
   defaultLearnerDateOfBirth = '',
-  // The website diagnostic they just took (its report's attemptId) — places the learner on that
-  // pathway at the course their score earns once they're enrolled.
+  // The website diagnostic they just took (its report's attemptId) — places the first learner on
+  // that pathway at the course their score earns once they're enrolled.
   attemptId = null,
 }) {
   const mutation = useSubmitBootcampEnrollment();
   const [spamBlocked, setSpamBlocked] = useState(false);
-  // The password never comes back from the API (it's never round-tripped once set) — captured
-  // here right before submit so the success screen below can still show it alongside the
-  // username. It's the same value the learner just typed into the form, not a secret being
-  // exposed anywhere it shouldn't be.
-  const [submittedPassword, setSubmittedPassword] = useState('');
+  // The passwords never come back from the API (they're never round-tripped once set) — captured
+  // here right before submit so the success screen below can still show each child's alongside
+  // their username. They're the values just typed into the form, not secrets exposed anywhere else.
+  const [submittedChildren, setSubmittedChildren] = useState([]);
   // The parent's phone, for the M-Pesa prompt on the Payment step.
   const [submittedPhone, setSubmittedPhone] = useState('');
-  const [submittedLearnerName, setSubmittedLearnerName] = useState('');
+  // The parent token (server: auth/parent-signup.js) — from "Sign in", or from the enrolment just
+  // made ("Enrol another child"): while it's held the parent's details and password are skipped.
+  const [parent, setParent] = useState(null); // { token, name, email, phone }
+  const [showSignIn, setShowSignIn] = useState(false);
   const { data: bootcamp, isLoading: bootcampLoading } = usePublicBootcamp(bootcampSlug);
   const runs = bootcamp?.upcomingRuns || [];
   const needsHubChoice = runs.length > 1;
@@ -186,27 +245,41 @@ export default function BootcampEnrollForm({
 
   const {
     register,
+    control,
     handleSubmit,
     reset,
+    setValue,
     watch,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(bootcampEnrollmentSchema),
     mode: 'onTouched',
     defaultValues: {
+      signedIn: false,
       parentName: defaultParentName,
       parentEmail: '',
       parentPhone: defaultParentPhone,
       parentPassword: '',
       confirmParentPassword: '',
-      learnerName: defaultLearnerName,
-      learnerDateOfBirth: defaultLearnerDateOfBirth,
-      username: '',
-      password: '',
-      confirmPassword: '',
+      children: [emptyChild(defaultLearnerName, defaultLearnerDateOfBirth)],
       ...HONEYPOT_DEFAULT,
     },
   });
+  const { fields, append, remove } = useFieldArray({ control, name: 'children' });
+
+  const signInAs = ({ token, parent: who }) => {
+    setParent({ token, ...who });
+    setShowSignIn(false);
+    setValue('signedIn', true);
+    setValue('parentName', who.name || '', { shouldValidate: true });
+    setValue('parentEmail', who.email, { shouldValidate: true });
+    if (who.phone) setValue('parentPhone', who.phone, { shouldValidate: true });
+  };
+  const signOut = () => {
+    setParent(null);
+    setValue('signedIn', false);
+    setValue('parentEmail', '');
+  };
 
   const onSubmit = async (values) => {
     if (isBot(values)) {
@@ -214,32 +287,54 @@ export default function BootcampEnrollForm({
       reset();
       return;
     }
-    setSubmittedPassword(values.password);
+    setSubmittedChildren(values.children.map((c) => ({ name: c.learnerName, username: c.username, password: c.password })));
     setSubmittedPhone(values.parentPhone);
-    setSubmittedLearnerName(values.learnerName);
     await mutation.mutateAsync({
       bootcampIdOrSlug: bootcampSlug,
       parentName: values.parentName,
       parentEmail: values.parentEmail,
       parentPhone: values.parentPhone,
-      parentPassword: values.parentPassword,
-      learnerName: values.learnerName,
-      learnerDateOfBirth: values.learnerDateOfBirth,
-      learnerAge: ageOn(values.learnerDateOfBirth),
-      username: values.username,
-      password: values.password,
+      ...(parent ? { parentToken: parent.token } : { parentPassword: values.parentPassword }),
+      children: values.children.map((c, i) => ({
+        learnerName: c.learnerName,
+        learnerDateOfBirth: c.learnerDateOfBirth,
+        learnerAge: ageOn(c.learnerDateOfBirth),
+        username: c.username,
+        password: c.password,
+        attemptId: i === 0 && attemptId ? attemptId : undefined,
+      })),
       hubId: hubId || undefined,
-      attemptId: attemptId || undefined,
     });
+  };
+
+  // "Enrol another child": back to the form for the same bootcamp and hub, signed in as the
+  // parent who just enrolled — only the new child's details to fill in.
+  const enrolAnother = () => {
+    const { parentToken, parentAccount } = mutation.data?.data || {};
+    if (parentToken && parentAccount) setParent({ token: parentToken, name: parentAccount.name, email: parentAccount.email, phone: parentAccount.phone });
+    reset({
+      signedIn: Boolean(parentToken),
+      parentName: parentAccount?.name || '',
+      parentEmail: parentAccount?.email || '',
+      parentPhone: parentAccount?.phone || submittedPhone,
+      parentPassword: '',
+      confirmParentPassword: '',
+      children: [emptyChild()],
+      ...HONEYPOT_DEFAULT,
+    });
+    mutation.reset();
+    goTo('details');
   };
 
   const selectedRun = runs.find((r) => r.hub.id === hubId);
   const flowRef = useScrollToFlowTop(`${moves}:${mutation.isSuccess}:${spamBlocked}`);
 
-  // ---- Success: the account is ready with the login they just chose --------
+  // ---- Success: the accounts are ready with the logins they just chose --------
   if (mutation.isSuccess) {
-    const { learnerUsername, parentAccount, payment } = mutation.data?.data || {};
-    const learnerFirstName = (submittedLearnerName || '').trim().split(/\s+/)[0] || 'The learner';
+    const { parentAccount, payment, parentToken } = mutation.data?.data || {};
+    const firstName = (name) => (name || '').trim().split(/\s+/)[0] || 'The learner';
+    const names = submittedChildren.map((c) => firstName(c.name));
+    const childNames = names.length > 1 ? `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}` : names[0] || 'the learner';
     const hasPrice = payment?.amount != null;
     return (
       <Box
@@ -256,11 +351,11 @@ export default function BootcampEnrollForm({
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mt: 2, mb: 0.5 }}>
           <CheckCircleIcon color="success" />
           <Typography variant="h5" component="h2" sx={{ fontWeight: 800 }}>
-            You’re enrolled in {bootcampName} — now pay
+            {names.length > 1 ? `${childNames} are` : `${childNames} is`} enrolled in {bootcampName} — now pay
           </Typography>
         </Box>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5 }}>
-          Two logins are ready: yours, to follow progress and pay, and {learnerFirstName}&rsquo;s own. Both work right away
+          The logins are ready: yours, to follow progress and pay, and {names.length > 1 ? 'each child’s own' : `${childNames}’s own`}. They work right away
           but stay view-only until your payment is confirmed.
         </Typography>
 
@@ -273,13 +368,18 @@ export default function BootcampEnrollForm({
               amountDue={payment.amount}
               invoiceNumber={payment.invoiceNumber}
               defaultPhone={submittedPhone}
-              paidMessage="Your account now has full access — log in with the details below."
+              paidMessage="Full access is on — log in with the details below."
             />
+            {payment.children > 1 && (
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: -2, mb: 2.5, textAlign: 'center' }}>
+                {payment.children} learners × {payment.currency} {Number(payment.perChild).toLocaleString()} each, on one invoice.
+              </Typography>
+            )}
             {/* This bootcamp is priced by course/module rather than as a whole — the total is the
                 sum of every priced course (or module), since enrollment covers the whole bootcamp. */}
             {payment.mode === 'by_course' && (
-              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: -2, mb: 2.5, textAlign: 'center' }}>
-                This total combines this bootcamp’s individually priced courses/modules — see the
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: payment.children > 1 ? -1.5 : -2, mb: 2.5, textAlign: 'center' }}>
+                The price combines this bootcamp’s individually priced courses/modules — see the
                 “Pathway courses” section on the bootcamp page for the breakdown.
               </Typography>
             )}
@@ -296,27 +396,36 @@ export default function BootcampEnrollForm({
             <CopyableField label="Email" value={parentAccount?.email} />
             <Typography variant="body2" color="text.secondary">
               {parentAccount?.existing
-                ? `Sign in with your existing password — ${learnerFirstName} has been added to your account.`
+                ? `Sign in with your existing password — ${childNames} ${names.length > 1 ? 'have' : 'has'} been added to your account.`
                 : 'Sign in with the password you just chose.'}
             </Typography>
           </Box>
-          <Box sx={{ p: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', display: 'grid', gap: 1.25, alignContent: 'start' }}>
-            <Typography sx={{ fontWeight: 800 }}>{learnerFirstName}&rsquo;s login</Typography>
-            <CopyableField label="Username" value={learnerUsername} />
-            <CopyableField label="Password" value={submittedPassword} />
-          </Box>
+          {submittedChildren.map((child) => (
+            <Box key={child.username} sx={{ p: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', display: 'grid', gap: 1.25, alignContent: 'start' }}>
+              <Typography sx={{ fontWeight: 800 }}>{firstName(child.name)}&rsquo;s login</Typography>
+              <CopyableField label="Username" value={child.username} />
+              <CopyableField label="Password" value={child.password} />
+            </Box>
+          ))}
         </Box>
 
-        <Button
-          variant="contained"
-          size="large"
-          fullWidth
-          href={`${APP_URL}/login`}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Go to login
-        </Button>
+        <Box sx={{ display: 'grid', gap: 1.5 }}>
+          <Button
+            variant="contained"
+            size="large"
+            fullWidth
+            href={`${APP_URL}/login`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Go to login
+          </Button>
+          {parentToken && (
+            <Button variant="outlined" size="large" fullWidth startIcon={<PersonAddAltRoundedIcon />} onClick={enrolAnother}>
+              Enrol another child — no need to type your password again
+            </Button>
+          )}
+        </Box>
       </Box>
     );
   }
@@ -386,8 +495,8 @@ export default function BootcampEnrollForm({
           Enroll in {bootcampName}
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-          We’ll set up your account and the learner’s right away so you can get started. Next you choose how to
-          pay — your account unlocks fully as soon as the payment is confirmed.
+          We’ll set up your account and each learner’s right away so you can get started. Next you choose how to
+          pay — the accounts unlock fully as soon as the payment is confirmed.
         </Typography>
       </Box>
 
@@ -411,101 +520,147 @@ export default function BootcampEnrollForm({
 
       <Honeypot register={register} />
 
-      <TextField
-        label="Your name"
-        required
-        {...register('parentName')}
-        error={!!errors.parentName}
-        helperText={errors.parentName?.message}
-      />
-      <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
-        <TextField
-          label="Your email"
-          type="email"
-          required
-          {...register('parentEmail')}
-          error={!!errors.parentEmail}
-          helperText={errors.parentEmail?.message}
-        />
-        <TextField
-          label="Your phone"
-          required
-          {...register('parentPhone')}
-          error={!!errors.parentPhone}
-          helperText={errors.parentPhone?.message}
-        />
-      </Box>
-      <Box>
-        <Typography sx={{ fontWeight: 700 }}>Your parent account</Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25, mb: 1.5 }}>
-          Sign in with your email and this password to follow progress and pay invoices. Already have
-          a Digifunzi account with this email? Use its password.
-        </Typography>
-        <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
-          <PasswordField
-            label="Your password"
-            required
-            {...register('parentPassword')}
-            error={errors.parentPassword}
-            helperText="At least 6 characters"
-          />
-          <PasswordField
-            label="Confirm your password"
-            required
-            {...register('confirmParentPassword')}
-            error={errors.confirmParentPassword}
-          />
-        </Box>
-      </Box>
-
-      <Typography sx={{ fontWeight: 700, mb: -0.5 }}>The learner</Typography>
-      <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '2fr 1fr' } }}>
-        <TextField
-          label="Learner's name"
-          required
-          {...register('learnerName')}
-          error={!!errors.learnerName}
-          helperText={errors.learnerName?.message}
-        />
-        <DateOfBirthField
-          required
-          registration={register('learnerDateOfBirth')}
-          value={watch('learnerDateOfBirth')}
-          error={errors.learnerDateOfBirth}
-        />
-      </Box>
-
-      <Box>
-        <Typography sx={{ fontWeight: 700, mb: 1.5 }}>Set up the learner&rsquo;s login</Typography>
-        <Box sx={{ display: 'grid', gap: 2 }}>
+      {/* ---- The parent: signed in (details and password skipped), or filled in ---- */}
+      {parent ? (
+        <>
+          <Box sx={{ p: 2, borderRadius: 3, border: '1px solid', borderColor: 'success.light', bgcolor: 'background.paper', display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+            <CheckCircleIcon color="success" />
+            <Box sx={{ flex: 1, minWidth: 180 }}>
+              <Typography sx={{ fontWeight: 700 }}>Signed in as {parent.name || parent.email}</Typography>
+              <Typography variant="body2" color="text.secondary">{parent.email} — the learners join this account.</Typography>
+            </Box>
+            <Button size="small" onClick={signOut}>Not you?</Button>
+          </Box>
           <TextField
-            label="Choose a username"
+            label="Your phone"
             required
-            autoComplete="username"
-            {...register('username')}
-            error={!!errors.username}
-            helperText={errors.username?.message || 'Letters, numbers, dots, underscores and hyphens only'}
+            {...register('parentPhone')}
+            error={!!errors.parentPhone}
+            helperText={errors.parentPhone?.message || 'For the M-Pesa prompt and the hub to reach you'}
+          />
+        </>
+      ) : showSignIn ? (
+        <ParentSignIn onSignedIn={signInAs} onCancel={() => setShowSignIn(false)} />
+      ) : (
+        <>
+          <Alert severity="info" icon={false} sx={{ py: 0.25 }}>
+            Already have a Digifunzi account (for another child)?{' '}
+            <Button size="small" onClick={() => setShowSignIn(true)} sx={{ verticalAlign: 'baseline', px: 0.5, minWidth: 0 }}>Sign in</Button>
+            {' '}— we’ll fill in your details.
+          </Alert>
+          <TextField
+            label="Your name (parent or guardian)"
+            required
+            {...register('parentName')}
+            error={!!errors.parentName}
+            helperText={errors.parentName?.message}
           />
           <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
-            <PasswordField
-              label="Create a password"
+            <TextField
+              label="Your email"
+              type="email"
               required
-              {...register('password')}
-              error={errors.password}
-              helperText="At least 6 characters"
+              {...register('parentEmail')}
+              error={!!errors.parentEmail}
+              helperText={errors.parentEmail?.message}
             />
-            <PasswordField
-              label="Confirm password"
+            <TextField
+              label="Your phone"
               required
-              {...register('confirmPassword')}
-              error={errors.confirmPassword}
+              {...register('parentPhone')}
+              error={!!errors.parentPhone}
+              helperText={errors.parentPhone?.message}
             />
           </Box>
-        </Box>
-      </Box>
+          <Box>
+            <Typography sx={{ fontWeight: 700 }}>Your parent account</Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25, mb: 1.5 }}>
+              Sign in with your email and this password to follow progress and pay invoices. Already have
+              a Digifunzi account with this email? Use its password.
+            </Typography>
+            <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
+              <PasswordField
+                label="Your password"
+                required
+                {...register('parentPassword')}
+                error={errors.parentPassword}
+                helperText="At least 6 characters"
+              />
+              <PasswordField
+                label="Confirm your password"
+                required
+                {...register('confirmParentPassword')}
+                error={errors.confirmParentPassword}
+              />
+            </Box>
+          </Box>
+        </>
+      )}
+
+      {/* ---- The learners: one block each, all on this one enrolment and invoice ---- */}
+      {fields.map((field, index) => {
+        const e = errors.children?.[index] || {};
+        const many = fields.length > 1;
+        return (
+          <Box key={field.id} sx={{ display: 'grid', gap: 2, ...(many ? { p: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' } : {}) }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, mb: -0.5 }}>
+              <Typography sx={{ fontWeight: 700 }}>{many ? `Learner ${index + 1}` : 'The learner'}</Typography>
+              {index > 0 && (
+                <Button size="small" color="inherit" startIcon={<RemoveCircleOutlineRoundedIcon />} onClick={() => remove(index)}>
+                  Remove
+                </Button>
+              )}
+            </Box>
+            <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '2fr 1fr' } }}>
+              <TextField
+                label="Learner's name"
+                required
+                {...register(`children.${index}.learnerName`)}
+                error={!!e.learnerName}
+                helperText={e.learnerName?.message}
+              />
+              <DateOfBirthField
+                required
+                registration={register(`children.${index}.learnerDateOfBirth`)}
+                value={watch(`children.${index}.learnerDateOfBirth`)}
+                error={e.learnerDateOfBirth}
+              />
+            </Box>
+            <Typography sx={{ fontWeight: 600, fontSize: 14, mb: -0.5 }}>Their own login</Typography>
+            <TextField
+              label="Choose a username"
+              required
+              autoComplete="off"
+              {...register(`children.${index}.username`)}
+              error={!!e.username}
+              helperText={e.username?.message || 'Letters, numbers, dots, underscores and hyphens only'}
+            />
+            <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
+              <PasswordField
+                label="Create a password"
+                required
+                {...register(`children.${index}.password`)}
+                error={e.password}
+                helperText="At least 6 characters"
+              />
+              <PasswordField
+                label="Confirm password"
+                required
+                {...register(`children.${index}.confirmPassword`)}
+                error={e.confirmPassword}
+              />
+            </Box>
+          </Box>
+        );
+      })}
+      {fields.length < MAX_CHILDREN && (
+        <Button variant="outlined" startIcon={<AddRoundedIcon />} onClick={() => append(emptyChild())} sx={{ justifySelf: 'start' }}>
+          Add another child
+        </Button>
+      )}
 
       <Button type="submit" variant="contained" size="large" disabled={isSubmitting || mutation.isPending}>
-        {isSubmitting || mutation.isPending ? 'Setting up your account…' : 'Continue to payment'}
+        {isSubmitting || mutation.isPending ? 'Setting up the accounts…' : 'Continue to payment'}
       </Button>
       <PrivacyNote>We use your details only to set up and manage this account. See our</PrivacyNote>
     </Box>

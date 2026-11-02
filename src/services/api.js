@@ -154,6 +154,10 @@ export const publicApi = {
   // cash payment against it (see server: bootcamp-enrollment.service.js).
   submitBootcampEnrollment: (payload) =>
     api.post('/api/public/bootcamp-enrollments', payload).then((r) => r.data),
+  // "Already have a Digifunzi account? Sign in" on a sign-up: a short-lived parent token and the
+  // parent's details — never a portal session (server: auth/parent-signup.js).
+  parentSignIn: (payload) =>
+    api.post('/api/public/parent-sign-in', payload).then((r) => r.data),
 
   // ---- Home Schooling sign-up (creates the family's accounts) ----------------------
   // Creates the household, the parent's login (email + password) and each child's login

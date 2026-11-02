@@ -127,28 +127,52 @@ const username = z
  * parentPassword is the parent's own login (their email + this password); a family that already
  * has a Digifunzi account under that email gives that account's password instead.
  */
-export const bootcampEnrollmentSchema = z
+// One child on a bootcamp enrolment: their name, date of birth and their own login.
+const bootcampChild = z
   .object({
-    parentName: z.string().trim().min(2, 'Please enter your name').max(120),
-    parentEmail: z.string().trim().email('Enter a valid email address').max(160),
-    parentPhone: phone,
-    parentPassword: z.string().min(6, 'At least 6 characters').max(72),
-    confirmParentPassword: z.string().min(1, 'Please confirm your password'),
     learnerName: z.string().trim().min(2, 'Please enter the learner’s name').max(120),
     learnerDateOfBirth,
     username,
     password: z.string().min(6, 'Password must be at least 6 characters').max(72),
-    confirmPassword: z.string().min(1, 'Please confirm your password'),
-    ...honeypot,
+    confirmPassword: z.string().min(1, 'Please confirm the password'),
   })
-  .refine((data) => data.parentPassword === data.confirmParentPassword, {
-    message: 'Passwords don’t match',
-    path: ['confirmParentPassword'],
-  })
-  .refine((data) => data.password === data.confirmPassword, {
+  .refine((child) => child.password === child.confirmPassword, {
     message: 'Passwords don’t match',
     path: ['confirmPassword'],
   });
+
+// Bootcamp enrolment → POST /api/public/bootcamp-enrollments. One parent, one or more children
+// (each with their own login). `signedIn` is set when the parent proved their password already —
+// "Sign in", or "Enrol another child" after an enrolment — and then no password is asked for.
+export const bootcampEnrollmentSchema = z
+  .object({
+    signedIn: z.boolean(),
+    parentName: z.string().trim().min(2, 'Please enter your name').max(120),
+    parentEmail: z.string().trim().email('Enter a valid email address').max(160),
+    parentPhone: phone,
+    parentPassword: z.string().max(72),
+    confirmParentPassword: z.string(),
+    children: z.array(bootcampChild).min(1, 'Add a learner').max(6, 'Up to 6 learners at a time'),
+    ...honeypot,
+  })
+  .superRefine((data, ctx) => {
+    if (!data.signedIn) {
+      if (data.parentPassword.length < 6) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['parentPassword'], message: 'At least 6 characters' });
+      else if (data.parentPassword !== data.confirmParentPassword) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['confirmParentPassword'], message: 'Passwords don’t match' });
+    }
+    const seen = new Set();
+    data.children.forEach((child, i) => {
+      const key = child.username.trim().toLowerCase();
+      if (key && seen.has(key)) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['children', i, 'username'], message: 'Each learner needs their own username' });
+      seen.add(key);
+    });
+  });
+
+/** Bootcamp enrolment's "Already have a Digifunzi account? Sign in". */
+export const parentSignInSchema = z.object({
+  email: z.string().trim().email('Enter a valid email address'),
+  password: z.string().min(1, 'Enter your password'),
+});
 
 /**
  * Home Schooling sign-up → POST /api/public/home-learning/signups. Mirrors the server's
