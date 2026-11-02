@@ -6,6 +6,9 @@ import JsonLd, { organizationSchema } from '../components/seo/JsonLd.jsx';
 import PageHeader from '../components/common/PageHeader.jsx';
 import Section from '../components/common/Section.jsx';
 import EnrollForm from '../components/forms/EnrollForm.jsx';
+import PathwayEnrollForm from '../components/forms/PathwayEnrollForm.jsx';
+import { usePathway } from '../hooks/usePathways.js';
+import PathwayEnrolJourney from '../components/pathway/PathwayEnrolJourney.jsx';
 import { getProject } from '../content/projects.js';
 import { LoadingBlock } from '../components/common/StateViews.jsx';
 import { childrenLabel, packageEnquiryNote, priceForPackage } from '../content/homeSchooling.js';
@@ -48,6 +51,10 @@ export default function EnrollPage() {
     ? childrenParam
     : null;
   const isPathwayFlow = params.get('flow') === 'pathway';
+  // A priced pathway that runs at chosen hubs is enrolled and paid for here (PathwayEnrollForm);
+  // any other pathway still sends an enquiry (EnrollForm).
+  const pathwayQuery = usePathway(isPathwayFlow ? referenceId : null);
+  const paidPathway = isPathwayFlow && pathwayQuery.data?.price && (pathwayQuery.data.hubs || []).length > 0 ? pathwayQuery.data : null;
   const clubName = (params.get('club') || '').trim().slice(0, 120);
 
   // A project / store reference (or an explicit ?enquiry=1) switches to the lighter enquiry
@@ -68,6 +75,34 @@ export default function EnrollPage() {
     : suggestedCourse
       ? `${suggestedCourse} (suggested starting course)`
       : clubName || undefined;
+
+  // The enquiry (not paid) form — also what a pathway's journey ends in when it isn't priced. A
+  // diagnostic taken on the way is noted on the enquiry.
+  const enquiryForm = (defaults = {}, attemptId = null) => {
+    const baseMessage = homeSchoolingPackage
+      ? packageEnquiryNote(homeSchoolingPackage, familyChildren)
+      : isHomeSchooling
+        ? 'I am interested in Home Schooling. Please contact me to discuss package options.'
+        : suggestedCourse
+          ? `Suggested starting course based on age: ${suggestedCourse}`
+          : clubName ? `I'm interested in the ${clubName}.` : undefined;
+    const note = attemptId ? `Took the website diagnostic (attempt ${attemptId}).` : null;
+    return (
+      <EnrollForm
+        key={homeSchoolingPackage?.slug || 'form'}
+        variant={isEnquiry ? 'enquiry' : 'enroll'}
+        withHub={isPathwayFlow}
+        defaultHubId={isPathwayFlow ? params.get('hubId') : null}
+        defaultInterest={defaultInterest}
+        referenceId={homeSchoolingPackage ? homeSchoolingPackage.slug : referenceId}
+        referenceLabel={homeSchoolingPackage
+          ? `Home Schooling — ${homeSchoolingPackage.name} (${childrenLabel(familyChildren || homeSchoolingPackage.childrenIncluded)})`
+          : isHomeSchooling ? 'Home Schooling' : referenceLabel}
+        defaultMessage={[note, baseMessage].filter(Boolean).join('\n') || undefined}
+        defaults={defaults}
+      />
+    );
+  };
 
   return (
     <>
@@ -92,32 +127,40 @@ export default function EnrollPage() {
             : isEnquiry
             ? 'Tell us what you’re interested in and we’ll confirm the price, arrange payment and get you set up. No account or commitment needed to ask.'
             : isPathwayFlow
-              ? 'First pick where the learner would attend and check its schedule, then add your details. This isn’t a payment or a binding sign-up — our team will get in touch to arrange a place.'
+              ? paidPathway
+                ? 'Start with the learner’s date of birth — if there’s a diagnostic for their age, a short quiz places them at the right course (you can skip it). Then choose a hub, add your details and pay.'
+                : 'Start with the learner’s date of birth — if there’s a diagnostic for their age, a short quiz places them at the right course (you can skip it). Then pick where they would attend and add your details; our team will get in touch to arrange a place.'
               : 'Tell us about your child and what you’re interested in. This isn’t a payment or a binding sign-up — our team will get in touch to talk through options and next steps.'
         }
       />
 
       <Section>
         <Box sx={{ maxWidth: isPathwayFlow ? 720 : 640, mx: 'auto' }}>
-          {packageSlug && packageQuery.isLoading ? <LoadingBlock label="Loading package…" /> : <EnrollForm
-            key={homeSchoolingPackage?.slug || 'form'}
-            variant={isEnquiry ? 'enquiry' : 'enroll'}
-            withHub={isPathwayFlow}
-            defaultInterest={defaultInterest}
-            referenceId={homeSchoolingPackage ? homeSchoolingPackage.slug : referenceId}
-            referenceLabel={homeSchoolingPackage
-              ? `Home Schooling — ${homeSchoolingPackage.name} (${childrenLabel(familyChildren || homeSchoolingPackage.childrenIncluded)})`
-              : isHomeSchooling ? 'Home Schooling' : referenceLabel}
-            defaultMessage={
-              homeSchoolingPackage
-                ? packageEnquiryNote(homeSchoolingPackage, familyChildren)
-                : isHomeSchooling
-                  ? 'I am interested in Home Schooling. Please contact me to discuss package options.'
-                  : suggestedCourse
-                    ? `Suggested starting course based on age: ${suggestedCourse}`
-                    : clubName ? `I'm interested in the ${clubName}.` : undefined
-            }
-          />}
+          {packageSlug && packageQuery.isLoading ? <LoadingBlock label="Loading package…" /> : isPathwayFlow && referenceId && pathwayQuery.isLoading ? <LoadingBlock label="Loading pathway…" /> : isPathwayFlow && pathwayQuery.data && !params.get('attempt') ? (
+            // Every pathway enrolment starts with the learner's date of birth and, when there is
+            // one for their age, the diagnostic — then the enrolment itself.
+            <PathwayEnrolJourney pathway={pathwayQuery.data} slug={referenceId} stageSlug={params.get('stage')}>
+              {(start) => (paidPathway ? (
+                <PathwayEnrollForm
+                  pathway={paidPathway}
+                  defaultHubId={params.get('hubId')}
+                  attemptId={start.attemptId}
+                  defaultLearnerName={start.childName}
+                  defaultLearnerDateOfBirth={start.dateOfBirth}
+                  defaultParentName={start.parentName}
+                  defaultParentPhone={start.parentPhone}
+                />
+              ) : enquiryForm({ parentName: start.parentName, parentPhone: start.parentPhone, learnerName: start.childName, learnerDateOfBirth: start.dateOfBirth }, start.attemptId))}
+            </PathwayEnrolJourney>
+          ) : paidPathway ? (
+            <PathwayEnrollForm
+              pathway={paidPathway}
+              defaultHubId={params.get('hubId')}
+              attemptId={params.get('attempt')}
+              defaultLearnerName={params.get('childName') || ''}
+              defaultLearnerDateOfBirth={params.get('dob') || ''}
+            />
+          ) : enquiryForm({ learnerName: params.get('childName') || '', learnerDateOfBirth: params.get('dob') || '' }, params.get('attempt'))}
           <Typography variant="body2" color="text.secondary" sx={{ mt: 4 }}>
             Prefer to talk first? Use the <a href="/contact">contact form</a> and we’ll call you back.
           </Typography>

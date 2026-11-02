@@ -154,6 +154,10 @@ export const publicApi = {
   // cash payment against it (see server: bootcamp-enrollment.service.js).
   submitBootcampEnrollment: (payload) =>
     api.post('/api/public/bootcamp-enrollments', payload).then((r) => r.data),
+  // A priced pathway's enrolment: logins, the chosen hub, one invoice to pay (server:
+  // pathway-enrollment/).
+  submitPathwayEnrollment: (payload) =>
+    api.post('/api/public/pathway-enrollments', payload).then((r) => r.data),
   // "Already have a Digifunzi account? Sign in" on a sign-up: a short-lived parent token and the
   // parent's details — never a portal session (server: auth/parent-signup.js).
   parentSignIn: (payload) =>

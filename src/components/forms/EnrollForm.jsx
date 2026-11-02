@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Box from '@mui/material/Box';
@@ -10,6 +10,7 @@ import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import Chip from '@mui/material/Chip';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
 import { enrollSchema, pathwayEnrollSchema, storeEnquirySchema } from './schemas.js';
 import DateOfBirthField from './DateOfBirthField.jsx';
 import { ageOn } from '../../utils/dates.js';
@@ -19,6 +20,7 @@ import FormStatus from './FormStatus.jsx';
 import PrivacyNote from './PrivacyNote.jsx';
 import Honeypot, { HONEYPOT_DEFAULT, isBot } from './Honeypot.jsx';
 import HubTypeSchedule from './HubTypeSchedule.jsx';
+import { usePathway } from '../../hooks/usePathways.js';
 import useScrollToFlowTop from '../../hooks/useScrollToFlowTop.js';
 
 // `value` must stay within the lead API's enum (bootcamp | project | quarky | home_schooling |
@@ -56,6 +58,11 @@ export const INTEREST_OPTIONS = [
  *  - referenceId: slug of the store item / pathway they came from → `referenceId`
  *  - referenceLabel: human label shown as read-only context
  *  - defaultMessage: pre-fills the "anything else" field
+ *  - defaultHubId: a hub already chosen on the pathway page ("Enrol here")
+ *
+ * A pathway that runs at chosen hubs (its page's "Where it runs" — set in the curriculum system)
+ * offers just those hubs on the hub step instead of the hub-type picker; the chosen hub is sent
+ * as the enquiry's hubId, so that hub's team follows up.
  */
 export default function EnrollForm({
   variant = 'enroll',
@@ -64,6 +71,10 @@ export default function EnrollForm({
   referenceId = null,
   referenceLabel,
   defaultMessage = '',
+  defaultHubId = null,
+  // Details already given (a pathway's diagnostic, PathwayEnrolJourney): parentName, parentPhone,
+  // learnerName, learnerDateOfBirth.
+  defaults = {},
 }) {
   const isEnquiry = variant === 'enquiry';
   const isHomeSchooling = defaultInterest === 'home_schooling';
@@ -86,11 +97,11 @@ export default function EnrollForm({
     resolver: zodResolver(schema),
     mode: 'onTouched',
     defaultValues: {
-      parentName: '',
+      parentName: defaults.parentName || '',
       parentEmail: '',
-      parentPhone: '',
-      learnerName: '',
-      learnerDateOfBirth: '',
+      parentPhone: defaults.parentPhone || '',
+      learnerName: defaults.learnerName || '',
+      learnerDateOfBirth: defaults.learnerDateOfBirth || '',
       interestedIn: defaultInterest,
       message: defaultMessage,
       ...(withHub ? { hubType: '', hubId: '', hubName: '' } : {}),
@@ -100,6 +111,23 @@ export default function EnrollForm({
 
   const hubType = watch('hubType');
   const hubName = watch('hubName');
+  const hubId = watch('hubId');
+
+  // The pathway's own hubs, when it runs at chosen ones.
+  const { data: pathway } = usePathway(withHub ? referenceId : null);
+  const pathwayHubs = pathway?.hubs || [];
+  const pickHub = (hub) => {
+    setValue('hubType', hub.hubType || 'pathway', { shouldValidate: true });
+    setValue('hubId', hub.id);
+    setValue('hubName', hub.name);
+  };
+  // A hub chosen on the pathway page ("Enrol here"), or the only one it runs at, is picked already.
+  useEffect(() => {
+    if (!pathwayHubs.length || hubId) return;
+    const chosen = pathwayHubs.find((h) => h.id === defaultHubId) || (pathwayHubs.length === 1 ? pathwayHubs[0] : null);
+    if (chosen) pickHub(chosen);
+  }, [pathwayHubs.length, defaultHubId]); // eslint-disable-line react-hooks/exhaustive-deps
+  const label = referenceLabel || pathway?.name;
 
   const goToDetails = async () => {
     const ok = await trigger('hubType', { shouldFocus: true });
@@ -120,7 +148,7 @@ export default function EnrollForm({
     const interest = INTEREST_OPTIONS.find((o) => o.value === values.interestedIn);
     if (interest?.wire) parts.push(`Interested in: ${interest.label}`);
     if (withHub && values.hubType) {
-      parts.push(`Preferred hub type: ${HUB_TYPE_LABELS[values.hubType] || values.hubType}`);
+      if (!pathwayHubs.length) parts.push(`Preferred hub type: ${HUB_TYPE_LABELS[values.hubType] || values.hubType}`);
       if (values.hubName) parts.push(`Chosen hub: ${values.hubName}`);
     }
     if (values.message) parts.push(values.message.trim());
@@ -136,6 +164,7 @@ export default function EnrollForm({
       learnerAge: values.learnerDateOfBirth ? ageOn(values.learnerDateOfBirth) : null,
       interestedIn: interest?.wire || values.interestedIn,
       referenceId: referenceId || null,
+      hubId: withHub && values.hubId ? values.hubId : undefined,
       note,
     });
     reset();
@@ -161,12 +190,39 @@ export default function EnrollForm({
           <Step><StepLabel>Your details</StepLabel></Step>
         </Stepper>
 
-        {referenceLabel && (
+        {label && (
           <Typography variant="body2" color="text.secondary">
-            Enrolling for: <strong>{referenceLabel}</strong>
+            Enrolling for: <strong>{label}</strong>
           </Typography>
         )}
 
+        {pathwayHubs.length > 0 ? (
+          <Box>
+            <Typography variant="h6" component="h2" gutterBottom>
+              Where would the learner attend?
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              {pathway?.name || 'This pathway'} runs at {pathwayHubs.length === 1 ? 'this hub' : 'these hubs'} — pick the one that suits you, then add your details.
+            </Typography>
+            <Box sx={{ display: 'grid', gap: 1.5 }}>
+              {pathwayHubs.map((hub) => {
+                const selected = hubId === hub.id;
+                return (
+                  <Box key={hub.id} component="button" type="button" onClick={() => pickHub(hub)}
+                    sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, width: '100%', textAlign: 'left', p: 2, borderRadius: 3, border: '2px solid', borderColor: selected ? 'primary.main' : 'divider', bgcolor: selected ? 'primary.main' : 'background.paper', color: selected ? 'primary.contrastText' : 'text.primary', cursor: 'pointer', font: 'inherit' }}>
+                    <PlaceOutlinedIcon sx={{ mt: 0.25 }} />
+                    <Box sx={{ minWidth: 0 }}>
+                      <Typography sx={{ fontWeight: 700 }}>{hub.name}</Typography>
+                      <Typography variant="body2" sx={{ opacity: selected ? 0.85 : 1, color: selected ? 'inherit' : 'text.secondary' }}>
+                        {[hub.town, hub.deliveryMode !== 'in_person' ? hub.deliveryLabel : null].filter(Boolean).join(' · ') || hub.deliveryLabel}
+                      </Typography>
+                    </Box>
+                  </Box>
+                );
+              })}
+            </Box>
+          </Box>
+        ) : (
         <Box>
           <Typography variant="h6" component="h2" gutterBottom>
             Where would the learner attend?
@@ -191,6 +247,7 @@ export default function EnrollForm({
             )}
           />
         </Box>
+        )}
 
         <Button
           variant="contained"
@@ -223,7 +280,7 @@ export default function EnrollForm({
               Change hub
             </Button>
             <Chip
-              label={`${HUB_TYPE_LABELS[hubType] || hubType}${hubName ? ` · ${hubName}` : ''}`}
+              label={pathwayHubs.length ? hubName : `${HUB_TYPE_LABELS[hubType] || hubType}${hubName ? ` · ${hubName}` : ''}`}
               color="primary"
               variant="outlined"
               sx={{ fontWeight: 600 }}

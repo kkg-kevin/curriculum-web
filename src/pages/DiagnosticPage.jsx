@@ -16,7 +16,6 @@ import { usePathway } from '../hooks/usePathways.js';
 import { usePublicBootcamp } from '../hooks/usePublicBootcamps.js';
 import { useDiagnostic, useSubmitDiagnostic } from '../hooks/useDiagnostic.js';
 import { diagnosticContactSchema } from '../components/forms/schemas.js';
-import { whatsAppUrl } from '../config/site.js';
 import { ageLabel } from '../utils/format.js';
 import DiagnosticAnswerForm from '../components/diagnostic/DiagnosticAnswerForm.jsx';
 import DiagnosticReport from '../components/diagnostic/DiagnosticReport.jsx';
@@ -48,6 +47,9 @@ export default function DiagnosticPage() {
   const { slug } = useParams();
   const [searchParams] = useSearchParams();
   const bootcampSlug = searchParams.get('bootcamp') || null;
+  // Opened from a developmental stage's page (?stage=<its slug>): that stage's diagnostic only, for
+  // its ages. From the pathway's own page: every stage's, across the whole pathway's age range.
+  const stageSlug = searchParams.get('stage') || null;
   const { data: pathway, isLoading: pathwayLoading } = usePathway(slug);
   const { data: bootcamp } = usePublicBootcamp(bootcampSlug);
 
@@ -104,25 +106,21 @@ export default function DiagnosticPage() {
   }
 
   const pathwayName = pathway?.name || 'this pathway';
-  const diagMinAge = pathway?.diagnostic?.minAge ?? null;
-  const diagMaxAge = pathway?.diagnostic?.maxAge ?? null;
-  const diagGroups = (pathway?.stages || [])
-    .filter((s) => s.diagnostic?.available)
+  const offered = (pathway?.stages || []).filter((s) => s.diagnostic?.available);
+  const stage = stageSlug ? offered.find((s) => s.slug === stageSlug) || null : null;
+  // The stage's own diagnostic when opened from a stage; otherwise every stage's.
+  const diagGroups = (stage ? [stage] : offered)
     .map((s) => ({ name: s.name, minAge: s.diagnostic.minAge, maxAge: s.diagnostic.maxAge }));
+  const finite = (list) => list.filter(Number.isFinite);
+  const diagMinAge = diagGroups.length ? Math.min(...finite(diagGroups.map((g) => g.minAge))) : pathway?.diagnostic?.minAge ?? null;
+  const diagMaxAge = diagGroups.length ? Math.max(...finite(diagGroups.map((g) => g.maxAge))) : pathway?.diagnostic?.maxAge ?? null;
+  const rangeText = Number.isFinite(diagMinAge) && Number.isFinite(diagMaxAge) ? `ages ${diagMinAge}–${diagMaxAge}` : null;
   const ageGroup = groupForAge(diagGroups, age);
   const changeAge = () => {
     setAnswers([]);
     setStep(STEP.AGE);
   };
 
-  // "Speak to a mentor" → WhatsApp, pre-filled with the pathway + the learner's name if given.
-  // whatsAppUrl returns null until a real number is set in src/config/site.js — until then the
-  // button falls back to the contact page so it's never a dead end.
-  const mentorWhatsApp = whatsAppUrl(
-    `Hi Digifunzi — my child ${childName ? `(${childName}) ` : ''}just did the ${pathwayName} diagnostic and I'd like to talk through next steps.`,
-  );
-  const mentorHref = mentorWhatsApp || '/contact?subject=Diagnostic%20follow-up';
-  const mentorIsExternal = Boolean(mentorWhatsApp);
 
   const isReport = step === STEP.REPORT;
   const learnerLabel = childName || 'your learner';
@@ -151,10 +149,15 @@ export default function DiagnosticPage() {
             <Link component={RouterLink} to={`/pathways/${slug}`} underline="hover" color="inherit">
               {pathwayName}
             </Link>
+            {stage && (
+              <Link component={RouterLink} to={`/pathways/${slug}/${stage.slug}`} underline="hover" color="inherit">
+                {stage.name}
+              </Link>
+            )}
             <Typography color="text.primary">Diagnostic</Typography>
           </Breadcrumbs>
           <Typography variant="h1" component="h1" sx={{ fontSize: { xs: 28, md: 36 } }}>
-            {isReport ? `How ${learnerLabel} did` : `${pathwayName} Diagnostic`}
+            {isReport ? `How ${learnerLabel} did` : stage ? `${pathwayName} — ${stage.name} Diagnostic` : `${pathwayName} Diagnostic`}
           </Typography>
           {isReport && (
             <Typography
@@ -176,13 +179,21 @@ export default function DiagnosticPage() {
             onSubmit={handleBirthDateSubmit}
             defaultDateOfBirth={dateOfBirth}
             checkAge={(a) => {
-              if (diagGroups.length > 0) return groupForAge(diagGroups, a) ? null : 'There is no diagnostic for that age yet.';
-              if (Number.isFinite(diagMinAge) && Number.isFinite(diagMaxAge) && (a < diagMinAge || a > diagMaxAge)) {
-                return `This diagnostic is for ages ${diagMinAge}–${diagMaxAge}.`;
+              // Outside the range (the stage's, or the whole pathway's): say what the range is.
+              if (rangeText && (a < diagMinAge || a > diagMaxAge)) {
+                return stage
+                  ? `The ${stage.name} diagnostic is for ${rangeText} — the learner is ${a}. Try the ${pathwayName} diagnostic for every age.`
+                  : `This diagnostic is for ${rangeText} — the learner is ${a}.`;
+              }
+              // Inside the pathway's range but between stages that have a diagnostic.
+              if (diagGroups.length > 0 && !groupForAge(diagGroups, a)) {
+                return `There is no diagnostic for age ${a} yet — it's offered for ${diagGroups.map((g) => ageLabel(g.minAge, g.maxAge).toLowerCase()).join(', ')}.`;
               }
               return null;
             }}
-            intro="Choose the learner’s date of birth and we’ll give them the diagnostic for their age."
+            intro={stage
+              ? `This is the ${stage.name} diagnostic, for ${rangeText || 'its age group'}. Choose the learner’s date of birth to start.`
+              : `This diagnostic is for ${rangeText || 'every age in the pathway'}. Choose the learner’s date of birth and we’ll give them the diagnostic for their age.`}
           />
         )}
 
@@ -238,12 +249,12 @@ export default function DiagnosticPage() {
 
             <Box sx={{ position: { lg: 'sticky' }, top: { lg: 24 } }}>
               <NextStepsPanel
-                enrollTo={`/enroll?flow=pathway&referenceId=${encodeURIComponent(slug)}`}
+                enrollTo={`/enroll?flow=pathway&referenceId=${encodeURIComponent(slug)}${report?.attemptId ? `&attempt=${encodeURIComponent(report.attemptId)}` : ''}${childName ? `&childName=${encodeURIComponent(childName)}` : ''}${dateOfBirth ? `&dob=${encodeURIComponent(dateOfBirth)}` : ''}`}
                 pathwayName={pathwayName}
                 courses={pathway?.courses || []}
+                stages={pathway?.stages || []}
+                hubs={pathway?.hubs || []}
                 accent={pathway?.color}
-                mentorHref={mentorHref}
-                mentorIsExternal={mentorIsExternal}
                 bootcamp={
                   bootcamp
                     ? {

@@ -78,7 +78,7 @@ function HubOption({ run, selected, onSelect }) {
 
 // Copies a value to the clipboard and flips a "Copied!" state for a moment — small, local, no
 // need for a shared utility given it's only used twice on this one confirmation card.
-function CopyableField({ label, value }) {
+export function CopyableField({ label, value }) {
   const [copied, setCopied] = useState(false);
   const handleCopy = async () => {
     try {
@@ -156,7 +156,7 @@ const MAX_CHILDREN = 6;
  * (POST /api/public/parent-sign-in); the form then skips their details and password, keeping the
  * short-lived parent token it got back for the enrolment.
  */
-function ParentSignIn({ onSignedIn, onCancel }) {
+export function ParentSignIn({ onSignedIn, onCancel }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
