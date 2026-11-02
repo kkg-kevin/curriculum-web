@@ -133,16 +133,6 @@ export default function PathwayDetailPage() {
             <Button component={RouterLink} to={enrollTo} variant="contained" size="large">
               {enrolLabel}
             </Button>
-            {diagnostic?.available && (
-              <Button
-                component={RouterLink}
-                to={`/pathways/${slug}/diagnostic`}
-                variant="outlined"
-                size="large"
-              >
-                Take the diagnostic
-              </Button>
-            )}
           </Box>
       </DetailHero>
 
@@ -178,26 +168,16 @@ export default function PathwayDetailPage() {
                 </Box>
               )}
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                {paidEnrol
-                  ? (diagnostic?.available ? 'Not sure where to start? Take the short diagnostic first — the learner then starts at the course their result earns.' : 'The learner starts at the right step for their age.')
-                  : diagnostic?.available
-                    ? 'Register interest and our team will get the learner set up — or take the short diagnostic first for an instant learner-profile report showing where to start.'
+                {diagnostic?.available
+                  ? `Enrolling starts with a short diagnostic for the learner's age, so they begin at the right course — you can skip it.${paidEnrol ? '' : ' Then register interest and our team gets them set up.'}`
+                  : paidEnrol
+                    ? 'The learner starts at the right step for their age.'
                     : 'Register interest now and our team will get the learner set up at the right step for their age and experience.'}
               </Typography>
               <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
                 <Button component={RouterLink} to={enrollTo} variant="contained" size="large">
                   {enrolLabel}
                 </Button>
-                {diagnostic?.available && (
-                  <Button
-                    component={RouterLink}
-                    to={`/pathways/${slug}/diagnostic`}
-                    variant="outlined"
-                    size="large"
-                  >
-                    Take the diagnostic
-                  </Button>
-                )}
               </Box>
               {hubs.length > 0 && (
                 <Box sx={{ mt: 3, pt: 2.5, borderTop: '1px solid', borderColor: 'divider' }}>

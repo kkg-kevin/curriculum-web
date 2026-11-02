@@ -93,7 +93,8 @@ export default function PathwayStagePage() {
   const ages = ageLabel(stage.minAge, stage.maxAge);
   const courses = stage.courses || [];
   const diagnostic = stage.diagnostic?.available ? stage.diagnostic : null;
-  const enrollTo = `/enroll?flow=pathway&referenceId=${encodeURIComponent(slug)}`;
+  // Enrolling from a stage: that stage's diagnostic and ages come first (PathwayEnrolJourney).
+  const enrollTo = `/enroll?flow=pathway&referenceId=${encodeURIComponent(slug)}&stage=${encodeURIComponent(stage.slug)}`;
   // What starting here costs: the pathway's price, or this stage's first course's.
   const stagePrice = data.price?.mode === 'whole'
     ? `${formatKsh(data.price.amount, data.price.currency)} per learner`
@@ -152,11 +153,6 @@ export default function PathwayStagePage() {
           <Button component={RouterLink} to={enrollTo} variant="contained" size="large">
             Enroll in this pathway
           </Button>
-          {diagnostic && (
-            <Button component={RouterLink} to={`/pathways/${slug}/diagnostic?stage=${encodeURIComponent(stage.slug)}`} variant="outlined" size="large">
-              Take the diagnostic
-            </Button>
-          )}
         </Box>
       </DetailHero>
 
@@ -169,18 +165,13 @@ export default function PathwayStagePage() {
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                 {diagnostic
-                  ? `${stageName} is for ${ages ? ages.toLowerCase() : 'its age group'}. The short diagnostic checks where a learner should start — at this stage or another — and which course.`
+                  ? `${stageName} is for ${ages ? ages.toLowerCase() : 'its age group'}. Enrolling starts with its short diagnostic, which checks which course the learner should start at — you can skip it.`
                   : `${stageName} is for ${ages ? ages.toLowerCase() : 'its age group'}. Register interest and our team will place the learner at the right stage and course for their age and experience.`}
               </Typography>
               <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
                 <Button component={RouterLink} to={enrollTo} variant="contained" size="large">
                   Enroll
                 </Button>
-                {diagnostic && (
-                  <Button component={RouterLink} to={`/pathways/${slug}/diagnostic?stage=${encodeURIComponent(stage.slug)}`} variant="outlined" size="large">
-                    Take the diagnostic
-                  </Button>
-                )}
               </Box>
               <Button component={RouterLink} to={`/pathways/${slug}`} startIcon={<ArrowBackRoundedIcon />} sx={{ mt: 2, px: 0 }}>
                 All stages of {pathwayName}

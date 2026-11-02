@@ -72,6 +72,9 @@ export default function EnrollForm({
   referenceLabel,
   defaultMessage = '',
   defaultHubId = null,
+  // Details already given (a pathway's diagnostic, PathwayEnrolJourney): parentName, parentPhone,
+  // learnerName, learnerDateOfBirth.
+  defaults = {},
 }) {
   const isEnquiry = variant === 'enquiry';
   const isHomeSchooling = defaultInterest === 'home_schooling';
@@ -94,11 +97,11 @@ export default function EnrollForm({
     resolver: zodResolver(schema),
     mode: 'onTouched',
     defaultValues: {
-      parentName: '',
+      parentName: defaults.parentName || '',
       parentEmail: '',
-      parentPhone: '',
-      learnerName: '',
-      learnerDateOfBirth: '',
+      parentPhone: defaults.parentPhone || '',
+      learnerName: defaults.learnerName || '',
+      learnerDateOfBirth: defaults.learnerDateOfBirth || '',
       interestedIn: defaultInterest,
       message: defaultMessage,
       ...(withHub ? { hubType: '', hubId: '', hubName: '' } : {}),

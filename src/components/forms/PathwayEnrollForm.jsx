@@ -47,9 +47,10 @@ const hubLine = (hub) => [hub.town, hub.deliveryMode !== 'in_person' ? hub.deliv
  *
  * Props: pathway (the public detail — name, slug, price, hubs, stages), defaultHubId?,
  * attemptId? (a website diagnostic just taken — places the first child), defaultLearnerName?,
- * defaultLearnerDateOfBirth?
+ * defaultLearnerDateOfBirth?, defaultParentName?, defaultParentPhone? (from the diagnostic's contact
+ * details — PathwayEnrolJourney)
  */
-export default function PathwayEnrollForm({ pathway, defaultHubId = null, attemptId = null, defaultLearnerName = '', defaultLearnerDateOfBirth = '' }) {
+export default function PathwayEnrollForm({ pathway, defaultHubId = null, attemptId = null, defaultLearnerName = '', defaultLearnerDateOfBirth = '', defaultParentName = '', defaultParentPhone = '' }) {
   const hubs = pathway.hubs || [];
   const [hubId, setHubId] = useState(() => (hubs.some((h) => h.id === defaultHubId) ? defaultHubId : hubs.length === 1 ? hubs[0].id : ''));
   const [stage, setStage] = useState('hub');
@@ -66,7 +67,7 @@ export default function PathwayEnrollForm({ pathway, defaultHubId = null, attemp
     resolver: zodResolver(bootcampEnrollmentSchema),
     mode: 'onTouched',
     defaultValues: {
-      signedIn: false, parentName: '', parentEmail: '', parentPhone: '', parentPassword: '', confirmParentPassword: '',
+      signedIn: false, parentName: defaultParentName, parentEmail: '', parentPhone: defaultParentPhone, parentPassword: '', confirmParentPassword: '',
       children: [emptyChild(defaultLearnerName, defaultLearnerDateOfBirth)], ...HONEYPOT_DEFAULT,
     },
   });
