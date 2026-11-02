@@ -1,4 +1,5 @@
 import Box from '@mui/material/Box';
+import { formatKsh } from '../../cart/format.js';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import SmartImage from '../common/SmartImage.jsx';
@@ -54,7 +55,12 @@ export default function PathwayCourseStep({ index, total, course, accent, headin
             <Typography variant="h4" component={headingLevel} gutterBottom>
               {course.name}
             </Typography>
-            {age && <Chip size="small" variant="outlined" label={age} sx={{ mb: 1 }} />}
+            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: (age || course.price != null) ? 1 : 0 }}>
+              {age && <Chip size="small" variant="outlined" label={age} />}
+              {course.price != null && (
+                <Chip size="small" label={formatKsh(course.price)} sx={{ fontWeight: 700, bgcolor: 'primary.main', color: 'primary.contrastText' }} />
+              )}
+            </Box>
             {course.description && (
               <Typography sx={{ color: 'text.secondary', whiteSpace: 'pre-line', maxWidth: PROSE_MAX_WIDTH }}>
                 {course.description}

@@ -5,6 +5,7 @@ import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import { priceShort } from '../../utils/pathwayPrice.js';
 
 // theme.palette.primary IS the curriculum system's own brand blue (see
 // theme/palette.js) — the pathways API returns that same navy as every
@@ -58,6 +59,7 @@ function JourneyRail({ count }) {
 
 export default function PathwayCard({ pathway }) {
   const { slug, name, description, courseCount } = pathway;
+  const price = priceShort(pathway.price);
 
   return (
     <Card
@@ -186,7 +188,15 @@ export default function PathwayCard({ pathway }) {
             </Typography>
           </Box>
 
-          <Box sx={{ mt: 'auto', pt: 2.5, display: 'flex', alignItems: 'center' }}>
+          <Box sx={{ mt: 'auto', pt: 2.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, flexWrap: 'wrap' }}>
+            {price && (
+              <Typography component="span" sx={{ fontWeight: 800, fontSize: '0.95rem', color: 'text.primary' }}>
+                {price}
+                <Typography component="span" sx={{ fontWeight: 600, fontSize: 12, color: 'text.secondary' }}>
+                  {pathway.price.mode === 'whole' ? ' / learner' : ' / course'}
+                </Typography>
+              </Typography>
+            )}
             <Box
               sx={{
                 display: 'inline-flex',

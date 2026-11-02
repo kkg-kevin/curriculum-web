@@ -5,6 +5,7 @@ import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import Button from '@mui/material/Button';
 import Skeleton from '@mui/material/Skeleton';
+import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
 import SeoHead from '../components/seo/SeoHead.jsx';
 import DetailHero from '../components/common/DetailHero.jsx';
 import JsonLd, { organizationSchema, pathwayCourseSchema, breadcrumbSchema } from '../components/seo/JsonLd.jsx';
@@ -17,6 +18,7 @@ import StageCard from '../components/pathway/StageCard.jsx';
 import DetailLayout from '../components/common/DetailLayout.jsx';
 import { RelatedPathways } from '../components/common/Related.jsx';
 import { actionRowSx } from '../components/common/ActionRow.jsx';
+import { priceLabel, priceShort } from '../utils/pathwayPrice.js';
 
 const FALLBACK_ACCENT = '#25476a';
 
@@ -78,6 +80,12 @@ export default function PathwayDetailPage() {
   const stages = (data.stages || []).filter((st) => st.slug);
   const byStage = stages.length > 0 && stages.some((st) => st.name);
   const enrollTo = `/enroll?flow=pathway&referenceId=${encodeURIComponent(slug)}`;
+  // Where it runs (chosen in the curriculum system); the family picks one when they enrol.
+  const hubs = data.hubs || [];
+  // Sold online when it has a price and hubs to choose from: Enrol then takes payment.
+  const price = data.price || null;
+  const paidEnrol = Boolean(price) && hubs.length > 0;
+  const enrolLabel = paidEnrol ? 'Enrol & pay' : 'Enroll in this pathway';
 
   return (
     <>
@@ -105,6 +113,9 @@ export default function PathwayDetailPage() {
               label={`${courses.length} ${courses.length === 1 ? 'course' : 'courses'}`}
               sx={{ bgcolor: `${accent}1A`, color: 'text.primary', fontWeight: 600 }}
             />
+            {price && (
+              <Chip label={priceLabel(price)} sx={{ bgcolor: 'primary.main', color: 'primary.contrastText', fontWeight: 700 }} />
+            )}
           </Box>
 
           <Typography variant="h1" component="h1" sx={{ mb: 2 }}>
@@ -120,7 +131,7 @@ export default function PathwayDetailPage() {
 
           <Box sx={{ ...actionRowSx, mt: 3 }}>
             <Button component={RouterLink} to={enrollTo} variant="contained" size="large">
-              Enroll in this pathway
+              {enrolLabel}
             </Button>
             {diagnostic?.available && (
               <Button
@@ -150,14 +161,32 @@ export default function PathwayDetailPage() {
               <Typography variant="h4" component="h2" gutterBottom>
                 Ready to start {name}?
               </Typography>
+              {price && (
+                <Box sx={{ mb: 2, p: 2, borderRadius: 2, bgcolor: 'surface.subtle', border: '1px solid', borderColor: 'divider' }}>
+                  <Typography sx={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'text.secondary' }}>Price</Typography>
+                  <Typography sx={{ fontWeight: 800, fontSize: '1.6rem', lineHeight: 1.2, mt: 0.5 }}>{priceShort(price)}</Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                    {price.mode === 'whole'
+                      ? 'Per learner, for the whole pathway.'
+                      : 'Each course is priced on its own — you pay for the course the learner starts at (by their age or diagnostic result). Prices are shown on each course below.'}
+                  </Typography>
+                  {paidEnrol && (
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                      Choose a hub, add your details, then pay — by M-Pesa or the other ways the hub accepts.
+                    </Typography>
+                  )}
+                </Box>
+              )}
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                {diagnostic?.available
-                  ? 'Register interest and our team will get the learner set up — or take the short diagnostic first for an instant learner-profile report showing where to start.'
-                  : 'Register interest now and our team will get the learner set up at the right step for their age and experience.'}
+                {paidEnrol
+                  ? (diagnostic?.available ? 'Not sure where to start? Take the short diagnostic first — the learner then starts at the course their result earns.' : 'The learner starts at the right step for their age.')
+                  : diagnostic?.available
+                    ? 'Register interest and our team will get the learner set up — or take the short diagnostic first for an instant learner-profile report showing where to start.'
+                    : 'Register interest now and our team will get the learner set up at the right step for their age and experience.'}
               </Typography>
               <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
                 <Button component={RouterLink} to={enrollTo} variant="contained" size="large">
-                  Enroll in this pathway
+                  {enrolLabel}
                 </Button>
                 {diagnostic?.available && (
                   <Button
@@ -170,6 +199,32 @@ export default function PathwayDetailPage() {
                   </Button>
                 )}
               </Box>
+              {hubs.length > 0 && (
+                <Box sx={{ mt: 3, pt: 2.5, borderTop: '1px solid', borderColor: 'divider' }}>
+                  <Typography variant="h5" component="h3" sx={{ fontWeight: 700, mb: 1.5 }}>
+                    Where it runs
+                  </Typography>
+                  <Box sx={{ display: 'grid', gap: 1.25 }}>
+                    {hubs.map((hub) => (
+                      <Box
+                        key={hub.id}
+                        component={RouterLink}
+                        to={`${enrollTo}&hubId=${encodeURIComponent(hub.id)}`}
+                        sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.25, p: 1.5, borderRadius: 2, border: '1px solid', borderColor: 'divider', color: 'text.primary', textDecoration: 'none', '&:hover': { borderColor: 'primary.main' } }}
+                      >
+                        <PlaceOutlinedIcon fontSize="small" sx={{ color: accent, mt: 0.25 }} />
+                        <Box sx={{ minWidth: 0, flex: 1 }}>
+                          <Typography sx={{ fontWeight: 700, fontSize: 15 }}>{hub.name}</Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            {[hub.town, hub.deliveryMode !== 'in_person' ? hub.deliveryLabel : null].filter(Boolean).join(' · ') || hub.deliveryLabel}
+                          </Typography>
+                        </Box>
+                        <Typography variant="body2" sx={{ fontWeight: 700, color: 'primary.main', whiteSpace: 'nowrap' }}>Enrol here</Typography>
+                      </Box>
+                    ))}
+                  </Box>
+                </Box>
+              )}
             </Box>
           }
         >

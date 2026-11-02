@@ -6,6 +6,8 @@ import JsonLd, { organizationSchema } from '../components/seo/JsonLd.jsx';
 import PageHeader from '../components/common/PageHeader.jsx';
 import Section from '../components/common/Section.jsx';
 import EnrollForm from '../components/forms/EnrollForm.jsx';
+import PathwayEnrollForm from '../components/forms/PathwayEnrollForm.jsx';
+import { usePathway } from '../hooks/usePathways.js';
 import { getProject } from '../content/projects.js';
 import { LoadingBlock } from '../components/common/StateViews.jsx';
 import { childrenLabel, packageEnquiryNote, priceForPackage } from '../content/homeSchooling.js';
@@ -48,6 +50,10 @@ export default function EnrollPage() {
     ? childrenParam
     : null;
   const isPathwayFlow = params.get('flow') === 'pathway';
+  // A priced pathway that runs at chosen hubs is enrolled and paid for here (PathwayEnrollForm);
+  // any other pathway still sends an enquiry (EnrollForm).
+  const pathwayQuery = usePathway(isPathwayFlow ? referenceId : null);
+  const paidPathway = isPathwayFlow && pathwayQuery.data?.price && (pathwayQuery.data.hubs || []).length > 0 ? pathwayQuery.data : null;
   const clubName = (params.get('club') || '').trim().slice(0, 120);
 
   // A project / store reference (or an explicit ?enquiry=1) switches to the lighter enquiry
@@ -99,10 +105,19 @@ export default function EnrollPage() {
 
       <Section>
         <Box sx={{ maxWidth: isPathwayFlow ? 720 : 640, mx: 'auto' }}>
-          {packageSlug && packageQuery.isLoading ? <LoadingBlock label="Loading package…" /> : <EnrollForm
+          {packageSlug && packageQuery.isLoading ? <LoadingBlock label="Loading package…" /> : isPathwayFlow && referenceId && pathwayQuery.isLoading ? <LoadingBlock label="Loading pathway…" /> : paidPathway ? (
+            <PathwayEnrollForm
+              pathway={paidPathway}
+              defaultHubId={params.get('hubId')}
+              attemptId={params.get('attempt')}
+              defaultLearnerName={params.get('childName') || ''}
+              defaultLearnerDateOfBirth={params.get('dob') || ''}
+            />
+          ) : <EnrollForm
             key={homeSchoolingPackage?.slug || 'form'}
             variant={isEnquiry ? 'enquiry' : 'enroll'}
             withHub={isPathwayFlow}
+            defaultHubId={isPathwayFlow ? params.get('hubId') : null}
             defaultInterest={defaultInterest}
             referenceId={homeSchoolingPackage ? homeSchoolingPackage.slug : referenceId}
             referenceLabel={homeSchoolingPackage

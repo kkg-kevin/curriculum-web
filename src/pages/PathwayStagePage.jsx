@@ -1,4 +1,5 @@
 import { useParams, Link as RouterLink, useLocation } from 'react-router-dom';
+import { formatKsh } from '../cart/format.js';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
@@ -93,6 +94,10 @@ export default function PathwayStagePage() {
   const courses = stage.courses || [];
   const diagnostic = stage.diagnostic?.available ? stage.diagnostic : null;
   const enrollTo = `/enroll?flow=pathway&referenceId=${encodeURIComponent(slug)}`;
+  // What starting here costs: the pathway's price, or this stage's first course's.
+  const stagePrice = data.price?.mode === 'whole'
+    ? `${formatKsh(data.price.amount, data.price.currency)} per learner`
+    : courses[0]?.price != null ? `Starts at ${formatKsh(courses[0].price, data.price?.currency)}` : null;
   const previous = index > 0 ? stages[index - 1] : null;
   const next = index < stages.length - 1 ? stages[index + 1] : null;
   const seoDescription = stage.description || `${stageName}${ages ? ` (${ages.toLowerCase()})` : ''}: ${courses.length} courses in the ${pathwayName} pathway.`;
@@ -124,6 +129,7 @@ export default function PathwayStagePage() {
         <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
           <Chip label={`Stage ${index + 1} of ${stages.length}`} sx={{ bgcolor: `${accent}1A`, color: 'text.primary', fontWeight: 700 }} />
           {ages && <Chip label={ages} sx={{ bgcolor: `${accent}1A`, color: 'text.primary', fontWeight: 600 }} />}
+          {stagePrice && <Chip label={stagePrice} sx={{ bgcolor: 'primary.main', color: 'primary.contrastText', fontWeight: 700 }} />}
           <Chip
             label={`${courses.length} ${courses.length === 1 ? 'course' : 'courses'}`}
             sx={{ bgcolor: `${accent}1A`, color: 'text.primary', fontWeight: 600 }}
@@ -147,7 +153,7 @@ export default function PathwayStagePage() {
             Enroll in this pathway
           </Button>
           {diagnostic && (
-            <Button component={RouterLink} to={`/pathways/${slug}/diagnostic`} variant="outlined" size="large">
+            <Button component={RouterLink} to={`/pathways/${slug}/diagnostic?stage=${encodeURIComponent(stage.slug)}`} variant="outlined" size="large">
               Take the diagnostic
             </Button>
           )}
@@ -171,7 +177,7 @@ export default function PathwayStagePage() {
                   Enroll
                 </Button>
                 {diagnostic && (
-                  <Button component={RouterLink} to={`/pathways/${slug}/diagnostic`} variant="outlined" size="large">
+                  <Button component={RouterLink} to={`/pathways/${slug}/diagnostic?stage=${encodeURIComponent(stage.slug)}`} variant="outlined" size="large">
                     Take the diagnostic
                   </Button>
                 )}
