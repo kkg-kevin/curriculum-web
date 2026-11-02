@@ -24,6 +24,7 @@ import FormStatus from './FormStatus.jsx';
 import PrivacyNote from './PrivacyNote.jsx';
 import Honeypot, { HONEYPOT_DEFAULT, isBot } from './Honeypot.jsx';
 import DateOfBirthField from './DateOfBirthField.jsx';
+import PasswordField from './PasswordField.jsx';
 import { ageOn } from '../../utils/dates.js';
 import useScrollToFlowTop from '../../hooks/useScrollToFlowTop.js';
 
@@ -441,23 +442,18 @@ export default function BootcampEnrollForm({
           a Digifunzi account with this email? Use its password.
         </Typography>
         <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
-          <TextField
+          <PasswordField
             label="Your password"
-            type="password"
             required
-            autoComplete="new-password"
             {...register('parentPassword')}
-            error={!!errors.parentPassword}
-            helperText={errors.parentPassword?.message || 'At least 6 characters'}
+            error={errors.parentPassword}
+            helperText="At least 6 characters"
           />
-          <TextField
+          <PasswordField
             label="Confirm your password"
-            type="password"
             required
-            autoComplete="new-password"
             {...register('confirmParentPassword')}
-            error={!!errors.confirmParentPassword}
-            helperText={errors.confirmParentPassword?.message}
+            error={errors.confirmParentPassword}
           />
         </Box>
       </Box>
@@ -491,23 +487,18 @@ export default function BootcampEnrollForm({
             helperText={errors.username?.message || 'Letters, numbers, dots, underscores and hyphens only'}
           />
           <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
-            <TextField
+            <PasswordField
               label="Create a password"
-              type="password"
               required
-              autoComplete="new-password"
               {...register('password')}
-              error={!!errors.password}
-              helperText={errors.password?.message || 'At least 6 characters'}
+              error={errors.password}
+              helperText="At least 6 characters"
             />
-            <TextField
+            <PasswordField
               label="Confirm password"
-              type="password"
               required
-              autoComplete="new-password"
               {...register('confirmPassword')}
-              error={!!errors.confirmPassword}
-              helperText={errors.confirmPassword?.message}
+              error={errors.confirmPassword}
             />
           </Box>
         </Box>

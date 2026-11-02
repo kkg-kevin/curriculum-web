@@ -21,10 +21,9 @@ import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
 import AutoFixHighRoundedIcon from '@mui/icons-material/AutoFixHighRounded';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import RemoveRoundedIcon from '@mui/icons-material/RemoveRounded';
-import VisibilityOffRoundedIcon from '@mui/icons-material/VisibilityOffRounded';
-import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import ChildIcons from './ChildIcons.jsx';
 import Honeypot, { HONEYPOT_DEFAULT, isBot } from '../forms/Honeypot.jsx';
+import PasswordField from '../forms/PasswordField.jsx';
 import PrivacyNote from '../forms/PrivacyNote.jsx';
 import PaymentStep from '../payments/PaymentStep.jsx';
 import { homeSchoolingSignupSchema } from '../forms/schemas.js';
@@ -44,32 +43,6 @@ function suggestUsername(first, last) {
   const clean = (v) => String(v || '').toLowerCase().normalize('NFD').replace(/[^a-z0-9]/g, '');
   const base = [clean(first), clean(last).slice(0, 1)].filter(Boolean).join('.') || 'learner';
   return `${base}${Math.floor(10 + Math.random() * 90)}`.slice(0, 30);
-}
-
-function PasswordField({ label, error, helperText, inputProps, ...rest }) {
-  const [show, setShow] = useState(false);
-  return (
-    <TextField
-      {...rest}
-      label={label}
-      type={show ? 'text' : 'password'}
-      error={Boolean(error)}
-      helperText={error?.message || helperText}
-      fullWidth
-      slotProps={{
-        htmlInput: { autoComplete: 'new-password', ...inputProps },
-        input: {
-          endAdornment: (
-            <InputAdornment position="end">
-              <IconButton aria-label={show ? 'Hide password' : 'Show password'} onClick={() => setShow((v) => !v)} edge="end" size="small">
-                {show ? <VisibilityOffRoundedIcon fontSize="small" /> : <VisibilityRoundedIcon fontSize="small" />}
-              </IconButton>
-            </InputAdornment>
-          ),
-        },
-      }}
-    />
-  );
 }
 
 // The Payment step: the accounts and invoice exist now; the family picks how to pay.
