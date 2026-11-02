@@ -24,6 +24,7 @@ import { EmptyBlock, LoadingBlock } from '../components/common/StateViews.jsx';
 import Honeypot from '../components/forms/Honeypot.jsx';
 import PrivacyNote from '../components/forms/PrivacyNote.jsx';
 import DateOfBirthField from '../components/forms/DateOfBirthField.jsx';
+import PasswordField from '../components/forms/PasswordField.jsx';
 import { ageOn } from '../utils/dates.js';
 import PaymentStep from '../components/payments/PaymentStep.jsx';
 import { cart, useCart } from '../cart/cartStore.js';
@@ -295,8 +296,8 @@ export default function CheckoutPage() {
                           Projects live in your child’s learner account; you follow along with yours. If this email already has a Digifunzi account, enter its password.
                         </Typography>
                         <Box sx={gridSx}>
-                          <TextField label="Password" type="password" value={form.parentPassword} onChange={set('parentPassword')} autoComplete="new-password" helperText="At least 6 characters" />
-                          <TextField label="Confirm password" type="password" value={form.parentPasswordAgain} onChange={set('parentPasswordAgain')} autoComplete="new-password" />
+                          <PasswordField label="Password" value={form.parentPassword} onChange={set('parentPassword')} helperText="At least 6 characters" />
+                          <PasswordField label="Confirm password" value={form.parentPasswordAgain} onChange={set('parentPasswordAgain')} />
                         </Box>
                       </Box>
 
@@ -314,7 +315,7 @@ export default function CheckoutPage() {
                             </Box>
                             <Box sx={gridSx}>
                               <TextField label="Choose a username" value={form.childUsername} onChange={set('childUsername')} autoComplete="off" helperText="Letters, numbers, dots, dashes, underscores" />
-                              <TextField label="Child’s password" type="password" value={form.childPassword} onChange={set('childPassword')} autoComplete="new-password" helperText="At least 6 characters" />
+                              <PasswordField label="Child’s password" value={form.childPassword} onChange={set('childPassword')} helperText="At least 6 characters" />
                             </Box>
                           </Box>
                         ) : (
