@@ -118,6 +118,9 @@ export default function BootcampDetailPage() {
     // Games and play that come with the bootcamp — absent on an older API, which reads as none.
     games = [], gamesNote = '',
   } = data;
+  // A TOT (training of trainers) bootcamp is for educators: there's no website sign-up for it yet
+  // (the one here enrols children under a parent), so its button asks them to get in touch.
+  const forEducators = data.audience === 'educators';
 
   const age = ageLabel(ageMin, ageMax);
   // A bootcamp priced by course/module instead of as a whole has `price: null` — falling straight
@@ -149,7 +152,7 @@ export default function BootcampDetailPage() {
   const bookingFacts = [
     { key: 'dates', Icon: ScheduleIcon, label: 'Dates', value: formatDateRange(startDate, endDate) },
     { key: 'where', Icon: PlaceIcon, label: upcomingRuns.length > 1 ? 'Running at' : 'Where', value: where },
-    { key: 'age', Icon: ChildCareIcon, label: 'Suitable for', value: age },
+    { key: 'age', Icon: ChildCareIcon, label: 'Suitable for', value: forEducators ? 'Educators (training of trainers)' : age },
   ].filter((fact) => fact.value);
   const facts = (
     <Box
@@ -183,16 +186,18 @@ export default function BootcampDetailPage() {
         )}
         <Button
           component={RouterLink}
-          to={`/bootcamps/${slug}/enroll`}
+          to={forEducators ? '/contact' : `/bootcamps/${slug}/enroll`}
           variant="contained"
           size="large"
           startIcon={<HowToRegIcon />}
           fullWidth
         >
-          Enroll
+          {forEducators ? 'Contact us to join' : 'Enroll'}
         </Button>
         <Typography variant="body2" color="text.secondary" sx={{ mt: 1.5, textAlign: 'center', fontSize: '0.8rem' }}>
-          Starts with a short diagnostic matched to your child&apos;s age.
+          {forEducators
+            ? 'Training of trainers for educators — tell us about yourself and we’ll enrol you.'
+            : 'Starts with a short diagnostic matched to your child’s age.'}
         </Typography>
       </Box>
     </Box>

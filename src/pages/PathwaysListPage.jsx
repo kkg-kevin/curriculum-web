@@ -1,5 +1,10 @@
+import { useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import MenuItem from '@mui/material/MenuItem';
 import Skeleton from '@mui/material/Skeleton';
+import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import SeoHead from '../components/seo/SeoHead.jsx';
 import JsonLd, { organizationSchema, itemListSchema } from '../components/seo/JsonLd.jsx';
@@ -10,6 +15,7 @@ import CTABanner from '../components/home/CTABanner.jsx';
 import { ErrorBlock, EmptyBlock } from '../components/common/StateViews.jsx';
 import { usePathways } from '../hooks/usePathways.js';
 import { CARD_GRID_COLUMNS, shortListSx } from '../theme/layout.js';
+import { ADULT_AGE, parseAge, pathwayAgeRange, stageForAge } from '../utils/pathwayAges.js';
 
 const GRID_SX = {
   display: 'grid',
@@ -28,7 +34,7 @@ function CardSkeleton() {
         bgcolor: 'surface.card',
       }}
     >
-      <Skeleton variant="rectangular" height={116} />
+      <Skeleton variant="rectangular" sx={{ aspectRatio: '16 / 10', height: 'auto' }} />
       <Box sx={{ p: 3 }}>
         <Skeleton variant="text" width="75%" height={28} />
         <Skeleton variant="text" width="55%" height={28} />
@@ -51,9 +57,88 @@ function PathwaySkeletons() {
   );
 }
 
+/**
+ * "My child is [age]" — the first question most parents have. Offers every age from the youngest
+ * any pathway takes up to ADULT_AGE ("18 or older").
+ */
+function AgePicker({ pathways, age, onChange, matches }) {
+  const youngest = Math.min(...pathways.map((p) => pathwayAgeRange(p)?.minAge ?? Infinity));
+  if (!Number.isFinite(youngest)) return null;
+  const options = [];
+  for (let a = Math.max(3, youngest); a <= ADULT_AGE; a += 1) options.push(a);
+
+  return (
+    <Box
+      sx={{
+        mb: 4,
+        p: { xs: 2, sm: 2.5 },
+        borderRadius: 3,
+        border: '1px solid',
+        borderColor: 'divider',
+        bgcolor: 'surface.card',
+        display: 'flex',
+        alignItems: 'center',
+        gap: { xs: 1.5, sm: 2 },
+        flexWrap: 'wrap',
+      }}
+    >
+      <Typography component="label" htmlFor="pathway-age" sx={{ fontWeight: 700 }}>
+        My child is
+      </Typography>
+      <TextField
+        id="pathway-age"
+        select
+        size="small"
+        value={age ?? ''}
+        onChange={(e) => onChange(e.target.value === '' ? null : Number(e.target.value))}
+        sx={{ minWidth: 150 }}
+        SelectProps={{ displayEmpty: true }}
+      >
+        <MenuItem value="">Any age</MenuItem>
+        {options.map((a) => (
+          <MenuItem key={a} value={a}>
+            {a === ADULT_AGE ? '18 or older' : `${a} years old`}
+          </MenuItem>
+        ))}
+      </TextField>
+      {age != null && (
+        <>
+          <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }} aria-live="polite">
+            {matches === 0
+              ? 'No pathway for this age yet.'
+              : `${matches} ${matches === 1 ? 'pathway fits' : 'pathways fit'} — each shows the stage they'd start in.`}
+          </Typography>
+          <Button size="small" onClick={() => onChange(null)} sx={{ ml: { sm: 'auto' } }}>
+            Show every pathway
+          </Button>
+        </>
+      )}
+    </Box>
+  );
+}
+
 export default function PathwaysListPage() {
   const { data, isLoading, isError, error, refetch } = usePathways();
+  const [params, setParams] = useSearchParams();
   const count = data?.length || 0;
+  const age = parseAge(params.get('age'));
+
+  // Picked an age: only the pathways with a stage for it (a pathway with no ages set isn't one).
+  const list = useMemo(() => {
+    const all = data || [];
+    return age == null ? all : all.filter((p) => stageForAge(p.stages, age));
+  }, [data, age]);
+
+  const setAge = (value) => {
+    setParams(
+      (prev) => {
+        if (value == null) prev.delete('age');
+        else prev.set('age', String(value));
+        return prev;
+      },
+      { replace: true },
+    );
+  };
 
   return (
     <>
@@ -73,7 +158,7 @@ export default function PathwaysListPage() {
 
       <PageHeader
         title="Learning Pathways"
-        lead="A pathway is a set of courses a child works through in order — each one builds on the last. Start at the very beginning, or take a short quiz and jump in where it fits."
+        lead="A pathway is a set of courses a child works through in order, in stages by age — each course builds on the last. Pick your child's age to see where they'd start."
       >
         {!isLoading && !isError && count > 0 && (
           <Box
@@ -108,11 +193,22 @@ export default function PathwaysListPage() {
           />
         )}
         {!isLoading && !isError && count > 0 && (
-          <Box sx={{ ...GRID_SX, ...shortListSx(data.length) }}>
-            {data.map((p) => (
-              <PathwayCard key={p.id} pathway={p} />
-            ))}
-          </Box>
+          <>
+            <AgePicker pathways={data} age={age} onChange={setAge} matches={list.length} />
+            {list.length > 0 && (
+              <Box sx={{ ...GRID_SX, ...shortListSx(list.length) }}>
+                {list.map((p) => (
+                  <PathwayCard key={p.id} pathway={p} age={age} />
+                ))}
+              </Box>
+            )}
+            {age != null && list.length === 0 && (
+              <EmptyBlock
+                title={`Nothing for age ${age === ADULT_AGE ? '18+' : age} yet`}
+                body="Contact us and we’ll tell you what’s coming up — or look through every pathway."
+              />
+            )}
+          </>
         )}
       </Section>
 

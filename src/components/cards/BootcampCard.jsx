@@ -63,7 +63,9 @@ export default function BootcampCard({ bootcamp }) {
 
   const age = ageLabel(ageMin, ageMax);
   const priceLabel = price ? formatPrice(price) : 'Enquire for pricing';
-  const kicker = ['Bootcamp', format && FORMAT_LABEL[format]].filter(Boolean).join(' · ').toUpperCase();
+  // A TOT (training of trainers) bootcamp says so first — it's for educators, not children.
+  const kicker = [bootcamp.audience === 'educators' ? 'Training of trainers' : 'Bootcamp', format && FORMAT_LABEL[format]]
+    .filter(Boolean).join(' · ').toUpperCase();
   const metaLine = [duration, age].filter(Boolean).join(' · ') || 'A short, intensive build';
   const dateRange = formatDateRange(startDate, endDate);
   // A run whose last day has passed says so, whatever its registration dates (or lack of them).

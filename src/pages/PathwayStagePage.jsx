@@ -3,20 +3,28 @@ import { formatKsh } from '../cart/format.js';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
 import Button from '@mui/material/Button';
 import Skeleton from '@mui/material/Skeleton';
 import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
 import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
+import CakeOutlinedIcon from '@mui/icons-material/CakeOutlined';
+import MenuBookOutlinedIcon from '@mui/icons-material/MenuBookOutlined';
+import LocalOfferOutlinedIcon from '@mui/icons-material/LocalOfferOutlined';
+import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
 import SeoHead from '../components/seo/SeoHead.jsx';
 import DetailHero from '../components/common/DetailHero.jsx';
 import JsonLd, { organizationSchema, breadcrumbSchema } from '../components/seo/JsonLd.jsx';
 import Section from '../components/common/Section.jsx';
-import DetailLayout from '../components/common/DetailLayout.jsx';
+import DetailLayout, { AsideCard } from '../components/common/DetailLayout.jsx';
+import ExpandableText from '../components/common/ExpandableText.jsx';
+import FactPills from '../components/common/FactPills.jsx';
+import StageLadder from '../components/pathway/StageLadder.jsx';
+import HowEnrollingWorks from '../components/pathway/HowEnrollingWorks.jsx';
+import PathwayEnrolBar from '../components/pathway/PathwayEnrolBar.jsx';
 import { ErrorBlock } from '../components/common/StateViews.jsx';
 import PathwayCourseStep from '../components/pathway/PathwayCourseStep.jsx';
 import { usePathway } from '../hooks/usePathways.js';
-import { ageLabel } from '../utils/format.js';
+import { stageAgeLabel } from '../utils/pathwayAges.js';
 import { actionRowSx } from '../components/common/ActionRow.jsx';
 
 const FALLBACK_ACCENT = '#25476a';
@@ -44,10 +52,11 @@ function StageLink({ pathwaySlug, stage, number, direction }) {
 }
 
 /**
- * One developmental stage of a pathway (`/pathways/:slug/:stageSlug`), reached from its card on the
- * pathway's page: what the stage is, its ages, its courses in order, and how to start — enrol, or
- * take the short diagnostic when this stage offers one. Links back to the pathway and on to the
- * stages either side. Data: GET /api/public/pathways/:slug (its `stages[]`).
+ * One developmental stage of a pathway (`/pathways/:slug/:stageSlug`), reached from the stage
+ * ladder on the pathway's page: what the stage is, its ages, its courses in order, and how to
+ * start — enrolling in this stage begins with its short diagnostic when it offers one. The ladder
+ * links to the other stages; the price and Enrol stay in view (side panel / bottom bar on a phone).
+ * Data: GET /api/public/pathways/:slug (its `stages[]`).
  */
 export default function PathwayStagePage() {
   const { slug, stageSlug } = useParams();
@@ -90,7 +99,7 @@ export default function PathwayStagePage() {
   const { name: pathwayName } = data;
   const accent = data.color || FALLBACK_ACCENT;
   const stageName = stage.name || 'More courses';
-  const ages = ageLabel(stage.minAge, stage.maxAge);
+  const ages = stageAgeLabel(stage.minAge, stage.maxAge);
   const courses = stage.courses || [];
   const diagnostic = stage.diagnostic?.available ? stage.diagnostic : null;
   // Enrolling from a stage: that stage's diagnostic and ages come first (PathwayEnrolJourney).
@@ -99,6 +108,10 @@ export default function PathwayStagePage() {
   const stagePrice = data.price?.mode === 'whole'
     ? `${formatKsh(data.price.amount, data.price.currency)} per learner`
     : courses[0]?.price != null ? `Starts at ${formatKsh(courses[0].price, data.price?.currency)}` : null;
+  const hubs = data.hubs || [];
+  const places = [...new Set(hubs.map((h) => (h.town || '').split(',')[0].trim()).filter(Boolean))];
+  const paidEnrol = Boolean(data.price) && hubs.length > 0;
+  const enrolLabel = paidEnrol ? 'Enrol & pay' : 'Enrol in this stage';
   const previous = index > 0 ? stages[index - 1] : null;
   const next = index < stages.length - 1 ? stages[index + 1] : null;
   const seoDescription = stage.description || `${stageName}${ages ? ` (${ages.toLowerCase()})` : ''}: ${courses.length} courses in the ${pathwayName} pathway.`;
@@ -127,31 +140,29 @@ export default function PathwayStagePage() {
           { label: stageName },
         ]}
       >
-        <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
-          <Chip label={`Stage ${index + 1} of ${stages.length}`} sx={{ bgcolor: `${accent}1A`, color: 'text.primary', fontWeight: 700 }} />
-          {ages && <Chip label={ages} sx={{ bgcolor: `${accent}1A`, color: 'text.primary', fontWeight: 600 }} />}
-          {stagePrice && <Chip label={stagePrice} sx={{ bgcolor: 'primary.main', color: 'primary.contrastText', fontWeight: 700 }} />}
-          <Chip
-            label={`${courses.length} ${courses.length === 1 ? 'course' : 'courses'}`}
-            sx={{ bgcolor: `${accent}1A`, color: 'text.primary', fontWeight: 600 }}
-          />
-        </Box>
-
-        <Typography variant="overline" component="p" sx={{ color: 'text.secondary', fontWeight: 700, letterSpacing: '0.08em' }}>
-          {pathwayName} pathway
+        <Typography variant="overline" component="p" sx={{ color: 'primary.main', fontWeight: 800, letterSpacing: '0.08em' }}>
+          {pathwayName} · Stage {index + 1} of {stages.length}
         </Typography>
         <Typography variant="h1" component="h1" sx={{ mb: 2 }}>
           {stageName}
         </Typography>
         {stage.description && (
-          <Typography variant="h4" component="p" sx={{ fontWeight: 400, color: 'text.secondary', maxWidth: 760, whiteSpace: 'pre-line' }}>
+          <ExpandableText lines={4} sx={{ fontSize: { xs: '1.05rem', md: '1.15rem' }, color: 'text.secondary', maxWidth: 760, whiteSpace: 'pre-line', mb: 2.5 }}>
             {stage.description}
-          </Typography>
+          </ExpandableText>
         )}
+        <FactPills
+          items={[
+            { key: 'ages', Icon: CakeOutlinedIcon, label: ages },
+            { key: 'courses', Icon: MenuBookOutlinedIcon, label: `${courses.length} ${courses.length === 1 ? 'course' : 'courses'}` },
+            { key: 'price', Icon: LocalOfferOutlinedIcon, label: stagePrice },
+            { key: 'places', Icon: PlaceOutlinedIcon, label: places.join(' · ') },
+          ]}
+        />
 
         <Box sx={{ ...actionRowSx, mt: 3 }}>
           <Button component={RouterLink} to={enrollTo} variant="contained" size="large">
-            Enroll in this pathway
+            {enrolLabel}
           </Button>
         </Box>
       </DetailHero>
@@ -159,45 +170,62 @@ export default function PathwayStagePage() {
       <Section>
         <DetailLayout
           aside={
-            <Box sx={{ p: 3, border: '1px solid', borderColor: 'divider', borderRadius: 2, backgroundColor: 'background.paper' }}>
-              <Typography variant="h4" component="h2" gutterBottom>
+            <AsideCard>
+              <Typography variant="h4" component="h2">
                 Is this the right stage?
               </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              <Typography variant="body2" color="text.secondary">
                 {diagnostic
-                  ? `${stageName} is for ${ages ? ages.toLowerCase() : 'its age group'}. Enrolling starts with its short diagnostic, which checks which course the learner should start at — you can skip it.`
-                  : `${stageName} is for ${ages ? ages.toLowerCase() : 'its age group'}. Register interest and our team will place the learner at the right stage and course for their age and experience.`}
+                  ? `${stageName} is for ${ages ? ages.toLowerCase() : 'its age group'}. Enrolling starts with its short quiz, which checks the course they should start at — you can skip it.`
+                  : `${stageName} is for ${ages ? ages.toLowerCase() : 'its age group'}. They start at the course that fits their age.`}
               </Typography>
-              <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-                <Button component={RouterLink} to={enrollTo} variant="contained" size="large">
-                  Enroll
-                </Button>
-              </Box>
-              <Button component={RouterLink} to={`/pathways/${slug}`} startIcon={<ArrowBackRoundedIcon />} sx={{ mt: 2, px: 0 }}>
+              {stagePrice && <Typography sx={{ fontWeight: 800, fontSize: '1.25rem' }}>{stagePrice}</Typography>}
+              <Button component={RouterLink} to={enrollTo} variant="contained" size="large" fullWidth>
+                {enrolLabel}
+              </Button>
+              <Button component={RouterLink} to={`/pathways/${slug}`} startIcon={<ArrowBackRoundedIcon />} sx={{ alignSelf: 'flex-start', px: 0 }}>
                 All stages of {pathwayName}
               </Button>
-            </Box>
+            </AsideCard>
           }
         >
-          <Typography variant="h2" component="h2" sx={{ mb: 1 }}>
-            The courses
-          </Typography>
-          <Typography sx={{ color: 'text.secondary', mb: 5, maxWidth: 720 }}>
-            Worked through in order — each one builds on the last.
-          </Typography>
+          <Box sx={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: { xs: 6, md: 7 } }}>
+            {stages.length > 1 && (
+              <StageLadder
+                stages={stages}
+                activeSlug={stage.slug}
+                hrefFor={(st) => `/pathways/${slug}/${st.slug}`}
+                label={`Stages of ${pathwayName}`}
+              />
+            )}
 
-          {courses.map((course, i) => (
-            <PathwayCourseStep key={`${course.name}-${i}`} index={i} total={courses.length} course={course} accent={accent} />
-          ))}
-
-          {(previous || next) && (
-            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mt: 6, pt: 4, borderTop: '1px solid', borderColor: 'divider' }}>
-              {previous && <StageLink pathwaySlug={slug} stage={previous} number={index} direction="previous" />}
-              {next && <StageLink pathwaySlug={slug} stage={next} number={index + 2} direction="next" />}
+            <Box component="section" aria-labelledby="stage-courses">
+              <Typography id="stage-courses" variant="h3" component="h2" sx={{ mb: 1 }}>
+                The courses
+              </Typography>
+              <Typography color="text.secondary" sx={{ mb: 3, maxWidth: 720 }}>
+                Worked through in order — each one builds on the last.
+              </Typography>
+              <Box component="ol" sx={{ listStyle: 'none', m: 0, p: 0 }}>
+                {courses.map((course, i) => (
+                  <PathwayCourseStep key={`${course.name}-${i}`} index={i} total={courses.length} course={course} accent={accent} />
+                ))}
+              </Box>
             </Box>
-          )}
+
+            <HowEnrollingWorks paid={paidEnrol} diagnostic={Boolean(diagnostic)} places={places} />
+
+            {(previous || next) && (
+              <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', pt: 4, borderTop: '1px solid', borderColor: 'divider' }}>
+                {previous && <StageLink pathwaySlug={slug} stage={previous} number={index} direction="previous" />}
+                {next && <StageLink pathwaySlug={slug} stage={next} number={index + 2} direction="next" />}
+              </Box>
+            )}
+          </Box>
         </DetailLayout>
       </Section>
+
+      <PathwayEnrolBar to={enrollTo} label={enrolLabel} price={stagePrice} note={[stageName, ages].filter(Boolean).join(' · ')} />
     </>
   );
 }
