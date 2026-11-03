@@ -21,8 +21,12 @@ export default function WhatsAppButton() {
       sx={{
         position: 'fixed',
         right: { xs: 16, md: 24 },
-        // Clear of the phone's home-indicator strip.
-        bottom: { xs: 'calc(16px + env(safe-area-inset-bottom, 0px))', md: 24 },
+        // Clear of the phone's home-indicator strip, and of a bar a page keeps along the bottom
+        // (--floating-bottom-offset, set by e.g. PathwayEnrolBar).
+        bottom: {
+          xs: 'calc(16px + var(--floating-bottom-offset, 0px) + env(safe-area-inset-bottom, 0px))',
+          md: 'calc(24px + var(--floating-bottom-offset, 0px))',
+        },
         zIndex: (t) => t.zIndex.speedDial,
         width: 56,
         height: 56,
