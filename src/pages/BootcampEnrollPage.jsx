@@ -11,7 +11,7 @@ import Link from '@mui/material/Link';
 import Skeleton from '@mui/material/Skeleton';
 import SeoHead from '../components/seo/SeoHead.jsx';
 import Section from '../components/common/Section.jsx';
-import { ErrorBlock, LoadingBlock } from '../components/common/StateViews.jsx';
+import { ErrorBlock, LoadingBlock, EmptyBlock } from '../components/common/StateViews.jsx';
 import { usePublicBootcamp } from '../hooks/usePublicBootcamps.js';
 import { useDiagnostic, useSubmitDiagnostic } from '../hooks/useDiagnostic.js';
 import { diagnosticContactSchema } from '../components/forms/schemas.js';
@@ -96,6 +96,28 @@ export default function BootcampEnrollPage() {
         <Box sx={{ textAlign: 'center', mt: 2 }}>
           <Button component={RouterLink} to="/bootcamps" variant="outlined">
             View all bootcamps
+          </Button>
+        </Box>
+      </Container>
+    );
+  }
+
+  // A TOT (training of trainers) bootcamp is for educators — this form enrols children under a
+  // parent (the server refuses it too), so a direct link here says how to join instead.
+  if (bootcamp.audience === 'educators') {
+    return (
+      <Container maxWidth="md" sx={{ py: 8 }}>
+        <SeoHead title={`Join ${bootcamp.name}`} noindex />
+        <EmptyBlock
+          title={`${bootcamp.name} is for educators`}
+          body="It’s training of trainers (TOT), and its sign-up isn’t online yet — contact us and we’ll enrol you."
+        />
+        <Box sx={{ display: 'flex', gap: 1.5, justifyContent: 'center', flexWrap: 'wrap', mt: 2 }}>
+          <Button component={RouterLink} to="/contact" variant="contained">
+            Contact us
+          </Button>
+          <Button component={RouterLink} to={`/bootcamps/${slug}`} variant="outlined">
+            Back to the bootcamp
           </Button>
         </Box>
       </Container>
