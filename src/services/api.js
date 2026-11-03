@@ -154,6 +154,10 @@ export const publicApi = {
   // cash payment against it (see server: bootcamp-enrollment.service.js).
   submitBootcampEnrollment: (payload) =>
     api.post('/api/public/bootcamp-enrollments', payload).then((r) => r.data),
+  // A TOT (training of trainers) bootcamp: the educator enrols themself — their account, their
+  // place, one invoice to pay (server: bootcamp-enrollment/educator-enrollment.service.js).
+  submitEducatorEnrollment: (payload) =>
+    api.post('/api/public/bootcamp-enrollments/educator', payload).then((r) => r.data),
   // A priced pathway's enrolment: logins, the chosen hub, one invoice to pay (server:
   // pathway-enrollment/).
   submitPathwayEnrollment: (payload) =>

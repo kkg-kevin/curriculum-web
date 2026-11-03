@@ -4,7 +4,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
-import { learnerBirthDateSchema } from '../forms/schemas.js';
+import { learnerBirthDateSchema, educatorBirthDateSchema } from '../forms/schemas.js';
 import DateOfBirthField from '../forms/DateOfBirthField.jsx';
 import { ageOn } from '../../utils/dates.js';
 
@@ -17,7 +17,8 @@ import { ageOn } from '../../utils/dates.js';
  * outside a bootcamp's ages); `onSubmit(dateOfBirth, age)` gets both once it passes. `intro` is
  * optional, `sx` adds to the form's own styles.
  */
-export default function BirthDateStep({ onSubmit, defaultDateOfBirth, checkAge, advice, intro, sx }) {
+// `adult`: the person's own date of birth (an educator on a TOT bootcamp) — any adult age.
+export default function BirthDateStep({ onSubmit, defaultDateOfBirth, checkAge, advice, intro, adult = false, sx }) {
   const {
     register,
     handleSubmit,
@@ -25,7 +26,7 @@ export default function BirthDateStep({ onSubmit, defaultDateOfBirth, checkAge, 
     setError,
     formState: { errors },
   } = useForm({
-    resolver: zodResolver(learnerBirthDateSchema),
+    resolver: zodResolver(adult ? educatorBirthDateSchema : learnerBirthDateSchema),
     defaultValues: { dateOfBirth: defaultDateOfBirth || '' },
     mode: 'onTouched',
   });
@@ -48,7 +49,12 @@ export default function BirthDateStep({ onSubmit, defaultDateOfBirth, checkAge, 
       sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 420, ...sx }}
     >
       {intro && <Typography color="text.secondary">{intro}</Typography>}
-      <DateOfBirthField registration={register('dateOfBirth')} value={watch('dateOfBirth')} error={errors.dateOfBirth} />
+      <DateOfBirthField
+        registration={register('dateOfBirth')}
+        value={watch('dateOfBirth')}
+        error={errors.dateOfBirth}
+        {...(adult ? { label: 'Your date of birth', yearsBack: 100 } : {})}
+      />
       {note && !errors.dateOfBirth && <Alert severity="info" sx={{ mt: -1 }}>{note}</Alert>}
       <Button type="submit" variant="contained" size="large">
         Continue

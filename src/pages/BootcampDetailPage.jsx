@@ -118,8 +118,7 @@ export default function BootcampDetailPage() {
     // Games and play that come with the bootcamp — absent on an older API, which reads as none.
     games = [], gamesNote = '',
   } = data;
-  // A TOT (training of trainers) bootcamp is for educators: there's no website sign-up for it yet
-  // (the one here enrols children under a parent), so its button asks them to get in touch.
+  // A TOT (training of trainers) bootcamp is for educators, who enrol themselves (no diagnostic).
   const forEducators = data.audience === 'educators';
 
   // A TOT bootcamp takes educators of any age (15–100) — say who it's for instead.
@@ -187,17 +186,17 @@ export default function BootcampDetailPage() {
         )}
         <Button
           component={RouterLink}
-          to={forEducators ? '/contact' : `/bootcamps/${slug}/enroll`}
+          to={`/bootcamps/${slug}/enroll`}
           variant="contained"
           size="large"
           startIcon={<HowToRegIcon />}
           fullWidth
         >
-          {forEducators ? 'Contact us to join' : 'Enroll'}
+          {forEducators ? 'Enrol' : 'Enroll'}
         </Button>
         <Typography variant="body2" color="text.secondary" sx={{ mt: 1.5, textAlign: 'center', fontSize: '0.8rem' }}>
           {forEducators
-            ? 'Training of trainers for educators — tell us about yourself and we’ll enrol you.'
+            ? 'Training of trainers for educators — enrol and pay online.'
             : 'Starts with a short diagnostic matched to your child’s age.'}
         </Typography>
       </Box>

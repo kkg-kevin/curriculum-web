@@ -70,7 +70,8 @@ function Fact({ icon, children }) {
   );
 }
 
-export default function DiagnosticAnswerForm({ diagnostic, contactForm, onAnswersChange, onSubmit, submitMutation, onSkip }) {
+// `adult`: an educator taking it themselves (a TOT bootcamp) — no "hand this to a grown-up".
+export default function DiagnosticAnswerForm({ diagnostic, contactForm, onAnswersChange, onSubmit, submitMutation, onSkip, adult = false }) {
   const items = diagnostic.items || [];
   const total = items.length;
   const { errors } = contactForm.formState;
@@ -120,7 +121,7 @@ export default function DiagnosticAnswerForm({ diagnostic, contactForm, onAnswer
     return (
       <Box ref={topRef} sx={{ ...cardSx, display: 'flex', flexDirection: 'column', gap: 2.5, maxWidth: 720 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 2, sm: 3 }, flexDirection: { xs: 'column', sm: 'row' }, textAlign: { xs: 'center', sm: 'left' } }}>
-          <Mascot src="/mascot-girl.png" size={130} />
+          {!adult && <Mascot src="/mascot-girl.png" size={130} />}
           <Box>
             <Typography component="h2" sx={{ fontSize: { xs: 26, sm: 30 }, fontWeight: 900, lineHeight: 1.15 }}>
               Hi{childName ? ` ${childName}` : ''}! Let&apos;s see what you already know.
@@ -169,7 +170,9 @@ export default function DiagnosticAnswerForm({ diagnostic, contactForm, onAnswer
         </Box>
         {onSkip && (
           <Typography sx={{ mt: -1, fontSize: 13.5, color: 'text.secondary' }}>
-            Only one diagnostic is needed. Skip this one and {childName || 'the learner'} takes it in their Digifunzi portal after enrolling.
+            {adult
+              ? 'Only one diagnostic is needed. Skip this one and you take it under “My learning” after enrolling.'
+              : `Only one diagnostic is needed. Skip this one and ${childName || 'the learner'} takes it in their Digifunzi portal after enrolling.`}
           </Typography>
         )}
       </Box>
@@ -181,7 +184,7 @@ export default function DiagnosticAnswerForm({ diagnostic, contactForm, onAnswer
     return (
       <Box ref={topRef} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, maxWidth: 720 }}>
         <Box sx={{ ...cardSx, display: 'flex', alignItems: 'center', gap: { xs: 2, sm: 3 }, flexDirection: { xs: 'column', sm: 'row' }, textAlign: { xs: 'center', sm: 'left' } }}>
-          <Mascot src="/mascot-boy.png" size={120} />
+          {!adult && <Mascot src="/mascot-boy.png" size={120} />}
           <Box sx={{ flex: 1 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, justifyContent: { xs: 'center', sm: 'flex-start' } }}>
               <EmojiEventsRoundedIcon sx={{ color: 'secondary.main', fontSize: 34 }} />
@@ -208,7 +211,7 @@ export default function DiagnosticAnswerForm({ diagnostic, contactForm, onAnswer
         <Box component="form" onSubmit={onSubmit} noValidate sx={{ ...cardSx, display: 'flex', flexDirection: 'column', gap: 2, borderColor: 'primary.main', borderWidth: 2 }}>
           <Box>
             <Typography sx={{ fontSize: 13, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'primary.main' }}>
-              Now hand this to a grown-up
+              {adult ? 'Almost done' : 'Now hand this to a grown-up'}
             </Typography>
             <Typography sx={{ mt: 0.5, fontSize: 15, color: 'text.secondary' }}>
               The report shows on the screen straight away. Your name and phone let our team follow up with next steps.

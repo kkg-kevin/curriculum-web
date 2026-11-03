@@ -33,12 +33,16 @@ export default function EnrollSummary({ bootcamp, hasDiagnostic }) {
   const facts = [
     { key: 'dates', Icon: ScheduleIcon, label: 'Dates', value: formatDateRange(startDate, endDate) },
     { key: 'where', Icon: PlaceIcon, label: upcomingRuns.length > 1 ? 'Running at' : 'Where', value: where },
-    { key: 'age', Icon: ChildCareIcon, label: 'Suitable for', value: ageLabel(ageMin, ageMax) },
+    { key: 'age', Icon: ChildCareIcon, label: 'Suitable for', value: bootcamp.audience === 'educators' ? 'Educators (training of trainers)' : ageLabel(ageMin, ageMax) },
     { key: 'format', Icon: TimerOutlinedIcon, label: 'Format', value: [format && FORMAT_LABEL[format], duration].filter(Boolean).join(' · ') },
   ].filter((f) => f.value);
   const next = hasDiagnostic
-    ? ['A short quiz for their age — marked straight away', 'See how they did, and where they’ll start', 'Enrol, create their login and pay']
-    : ['Enter your details and create their login', 'Pay, in whichever way suits you'];
+    ? bootcamp.audience === 'educators'
+      ? ['A short diagnostic — marked straight away', 'See how you did, and where you’ll start', 'Enrol, create your login and pay']
+      : ['A short quiz for their age — marked straight away', 'See how they did, and where they’ll start', 'Enrol, create their login and pay']
+    : bootcamp.audience === 'educators'
+      ? ['Enter your details and create your login', 'Pay, in whichever way suits you']
+      : ['Enter your details and create their login', 'Pay, in whichever way suits you'];
 
   return (
     <Box

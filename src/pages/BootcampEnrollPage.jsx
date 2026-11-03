@@ -11,13 +11,14 @@ import Link from '@mui/material/Link';
 import Skeleton from '@mui/material/Skeleton';
 import SeoHead from '../components/seo/SeoHead.jsx';
 import Section from '../components/common/Section.jsx';
-import { ErrorBlock, LoadingBlock, EmptyBlock } from '../components/common/StateViews.jsx';
+import { ErrorBlock, LoadingBlock } from '../components/common/StateViews.jsx';
 import { usePublicBootcamp } from '../hooks/usePublicBootcamps.js';
 import { useDiagnostic, useSubmitDiagnostic } from '../hooks/useDiagnostic.js';
 import { diagnosticContactSchema } from '../components/forms/schemas.js';
 import DiagnosticAnswerForm from '../components/diagnostic/DiagnosticAnswerForm.jsx';
 import DiagnosticReport from '../components/diagnostic/DiagnosticReport.jsx';
 import BootcampEnrollForm from '../components/forms/BootcampEnrollForm.jsx';
+import EducatorEnrollForm from '../components/forms/EducatorEnrollForm.jsx';
 import BirthDateStep from '../components/diagnostic/BirthDateStep.jsx';
 import useScrollToFlowTop from '../hooks/useScrollToFlowTop.js';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
@@ -102,27 +103,10 @@ export default function BootcampEnrollPage() {
     );
   }
 
-  // A TOT (training of trainers) bootcamp is for educators — this form enrols children under a
-  // parent (the server refuses it too), so a direct link here says how to join instead.
-  if (bootcamp.audience === 'educators') {
-    return (
-      <Container maxWidth="md" sx={{ py: 8 }}>
-        <SeoHead title={`Join ${bootcamp.name}`} noindex />
-        <EmptyBlock
-          title={`${bootcamp.name} is for educators`}
-          body="It’s training of trainers (TOT), and its sign-up isn’t online yet — contact us and we’ll enrol you."
-        />
-        <Box sx={{ display: 'flex', gap: 1.5, justifyContent: 'center', flexWrap: 'wrap', mt: 2 }}>
-          <Button component={RouterLink} to="/contact" variant="contained">
-            Contact us
-          </Button>
-          <Button component={RouterLink} to={`/bootcamps/${slug}`} variant="outlined">
-            Back to the bootcamp
-          </Button>
-        </Box>
-      </Container>
-    );
-  }
+  // A TOT (training of trainers) bootcamp is for educators, who enrol themselves — the same steps
+  // (date of birth → diagnostic → result → details and payment), worded for them, ending on
+  // EducatorEnrollForm instead of the children's form.
+  const forEducators = bootcamp.audience === 'educators';
 
   const handleBirthDateSubmit = (submittedDateOfBirth, submittedAge) => {
     const match = pathwayForAge(bootcamp.pathwayDiagnostics || [], submittedAge);
@@ -151,7 +135,7 @@ export default function BootcampEnrollPage() {
   });
 
   const isReport = step === STEP.REPORT;
-  const learnerLabel = childName || 'your learner';
+  const learnerLabel = forEducators ? 'you' : childName || 'your learner';
   // The steps a parent sees: no diagnostic step when the bootcamp offers none. The report counts
   // the diagnostic as done; enrolling from it (or skipping the quiz) is the last step.
   const hasDiagnostic = (bootcamp.pathwayDiagnostics || []).length > 0;
@@ -162,6 +146,7 @@ export default function BootcampEnrollPage() {
   const width = isReport ? 'xl' : withSummary ? 'lg' : 'md';
   const bootcampAges = ageLabel(bootcamp.ageMin, bootcamp.ageMax);
   const ageAdvice = (a) => {
+    if (forEducators) return null; // any age
     const below = bootcamp.ageMin != null && a < bootcamp.ageMin;
     const above = bootcamp.ageMax != null && a > bootcamp.ageMax;
     return below || above
@@ -177,10 +162,23 @@ export default function BootcampEnrollPage() {
     defaultLearnerDateOfBirth: dateOfBirth,
     attemptId: report?.attemptId || null,
   };
+  // The details-and-payment form at the end: the children's, or an educator's own.
+  const enrolForm = forEducators ? (
+    <EducatorEnrollForm
+      bootcampSlug={bootcamp.slug}
+      bootcampName={bootcamp.name}
+      defaultName={contactForm.getValues('parentName')}
+      defaultPhone={contactForm.getValues('parentPhone')}
+      dateOfBirth={dateOfBirth}
+      attemptId={report?.attemptId || null}
+    />
+  ) : (
+    <BootcampEnrollForm bootcampSlug={bootcamp.slug} bootcampName={bootcamp.name} {...enrollDefaults} />
+  );
 
   return (
     <>
-      <SeoHead title={`Enroll in ${bootcamp.name}`} noindex />
+      <SeoHead title={`${forEducators ? 'Enrol' : 'Enroll'} in ${bootcamp.name}`} noindex />
 
       <Box
         ref={flowRef}
@@ -202,10 +200,10 @@ export default function BootcampEnrollPage() {
             <Link component={RouterLink} to={`/bootcamps/${slug}`} underline="hover" color="inherit">
               {bootcamp.name}
             </Link>
-            <Typography color="text.primary">Enroll</Typography>
+            <Typography color="text.primary">{forEducators ? 'Enrol' : 'Enroll'}</Typography>
           </Breadcrumbs>
           <Typography variant="h1" component="h1" sx={{ fontSize: { xs: 28, md: 36 } }}>
-            {isReport ? `How ${learnerLabel} did` : `Enroll in ${bootcamp.name}`}
+            {isReport ? `How ${learnerLabel} did` : `${forEducators ? 'Enrol' : 'Enroll'} in ${bootcamp.name}`}
           </Typography>
           {isReport ? (
             <Typography variant="h4" component="p" sx={{ fontWeight: 400, color: 'text.secondary', maxWidth: 640, mt: 1.5 }}>
@@ -226,25 +224,30 @@ export default function BootcampEnrollPage() {
                 Step 1 of {progressSteps.length}
               </Typography>
               <Typography variant="h4" component="h2" sx={{ fontWeight: 800, mt: 0.5 }}>
-                When was your child born?
+                {forEducators ? 'When were you born?' : 'When was your child born?'}
               </Typography>
               <Typography color="text.secondary" sx={{ mt: 1, mb: 3, maxWidth: 520 }}>
-                {hasDiagnostic
-                  ? 'Their age decides which short quiz they take, so they start at the right level. After the quiz you’ll see how they did, then enrol.'
-                  : 'Their age places them at the right level. Next you’ll add your details and enrol.'}
-                {bootcampAges && ` ${bootcamp.name} is for ${bootcampAges.toLowerCase()}.`}
+                {forEducators
+                  ? (hasDiagnostic
+                    ? 'Your age decides which short diagnostic you take, so you start at the right course. After it you’ll see how you did, then enrol and pay.'
+                    : 'Next you’ll add your details, then pay.')
+                  : (hasDiagnostic
+                    ? 'Their age decides which short quiz they take, so they start at the right level. After the quiz you’ll see how they did, then enrol.'
+                    : 'Their age places them at the right level. Next you’ll add your details and enrol.')}
+                {!forEducators && bootcampAges && ` ${bootcamp.name} is for ${bootcampAges.toLowerCase()}.`}
               </Typography>
               <BirthDateStep
                 onSubmit={handleBirthDateSubmit}
                 defaultDateOfBirth={dateOfBirth}
+                adult={forEducators}
                 advice={ageAdvice}
                 sx={{ maxWidth: 440 }}
               />
               <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start', mt: 3, pt: 2.5, borderTop: '1px solid', borderColor: 'divider' }}>
                 <LockOutlinedIcon fontSize="small" sx={{ color: 'text.secondary', mt: 0.25 }} />
                 <Typography variant="body2" color="text.secondary">
-                  We only use the date of birth to {hasDiagnostic ? 'choose the right questions and level' : 'place them at the right level'}.
-                  No account is needed yet — you&apos;ll create the logins when you enrol.
+                  We only use the date of birth to {hasDiagnostic ? 'choose the right questions and level' : 'place you at the right level'}.
+                  No account is needed yet — you&apos;ll create {forEducators ? 'yours' : 'the logins'} when you enrol.
                 </Typography>
               </Box>
             </Box>
@@ -257,7 +260,7 @@ export default function BootcampEnrollPage() {
         {step === STEP.QUESTIONS && (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', flexWrap: 'wrap' }}>
-              <Typography sx={{ fontWeight: 600 }}>Diagnostic — for a learner aged {age}</Typography>
+              <Typography sx={{ fontWeight: 600 }}>{forEducators ? 'Your diagnostic' : `Diagnostic — for a learner aged ${age}`}</Typography>
               <Button size="small" onClick={changeAge}>
                 Change date of birth
               </Button>
@@ -265,9 +268,7 @@ export default function BootcampEnrollPage() {
 
             {diagnosticQuery.isLoading && <LoadingBlock label="Loading questions…" />}
 
-            {diagnosticGone && (
-              <BootcampEnrollForm bootcampSlug={bootcamp.slug} bootcampName={bootcamp.name} {...enrollDefaults} />
-            )}
+            {diagnosticGone && enrolForm}
 
             {diagnosticQuery.isError && !diagnosticGone && (
               <ErrorBlock error={{ message: diagnosticQuery.error?.message }} onRetry={diagnosticQuery.refetch} />
@@ -281,6 +282,7 @@ export default function BootcampEnrollPage() {
                 onSubmit={handleSubmit}
                 submitMutation={submitMutation}
                 onSkip={() => setStep(STEP.ENROLL)}
+                adult={forEducators}
               />
             )}
           </Box>
@@ -294,7 +296,7 @@ export default function BootcampEnrollPage() {
                   Change date of birth
                 </Button>
               </Box>
-              <BootcampEnrollForm bootcampSlug={bootcamp.slug} bootcampName={bootcamp.name} {...enrollDefaults} />
+              {enrolForm}
             </Box>
             <Box sx={{ position: { md: 'sticky' }, top: { md: 96 } }}>
               <EnrollSummary bootcamp={bootcamp} hasDiagnostic={false} />
@@ -317,14 +319,14 @@ export default function BootcampEnrollPage() {
                 ...report,
                 pathwayName: undefined,
                 bootcampName: bootcamp.name,
-                childName: childName || undefined,
+                childName: (forEducators ? contactForm.getValues('parentName') : childName) || undefined,
                 childAge: age,
               }}
             />
 
             {/* The report's only next step is enrolling, so its details form opens right beside it. */}
             <Box sx={{ minWidth: 0 }}>
-              <BootcampEnrollForm bootcampSlug={bootcamp.slug} bootcampName={bootcamp.name} {...enrollDefaults} />
+              {enrolForm}
             </Box>
           </Box>
         )}

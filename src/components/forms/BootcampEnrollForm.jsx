@@ -32,8 +32,8 @@ import PasswordField from './PasswordField.jsx';
 import { ageOn } from '../../utils/dates.js';
 import useScrollToFlowTop from '../../hooks/useScrollToFlowTop.js';
 
-/** One selectable "Running at" hub card for the hub-choice step. */
-function HubOption({ run, selected, onSelect }) {
+/** One selectable "Running at" hub card for the hub-choice step (also the educators' form). */
+export function HubOption({ run, selected, onSelect }) {
   const { hub, startDate, endDate } = run;
   return (
     <Box

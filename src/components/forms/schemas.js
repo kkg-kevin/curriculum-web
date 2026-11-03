@@ -94,6 +94,17 @@ export const contactSchema = z.object({
  */
 export const learnerBirthDateSchema = z.object({ dateOfBirth: learnerDateOfBirth });
 
+// An educator's own date of birth (a TOT bootcamp's sign-up) — any adult age.
+const educatorDateOfBirth = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, 'Choose your date of birth')
+  .superRefine((dateOfBirth, ctx) => {
+    const age = ageOn(dateOfBirth);
+    if (age === null) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'The date of birth can’t be in the future' });
+    else if (age < 15 || age > 100) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Training of trainers is for ages 15 to 100' });
+  });
+export const educatorBirthDateSchema = z.object({ dateOfBirth: educatorDateOfBirth });
+
 /**
  * Public diagnostic — contact details, collected on the questions step before
  * the visitor can submit. Name + phone are required (they become a
@@ -268,3 +279,20 @@ export const homeSchoolingSignupSchema = z
       seen.add(key);
     });
   });
+
+/**
+ * A TOT (training of trainers) bootcamp's sign-up — the educator themself (EducatorEnrollForm).
+ * Their email is their login; an existing Digifunzi account's own password is used instead.
+ */
+export const educatorEnrollmentSchema = z
+  .object({
+    firstName: z.string().trim().min(1, 'Enter your first name').max(80),
+    lastName: z.string().trim().min(1, 'Enter your last name').max(80),
+    email: z.string().trim().email('Enter a valid email').max(254),
+    phone,
+    organisation: z.string().trim().max(150).optional().or(z.literal('')),
+    password: z.string().min(6, 'At least 6 characters').max(72),
+    confirmPassword: z.string(),
+    ...honeypot,
+  })
+  .refine((d) => d.password === d.confirmPassword, { path: ['confirmPassword'], message: 'Passwords don’t match' });

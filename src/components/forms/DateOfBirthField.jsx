@@ -7,9 +7,10 @@ import { ageOn, todayStr } from '../../utils/dates.js';
  * picked, so the parent can see it's right. Pass react-hook-form's `register(name)` as
  * `registration` and the watched value as `value`.
  */
-export default function DateOfBirthField({ registration, value, error, label = 'Learner’s date of birth', ...props }) {
+// `yearsBack`: how far back the date may go — 20 for a child, 100 for an educator's own.
+export default function DateOfBirthField({ registration, value, error, label = 'Learner’s date of birth', yearsBack = 20, ...props }) {
   const today = todayStr();
-  const earliest = `${Number(today.slice(0, 4)) - 20}${today.slice(4)}`;
+  const earliest = `${Number(today.slice(0, 4)) - yearsBack}${today.slice(4)}`;
   const age = ageOn(value);
   return (
     <TextField

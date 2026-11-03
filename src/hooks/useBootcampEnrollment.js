@@ -12,3 +12,10 @@ export function useSubmitBootcampEnrollment() {
     mutationFn: (payload) => publicApi.submitBootcampEnrollment(payload),
   });
 }
+
+/** POST /api/public/bootcamp-enrollments/educator — a TOT bootcamp's sign-up (EducatorEnrollForm). */
+export function useSubmitEducatorEnrollment() {
+  return useMutation({
+    mutationFn: (payload) => publicApi.submitEducatorEnrollment(payload),
+  });
+}
