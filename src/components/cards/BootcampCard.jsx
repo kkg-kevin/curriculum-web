@@ -61,7 +61,8 @@ export default function BootcampCard({ bootcamp }) {
     startDate, endDate, registrationOpenDate, registrationCloseDate, games = [],
   } = bootcamp;
 
-  const age = ageLabel(ageMin, ageMax);
+  // A TOT bootcamp takes educators of any age (15–100) — say who it's for instead.
+  const age = bootcamp.audience === 'educators' ? 'For educators' : ageLabel(ageMin, ageMax);
   const priceLabel = price ? formatPrice(price) : 'Enquire for pricing';
   // A TOT (training of trainers) bootcamp says so first — it's for educators, not children.
   const kicker = [bootcamp.audience === 'educators' ? 'Training of trainers' : 'Bootcamp', format && FORMAT_LABEL[format]]

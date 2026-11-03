@@ -122,7 +122,8 @@ export default function BootcampDetailPage() {
   // (the one here enrols children under a parent), so its button asks them to get in touch.
   const forEducators = data.audience === 'educators';
 
-  const age = ageLabel(ageMin, ageMax);
+  // A TOT bootcamp takes educators of any age (15–100) — say who it's for instead.
+  const age = data.audience === 'educators' ? 'For educators' : ageLabel(ageMin, ageMax);
   // A bootcamp priced by course/module instead of as a whole has `price: null` — falling straight
   // to "Enquire for pricing" would hide real numbers that DO exist, just spread across the
   // bootcamp's per-course prices. Surface the cheapest priced item instead, as a "From X"
