@@ -54,7 +54,9 @@ export default function EnrollPage() {
   // A priced pathway that runs at chosen hubs is enrolled and paid for here (PathwayEnrollForm);
   // any other pathway still sends an enquiry (EnrollForm).
   const pathwayQuery = usePathway(isPathwayFlow ? referenceId : null);
-  const paidPathway = isPathwayFlow && pathwayQuery.data?.price && (pathwayQuery.data.hubs || []).length > 0 ? pathwayQuery.data : null;
+  // Sold online: subscription plans and hubs to choose from — PathwayEnrollForm; otherwise an
+  // enquiry (EnrollForm).
+  const paidPathway = isPathwayFlow && (pathwayQuery.data?.plans || []).length > 0 && (pathwayQuery.data.hubs || []).length > 0 ? pathwayQuery.data : null;
   const clubName = (params.get('club') || '').trim().slice(0, 120);
 
   // A project / store reference (or an explicit ?enquiry=1) switches to the lighter enquiry
@@ -144,6 +146,7 @@ export default function EnrollPage() {
                 <PathwayEnrollForm
                   pathway={paidPathway}
                   defaultHubId={params.get('hubId')}
+                  defaultPlanId={params.get('plan')}
                   attemptId={start.attemptId}
                   defaultLearnerName={start.childName}
                   defaultLearnerDateOfBirth={start.dateOfBirth}
@@ -156,6 +159,7 @@ export default function EnrollPage() {
             <PathwayEnrollForm
               pathway={paidPathway}
               defaultHubId={params.get('hubId')}
+              defaultPlanId={params.get('plan')}
               attemptId={params.get('attempt')}
               defaultLearnerName={params.get('childName') || ''}
               defaultLearnerDateOfBirth={params.get('dob') || ''}

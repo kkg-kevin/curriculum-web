@@ -10,7 +10,7 @@ import RouteRoundedIcon from '@mui/icons-material/RouteRounded';
 import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import FramedImage from '../media/FramedImage.jsx';
-import { priceShort } from '../../utils/pathwayPrice.js';
+import { subscriptionShort } from '../../utils/pathwayPrice.js';
 import { pathwayAgeLabel, stageAgeShort, stageForAge } from '../../utils/pathwayAges.js';
 
 const MAX_STAGE_CHIPS = 5;
@@ -31,7 +31,8 @@ const MAX_STAGE_CHIPS = 5;
 export default function PathwayCard({ pathway, age = null }) {
   const { slug, name, description, courseCount, image, places = [] } = pathway;
   const stages = (pathway.stages || []).filter((s) => s.minAge != null && s.maxAge != null);
-  const price = priceShort(pathway.price);
+  // Sold by subscription plans: the cheapest, "From KSh 3,000 / month".
+  const subscription = subscriptionShort(pathway.subscription);
   const ages = pathwayAgeLabel(pathway);
   const fit = age != null ? stageForAge(stages, age) : null;
   const fitIndex = fit ? stages.indexOf(fit) : -1;
@@ -189,12 +190,9 @@ export default function PathwayCard({ pathway, age = null }) {
               flexWrap: 'wrap',
             }}
           >
-            {price ? (
+            {subscription ? (
               <Typography component="span" sx={{ fontWeight: 800, fontSize: '1rem', color: 'text.primary' }}>
-                {price}
-                <Typography component="span" sx={{ fontWeight: 600, fontSize: 12, color: 'text.secondary' }}>
-                  {pathway.price.mode === 'whole' ? ' / learner' : ' / course'}
-                </Typography>
+                {subscription}
               </Typography>
             ) : (
               <Typography component="span" sx={{ fontWeight: 600, fontSize: 13, color: 'text.secondary' }}>

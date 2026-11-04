@@ -5,7 +5,7 @@ import Typography from '@mui/material/Typography';
  * "How enrolling works" on a pathway's (or stage's) page — the same steps the enrolment itself
  * takes (PathwayEnrolJourney, then PathwayEnrollForm or the enquiry form):
  * - date of birth, and the stage's short diagnostic when one is offered (it can be skipped);
- * - sold online (`paid`): choose a hub, then details and payment;
+ * - sold online (`paid` — it has subscription plans): choose a plan and a hub, then details and payment;
  * - not sold online: send your details, then the team gets in touch.
  */
 export default function HowEnrollingWorks({ paid, diagnostic, places = [] }) {
@@ -19,10 +19,10 @@ export default function HowEnrollingWorks({ paid, diagnostic, places = [] }) {
     ...(paid
       ? [
           {
-            title: 'Choose a hub',
-            body: places.length ? `Where they’ll learn — ${places.join(', ')}.` : 'Where they’ll learn.',
+            title: 'Choose a plan and a hub',
+            body: places.length ? `Pay by the month, term or year — and where they’re based: ${places.join(', ')}.` : 'Pay by the month, term or year — and where they’re based.',
           },
-          { title: 'Your details, then pay', body: 'Pay by M-Pesa or the other ways the hub accepts.' },
+          { title: 'Your details, then pay', body: 'Pay by M-Pesa or the other ways the hub accepts. The courses open once it’s paid, and it renews automatically.' },
         ]
       : [
           { title: 'Send your details', body: 'Your name and phone number, and your child’s details.' },

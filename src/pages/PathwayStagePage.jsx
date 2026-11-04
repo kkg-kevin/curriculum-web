@@ -1,5 +1,5 @@
 import { useParams, Link as RouterLink, useLocation } from 'react-router-dom';
-import { formatKsh } from '../cart/format.js';
+import { isSoldOnline, subscriptionShort } from '../utils/pathwayPrice.js';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
@@ -104,13 +104,11 @@ export default function PathwayStagePage() {
   const diagnostic = stage.diagnostic?.available ? stage.diagnostic : null;
   // Enrolling from a stage: that stage's diagnostic and ages come first (PathwayEnrolJourney).
   const enrollTo = `/enroll?flow=pathway&referenceId=${encodeURIComponent(slug)}&stage=${encodeURIComponent(stage.slug)}`;
-  // What starting here costs: the pathway's price, or this stage's first course's.
-  const stagePrice = data.price?.mode === 'whole'
-    ? `${formatKsh(data.price.amount, data.price.currency)} per learner`
-    : courses[0]?.price != null ? `Starts at ${formatKsh(courses[0].price, data.price?.currency)}` : null;
+  // What it costs: the pathway's cheapest plan ("From KSh 3,000 / month") — every stage is included.
+  const stagePrice = isSoldOnline(data) ? subscriptionShort(data.subscription) : null;
   const hubs = data.hubs || [];
   const places = [...new Set(hubs.map((h) => (h.town || '').split(',')[0].trim()).filter(Boolean))];
-  const paidEnrol = Boolean(data.price) && hubs.length > 0;
+  const paidEnrol = isSoldOnline(data);
   const enrolLabel = paidEnrol ? 'Enrol & pay' : 'Enrol in this stage';
   const previous = index > 0 ? stages[index - 1] : null;
   const next = index < stages.length - 1 ? stages[index + 1] : null;

@@ -26,8 +26,7 @@ import PathwayEnrolBar from '../components/pathway/PathwayEnrolBar.jsx';
 import DetailLayout, { AsideCard } from '../components/common/DetailLayout.jsx';
 import { RelatedPathways } from '../components/common/Related.jsx';
 import { actionRowSx } from '../components/common/ActionRow.jsx';
-import { priceLabel, priceShort } from '../utils/pathwayPrice.js';
-import { formatKsh } from '../cart/format.js';
+import { planLabel, planChildren, subscriptionShort, periodUnit, isSoldOnline } from '../utils/pathwayPrice.js';
 import { parseAge, pathwayAgeLabel, stageAgeLabel, stageForAge } from '../utils/pathwayAges.js';
 
 const FALLBACK_ACCENT = '#25476a';
@@ -153,12 +152,14 @@ export default function PathwayDetailPage() {
   // Where it runs (chosen in the curriculum system); the family picks one when they enrol.
   const hubs = data.hubs || [];
   const places = [...new Set(hubs.map((h) => (h.town || '').split(',')[0].trim()).filter(Boolean))];
-  // Sold online when it has a price and hubs to choose from: Enrol then takes payment.
-  const price = data.price || null;
-  const paidEnrol = Boolean(price) && hubs.length > 0;
+  // Sold online when it has subscription plans and hubs to choose from: Enrol then takes payment.
+  const plans = data.plans || [];
+  const subscription = data.subscription || null;
+  const paidEnrol = isSoldOnline(data);
+  // The headline price: the cheapest plan's "from".
+  const headline = paidEnrol ? subscriptionShort(subscription) : null;
   const enrolLabel = paidEnrol ? 'Enrol & pay' : 'Enrol';
   const ages = pathwayAgeLabel(data);
-  const stageStart = stage?.courses?.[0]?.price;
   const choose = (st) =>
     setParams(
       (prev) => {
@@ -217,9 +218,9 @@ export default function PathwayDetailPage() {
               <Button component={RouterLink} to={enrollTo} variant="contained" size="large">
                 {enrolLabel}
               </Button>
-              {price && (
+              {headline && (
                 <Typography sx={{ fontWeight: 800, fontSize: '1.1rem' }}>
-                  {priceLabel(price)}
+                  {headline}
                 </Typography>
               )}
             </Box>
@@ -236,15 +237,13 @@ export default function PathwayDetailPage() {
             <AsideCard>
               <Box>
                 <Typography sx={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'text.secondary' }}>
-                  {price ? 'Price' : 'Ready to start?'}
+                  {headline ? 'Price' : 'Ready to start?'}
                 </Typography>
-                {price ? (
+                {headline ? (
                   <>
-                    <Typography sx={{ fontWeight: 800, fontSize: '1.7rem', lineHeight: 1.2, mt: 0.5 }}>{priceShort(price)}</Typography>
+                    <Typography sx={{ fontWeight: 800, fontSize: '1.7rem', lineHeight: 1.2, mt: 0.5 }}>{subscriptionShort(subscription)}</Typography>
                     <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                      {price.mode === 'whole'
-                        ? 'Per learner, for the whole pathway.'
-                        : 'Per course — you pay for the course they start at, by age or quiz result.'}
+                      A subscription — renews every {periodUnit(subscription.billingPeriod)}; every stage’s courses stay open while it’s paid.
                     </Typography>
                   </>
                 ) : (
@@ -283,7 +282,6 @@ export default function PathwayDetailPage() {
                     <Box sx={{ minWidth: 0, flex: '1 1 280px' }}>
                       <Typography variant="overline" component="p" sx={{ color: 'text.secondary', fontWeight: 800, lineHeight: 1.6 }}>
                         Stage {stageNumber} · {stageAgeLabel(stage.minAge, stage.maxAge) || 'All ages'}
-                        {price?.mode === 'by_course' && stageStart != null ? ` · Starts at ${formatKsh(stageStart, price.currency)}` : ''}
                       </Typography>
                       <Typography variant="h4" component="h3">{stage.name || 'More courses'}</Typography>
                       {stage.description && (
@@ -324,6 +322,40 @@ export default function PathwayDetailPage() {
               </Box>
             )}
 
+            {plans.length > 0 && hubs.length > 0 && (
+              <Box component="section" aria-labelledby="pathway-plans">
+                <Typography id="pathway-plans" variant="h3" component="h2" sx={{ mb: 1 }}>
+                  Plans
+                </Typography>
+                <Typography color="text.secondary" sx={{ mb: 2.5, maxWidth: 720 }}>
+                  Pay as you go — every stage’s courses, self-paced. It renews automatically; if a payment is missed the courses pause and pick up where they left off once it’s paid.
+                </Typography>
+                <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: 'repeat(auto-fill, minmax(240px, 1fr))' } }}>
+                  {plans.map((plan) => (
+                    <Box key={plan.id} sx={{ p: 2.5, borderRadius: 3, border: '1px solid', borderColor: plan.badge ? 'primary.main' : 'divider', bgcolor: 'background.paper', display: 'flex', flexDirection: 'column', gap: 1, minWidth: 0 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, flexWrap: 'wrap' }}>
+                        <Typography sx={{ fontWeight: 800 }}>{plan.name}</Typography>
+                        {plan.badge && <Box component="span" sx={{ fontSize: 11, fontWeight: 800, px: 1, py: 0.25, borderRadius: 999, bgcolor: 'primary.main', color: 'primary.contrastText' }}>{plan.badge}</Box>}
+                      </Box>
+                      <Typography sx={{ fontWeight: 800, fontSize: '1.4rem', lineHeight: 1.2 }}>{planLabel(plan)}</Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {planChildren(plan)}{plan.allowExtraChildren && plan.extraChildAmount ? ` · +${planLabel(plan, plan.extraChildAmount)} per extra child` : ''}
+                      </Typography>
+                      {plan.summary && <Typography variant="body2" color="text.secondary">{plan.summary}</Typography>}
+                      {(plan.features || []).length > 0 && (
+                        <Box component="ul" sx={{ m: 0, pl: 2.25, color: 'text.secondary', fontSize: 14, display: 'grid', gap: 0.5 }}>
+                          {plan.features.map((feature) => <li key={feature}>{feature}</li>)}
+                        </Box>
+                      )}
+                      <Button component={RouterLink} to={`${enrollTo}&plan=${encodeURIComponent(plan.id)}`} variant={plan.badge ? 'contained' : 'outlined'} sx={{ mt: 'auto' }}>
+                        Choose {plan.name}
+                      </Button>
+                    </Box>
+                  ))}
+                </Box>
+              </Box>
+            )}
+
             <HowEnrollingWorks paid={paidEnrol} diagnostic={Boolean(diagnostic?.available)} places={places} />
 
             {hubs.length > 0 && <WhereItRuns hubs={hubs} enrollTo={enrollTo} paidEnrol={paidEnrol} accent={accent} />}
@@ -336,7 +368,7 @@ export default function PathwayDetailPage() {
       <PathwayEnrolBar
         to={enrollTo}
         label={enrolLabel}
-        price={price ? priceShort(price) + (price.mode === 'whole' ? ' / learner' : ' / course') : null}
+        price={headline}
         note={ages || name}
       />
     </>

@@ -26,11 +26,11 @@ import PasswordField from './PasswordField.jsx';
 import { CopyableField, ParentSignIn } from './BootcampEnrollForm.jsx';
 import { ageOn } from '../../utils/dates.js';
 import { formatKsh } from '../../cart/format.js';
-import { priceLabel, startFor } from '../../utils/pathwayPrice.js';
+import { startFor, planPrice, planLabel, planChildren, periodUnit } from '../../utils/pathwayPrice.js';
 import { APP_URL } from '../../config/env.js';
 import useScrollToFlowTop from '../../hooks/useScrollToFlowTop.js';
 
-const STEPS = ['Choose a hub', 'Your details', 'Payment'];
+const STEPS = ['Plan & hub', 'Your details', 'Payment'];
 const MAX_CHILDREN = 6;
 const emptyChild = (name = '', dateOfBirth = '') => ({ learnerName: name, learnerDateOfBirth: dateOfBirth, username: '', password: '', confirmPassword: '' });
 const box = { p: { xs: 2.5, md: 3.5 }, borderRadius: 4, border: '1px solid', borderColor: 'divider', bgcolor: 'surface.subtle' };
@@ -50,8 +50,14 @@ const hubLine = (hub) => [hub.town, hub.deliveryMode !== 'in_person' ? hub.deliv
  * defaultLearnerDateOfBirth?, defaultParentName?, defaultParentPhone? (from the diagnostic's contact
  * details — PathwayEnrolJourney)
  */
-export default function PathwayEnrollForm({ pathway, defaultHubId = null, attemptId = null, defaultLearnerName = '', defaultLearnerDateOfBirth = '', defaultParentName = '', defaultParentPhone = '' }) {
+export default function PathwayEnrollForm({ pathway, defaultHubId = null, defaultPlanId = null, attemptId = null, defaultLearnerName = '', defaultLearnerDateOfBirth = '', defaultParentName = '', defaultParentPhone = '' }) {
   const hubs = pathway.hubs || [];
+  // The pathway's subscription plans (renewing every period): the family picks one with the hub —
+  // the one they chose on the pathway's page, else the first.
+  const plans = pathway.plans || [];
+  const [planId, setPlanId] = useState(() => (plans.some((p) => p.id === defaultPlanId) ? defaultPlanId : plans[0]?.id || ''));
+  const plan = plans.find((p) => p.id === planId) || null;
+  const steps = STEPS;
   const [hubId, setHubId] = useState(() => (hubs.some((h) => h.id === defaultHubId) ? defaultHubId : hubs.length === 1 ? hubs[0].id : ''));
   const [stage, setStage] = useState('hub');
   const [moves, setMoves] = useState(0);
@@ -84,9 +90,11 @@ export default function PathwayEnrollForm({ pathway, defaultHubId = null, attemp
   };
   const signOut = () => { setParent(null); setValue('signedIn', false); setValue('parentEmail', ''); };
 
-  // What each child is expected to cost, from their date of birth (the invoice is final).
+  // Where each child starts, from their date of birth; the family pays the plan's price for the
+  // number of children, every period (the invoice is final).
   const estimates = children.map((c) => startFor(pathway, c.learnerDateOfBirth));
-  const estimateTotal = estimates.every((e) => e?.amount != null) ? estimates.reduce((sum, e) => sum + e.amount, 0) : null;
+  const planTotal = plan ? planPrice(plan, children.length) : null;
+  const estimateTotal = planTotal;
 
   const onSubmit = async (values) => {
     if (isBot(values)) { setSpamBlocked(true); reset(); return; }
@@ -94,6 +102,7 @@ export default function PathwayEnrollForm({ pathway, defaultHubId = null, attemp
     await mutation.mutateAsync({
       pathwayIdOrSlug: pathway.slug,
       hubId,
+      packageId: plan?.id,
       parentName: values.parentName,
       parentEmail: values.parentEmail,
       parentPhone: values.parentPhone,
@@ -120,7 +129,7 @@ export default function PathwayEnrollForm({ pathway, defaultHubId = null, attemp
   const flowRef = useScrollToFlowTop(`${moves}:${mutation.isSuccess}:${spamBlocked}`);
   const stepper = (active) => (
     <Stepper activeStep={active} alternativeLabel sx={{ mb: 1 }}>
-      {STEPS.map((label) => <Step key={label}><StepLabel>{label}</StepLabel></Step>)}
+      {steps.map((label) => <Step key={label}><StepLabel>{label}</StepLabel></Step>)}
     </Stepper>
   );
 
@@ -140,13 +149,15 @@ export default function PathwayEnrollForm({ pathway, defaultHubId = null, attemp
           </Typography>
         </Box>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          At {mutation.data?.data?.hub?.name || hub?.name}. The logins work right away but stay view-only until your payment is confirmed; the hub then puts {names.length > 1 ? 'them' : first(submitted.children[0]?.name)} in a class.
+          {mutation.data?.data?.subscription
+            ? <>On the {mutation.data.data.subscription.plan} plan — {formatKsh(mutation.data.data.subscription.amount, payment?.currency)} a {periodUnit(mutation.data.data.subscription.billingPeriod)}, renewing automatically. The logins work right away; the pathway’s courses open as soon as your payment is confirmed — self-paced, no class needed.</>
+            : <>At {mutation.data?.data?.hub?.name || hub?.name}. The logins work right away but stay view-only until your payment is confirmed; the hub then puts {names.length > 1 ? 'them' : first(submitted.children[0]?.name)} in a class.</>}
         </Typography>
         <Box sx={{ mb: 2.5, display: 'grid', gap: 0.75 }}>
           {learners.map((l) => (
             <Box key={l.username} sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, p: 1.5, borderRadius: 2, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider' }}>
               <Typography variant="body2"><strong>{first(l.name)}</strong> — {l.stage ? `${l.stage}, ` : ''}starts at {l.startsAt}</Typography>
-              <Typography variant="body2" sx={{ fontWeight: 700, whiteSpace: 'nowrap' }}>{formatKsh(l.amount, payment?.currency)}</Typography>
+              {!mutation.data?.data?.subscription && <Typography variant="body2" sx={{ fontWeight: 700, whiteSpace: 'nowrap' }}>{formatKsh(l.amount, payment?.currency)}</Typography>}
             </Box>
           ))}
         </Box>
@@ -193,8 +204,27 @@ export default function PathwayEnrollForm({ pathway, defaultHubId = null, attemp
         {stepper(0)}
         <Box>
           <Typography variant="h5" component="h2" sx={{ fontWeight: 800 }}>Enrol in {pathway.name}</Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>{priceLabel(pathway.price)}. Where would the learner attend?</Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>Choose a plan, then where the learner is based.</Typography>
         </Box>
+        {plans.length > 0 && (
+          <Box sx={{ display: 'grid', gap: 1.5 }} role="radiogroup" aria-label="How to pay">
+            {plans.map((p) => ({ id: p.id, title: p.name, line: `${planLabel(p)} · ${planChildren(p)}`, note: 'Renews automatically — the courses stay open while it’s paid.', badge: p.badge })).map((o) => {
+              const selected = planId === o.id;
+              return (
+                <Box key={o.id} component="button" type="button" role="radio" aria-checked={selected} onClick={() => setPlanId(o.id)}
+                  sx={{ display: 'grid', gap: 0.25, width: '100%', textAlign: 'left', p: 2, borderRadius: 3, border: '2px solid', borderColor: selected ? 'primary.main' : 'divider', bgcolor: selected ? 'primary.main' : 'background.paper', color: selected ? 'primary.contrastText' : 'text.primary', cursor: 'pointer', font: 'inherit' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                    <Typography sx={{ fontWeight: 800 }}>{o.title}</Typography>
+                    {o.badge && <Box component="span" sx={{ fontSize: 11, fontWeight: 800, px: 1, py: 0.25, borderRadius: 999, bgcolor: selected ? 'rgba(255,255,255,.2)' : 'warning.light', color: selected ? 'inherit' : 'warning.dark' }}>{o.badge}</Box>}
+                  </Box>
+                  <Typography variant="body2" sx={{ fontWeight: 700 }}>{o.line}</Typography>
+                  <Typography variant="body2" sx={{ opacity: selected ? 0.85 : 1, color: selected ? 'inherit' : 'text.secondary' }}>{o.note}</Typography>
+                </Box>
+              );
+            })}
+          </Box>
+        )}
+        {plans.length > 0 && <Typography sx={{ fontWeight: 700, mt: 1 }}>Where is the learner based?</Typography>}
         <Box sx={{ display: 'grid', gap: 1.5 }}>
           {hubs.map((h) => {
             const selected = hubId === h.id;
@@ -210,7 +240,7 @@ export default function PathwayEnrollForm({ pathway, defaultHubId = null, attemp
             );
           })}
         </Box>
-        <Button variant="contained" size="large" disabled={!hubId} onClick={() => goTo('details')}>Continue</Button>
+        <Button variant="contained" size="large" disabled={!hubId || !planId} onClick={() => goTo('details')}>Continue</Button>
       </Box>
     );
   }
@@ -220,8 +250,8 @@ export default function PathwayEnrollForm({ pathway, defaultHubId = null, attemp
     <Box ref={flowRef} component="form" onSubmit={handleSubmit(onSubmit)} noValidate sx={{ ...box, display: 'grid', gap: 2 }}>
       {stepper(1)}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-        <Button size="small" onClick={() => goTo('hub')} sx={{ px: 1 }}>Change hub</Button>
-        <Typography variant="body2" sx={{ fontWeight: 600 }}>{hub?.name}{hub ? ` · ${hubLine(hub)}` : ''}</Typography>
+        <Button size="small" onClick={() => goTo('hub')} sx={{ px: 1 }}>{plans.length ? 'Change plan or hub' : 'Change hub'}</Button>
+        <Typography variant="body2" sx={{ fontWeight: 600 }}>{plan ? `${plan.name} · ` : ''}{hub?.name}{hub ? ` · ${hubLine(hub)}` : ''}</Typography>
       </Box>
       <FormStatus status={mutation.isError ? 'error' : 'idle'} error={mutation.error} />
       <Honeypot register={register} />
@@ -282,7 +312,7 @@ export default function PathwayEnrollForm({ pathway, defaultHubId = null, attemp
             {est && (
               <Typography variant="body2" sx={{ color: est.course ? 'text.secondary' : 'warning.main' }}>
                 {est.course
-                  ? `${est.stage?.name ? `${est.stage.name} · ` : ''}starts at ${est.course.name}${est.amount != null ? ` — ${formatKsh(est.amount, pathway.price?.currency)}` : ' — no online price yet; enquire instead'}`
+                  ? `${est.stage?.name ? `${est.stage.name} · ` : ''}starts at ${est.course.name}`
                   : `${pathway.name} isn’t offered for age ${est.age} — enquire instead and our team will help.`}
               </Typography>
             )}
@@ -299,13 +329,16 @@ export default function PathwayEnrollForm({ pathway, defaultHubId = null, attemp
         <Button variant="outlined" startIcon={<AddRoundedIcon />} onClick={() => append(emptyChild())} sx={{ justifySelf: 'start' }}>Add another child</Button>
       )}
 
+      {plan && planTotal == null && (
+        <Alert severity="warning">{plan.name} takes {plan.allowExtraChildren ? `up to ${plan.maxChildren}` : plan.childrenIncluded} {plan.childrenIncluded === 1 && !plan.allowExtraChildren ? 'child' : 'children'} — choose a larger plan or remove a learner.</Alert>
+      )}
       {estimateTotal != null && (
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2, borderRadius: 2, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider' }}>
-          <Typography sx={{ fontWeight: 700 }}>To pay{children.length > 1 ? ` for ${children.length} learners` : ''}</Typography>
-          <Typography sx={{ fontWeight: 800, fontSize: '1.2rem' }}>{formatKsh(estimateTotal, pathway.price?.currency)}</Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2, flexWrap: 'wrap', p: 2, borderRadius: 2, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider' }}>
+          <Typography sx={{ fontWeight: 700 }}>{plan ? `Then every ${periodUnit(plan.billingPeriod)}` : 'To pay'}{children.length > 1 ? ` for ${children.length} learners` : ''}</Typography>
+          <Typography sx={{ fontWeight: 800, fontSize: '1.2rem' }}>{formatKsh(estimateTotal, plan?.currency)}{plan ? ` / ${periodUnit(plan.billingPeriod)}` : ''}</Typography>
         </Box>
       )}
-      <Button type="submit" variant="contained" size="large" disabled={isSubmitting || mutation.isPending}>
+      <Button type="submit" variant="contained" size="large" disabled={isSubmitting || mutation.isPending || (plan && planTotal == null)}>
         {isSubmitting || mutation.isPending ? 'Setting up the accounts…' : 'Continue to payment'}
       </Button>
       <PrivacyNote>We use your details only to set up and manage this account. See our</PrivacyNote>
