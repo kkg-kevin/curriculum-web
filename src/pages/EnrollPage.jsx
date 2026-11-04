@@ -137,7 +137,9 @@ export default function EnrollPage() {
       />
 
       <Section>
-        <Box sx={{ maxWidth: isPathwayFlow ? 720 : 640, mx: 'auto' }}>
+        {/* A pathway enrolment uses a wider page: its diagnostic result and the enrolment sit side
+            by side (PathwayEnrolJourney); everything else keeps a reading width. */}
+        <Box sx={{ maxWidth: isPathwayFlow ? 1180 : 640, mx: 'auto' }}>
           {packageSlug && packageQuery.isLoading ? <LoadingBlock label="Loading package…" /> : isPathwayFlow && referenceId && pathwayQuery.isLoading ? <LoadingBlock label="Loading pathway…" /> : isPathwayFlow && pathwayQuery.data && !params.get('attempt') ? (
             // Every pathway enrolment starts with the learner's date of birth and, when there is
             // one for their age, the diagnostic — then the enrolment itself.
@@ -156,16 +158,16 @@ export default function EnrollPage() {
               ) : enquiryForm({ parentName: start.parentName, parentPhone: start.parentPhone, learnerName: start.childName, learnerDateOfBirth: start.dateOfBirth }, start.attemptId))}
             </PathwayEnrolJourney>
           ) : paidPathway ? (
-            <PathwayEnrollForm
+            <Box sx={{ maxWidth: 720, mx: 'auto' }}><PathwayEnrollForm
               pathway={paidPathway}
               defaultHubId={params.get('hubId')}
               defaultPlanId={params.get('plan')}
               attemptId={params.get('attempt')}
               defaultLearnerName={params.get('childName') || ''}
               defaultLearnerDateOfBirth={params.get('dob') || ''}
-            />
-          ) : enquiryForm({ learnerName: params.get('childName') || '', learnerDateOfBirth: params.get('dob') || '' }, params.get('attempt'))}
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 4 }}>
+            /></Box>
+          ) : <Box sx={{ maxWidth: isPathwayFlow ? 720 : 'none', mx: 'auto' }}>{enquiryForm({ learnerName: params.get('childName') || '', learnerDateOfBirth: params.get('dob') || '' }, params.get('attempt'))}</Box>}
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 4, maxWidth: 720, mx: 'auto' }}>
             Prefer to talk first? Use the <a href="/contact">contact form</a> and we’ll call you back.
           </Typography>
         </Box>

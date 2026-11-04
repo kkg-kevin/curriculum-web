@@ -34,7 +34,10 @@ const groupForAge = (groups, age) => (Number.isFinite(age) ? groups.find((g) => 
  * separate button: its result places the learner at the course their score earns (the attempt is
  * handed on), and the name, date of birth and parent details typed for it carry over.
  *
- * `children(start)` renders the enrolment — PathwayEnrollForm (priced: hub → details → payment) or
+ * After the result the enrolment comes straight in — beside the result on a large screen (the
+ * result on the left, the enrolment on the right, staying in view), under it on a phone.
+ *
+ * `children(start)` renders the enrolment — PathwayEnrollForm (plan & hub → details → payment) or
  * EnrollForm (an enquiry) — with start = { attemptId, dateOfBirth, childName, parentName,
  * parentPhone }. `stageSlug` (from a stage page) limits it to that stage's diagnostic and ages.
  */
@@ -75,17 +78,50 @@ export default function PathwayEnrolJourney({ pathway, slug, stageSlug = null, c
   });
 
   const steps = ['Date of birth', 'Diagnostic', 'Enrol'];
-  const active = step === STEP.AGE ? 0 : step === STEP.ENROL ? 2 : 1;
+  // The result step shows the enrolment beside it, so "Enrol" is where they are by then.
+  const active = step === STEP.AGE ? 0 : step === STEP.QUESTIONS ? 1 : 2;
   const header = groups.length > 0 && step !== STEP.ENROL && (
     <Stepper activeStep={active} alternativeLabel sx={{ mb: 3 }}>
       {steps.map((label) => <Step key={label}><StepLabel>{label}</StepLabel></Step>)}
     </Stepper>
   );
 
-  if (step === STEP.ENROL) return <Box ref={flowRef}>{children(start())}</Box>;
+  // The steps before the result keep a reading width; the result step uses the page's width.
+  const narrow = { maxWidth: 720, mx: 'auto', width: '100%' };
+  if (step === STEP.ENROL) return <Box ref={flowRef} sx={narrow}>{children(start())}</Box>;
+
+  if (step === STEP.REPORT && report) {
+    return (
+      <Box ref={flowRef}>
+        <Box sx={narrow}>{header}</Box>
+        <Box sx={{ display: 'grid', gap: { xs: 3, md: 4 }, alignItems: 'start', gridTemplateColumns: { xs: 'minmax(0, 1fr)', md: 'minmax(0, 1fr) minmax(0, 1fr)' } }}>
+          <Box sx={{ minWidth: 0 }}>
+            {/* On a phone the enrolment comes after the whole report — a shortcut to it first. */}
+            <Button
+              variant="contained"
+              size="large"
+              fullWidth
+              sx={{ display: { md: 'none' }, mb: 2 }}
+              onClick={() => document.getElementById('pathway-enrol')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+            >
+              Continue to enrol
+            </Button>
+            <DiagnosticReport report={{ ...report, childName: contactForm.getValues('childName') || undefined, childAge: age }} />
+          </Box>
+          <Box id="pathway-enrol" sx={{ minWidth: 0, position: { md: 'sticky' }, top: { md: 88 }, scrollMarginTop: 80 }}>
+            <Typography sx={{ fontWeight: 800, mb: 0.5 }}>Next: enrol in {pathway.name}</Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              The learner starts at the course this result earns. Your details carry over.
+            </Typography>
+            {children(start())}
+          </Box>
+        </Box>
+      </Box>
+    );
+  }
 
   return (
-    <Box ref={flowRef}>
+    <Box ref={flowRef} sx={narrow}>
       {header}
 
       {step === STEP.AGE && (
@@ -135,18 +171,6 @@ export default function PathwayEnrolJourney({ pathway, slug, stageSlug = null, c
         </Box>
       )}
 
-      {step === STEP.REPORT && report && (
-        <Box sx={{ display: 'grid', gap: 3 }}>
-          <DiagnosticReport report={{ ...report, childName: contactForm.getValues('childName') || undefined, childAge: age }} />
-          <Box sx={{ p: 2.5, borderRadius: 3, border: '1px solid', borderColor: 'divider', bgcolor: 'surface.subtle' }}>
-            <Typography sx={{ fontWeight: 800 }}>Next: enrol in {pathway.name}</Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, mb: 2 }}>
-              The learner starts at the course this result earns. Your details carry over.
-            </Typography>
-            <Button variant="contained" size="large" onClick={() => setStep(STEP.ENROL)}>Continue to enrol</Button>
-          </Box>
-        </Box>
-      )}
     </Box>
   );
 }

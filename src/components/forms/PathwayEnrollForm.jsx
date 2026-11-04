@@ -3,6 +3,7 @@ import { useFieldArray, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import Box from '@mui/material/Box';
+import { alpha } from '@mui/material/styles';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
@@ -26,7 +27,7 @@ import PasswordField from './PasswordField.jsx';
 import { CopyableField, ParentSignIn } from './BootcampEnrollForm.jsx';
 import { ageOn } from '../../utils/dates.js';
 import { formatKsh } from '../../cart/format.js';
-import { startFor, planPrice, planLabel, planChildren, periodUnit } from '../../utils/pathwayPrice.js';
+import { startFor, planPrice, planChildren, periodUnit } from '../../utils/pathwayPrice.js';
 import { APP_URL } from '../../config/env.js';
 import useScrollToFlowTop from '../../hooks/useScrollToFlowTop.js';
 
@@ -35,6 +36,25 @@ const MAX_CHILDREN = 6;
 const emptyChild = (name = '', dateOfBirth = '') => ({ learnerName: name, learnerDateOfBirth: dateOfBirth, username: '', password: '', confirmPassword: '' });
 const box = { p: { xs: 2.5, md: 3.5 }, borderRadius: 4, border: '1px solid', borderColor: 'divider', bgcolor: 'surface.subtle' };
 const hubLine = (hub) => [hub.town, hub.deliveryMode !== 'in_person' ? hub.deliveryLabel : null].filter(Boolean).join(' · ') || hub.deliveryLabel;
+
+// A selectable card (plan or hub): white, its border and a light tint marking the chosen one.
+const choiceCard = (selected) => ({
+  width: '100%', textAlign: 'left', p: 2, borderRadius: 3, cursor: 'pointer', font: 'inherit', color: 'text.primary',
+  border: '2px solid', borderColor: selected ? 'primary.main' : 'divider',
+  bgcolor: (t) => (selected ? alpha(t.palette.primary.main, 0.08) : t.palette.background.paper),
+  transition: 'border-color .15s, background-color .15s',
+  '&:hover': { borderColor: 'primary.main' },
+  '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.light', outlineOffset: 2 },
+});
+const sectionTitle = { p: 0, mb: 0.25, fontSize: 13, fontWeight: 800, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'text.secondary' };
+// The radio mark on a selectable card.
+function RadioMark({ on }) {
+  return (
+    <Box component="span" aria-hidden sx={{ width: 20, height: 20, borderRadius: '50%', flexShrink: 0, border: '2px solid', borderColor: on ? 'primary.main' : 'divider', display: 'grid', placeItems: 'center', bgcolor: 'background.paper' }}>
+      {on && <Box component="span" sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: 'primary.main' }} />}
+    </Box>
+  );
+}
 
 /**
  * Paid enrolment for a priced pathway that runs at chosen hubs (both set in the curriculum system —
@@ -197,49 +217,74 @@ export default function PathwayEnrollForm({ pathway, defaultHubId = null, defaul
     return <Box ref={flowRef} sx={box}><Alert severity="success">Thanks! We’ll be in touch shortly.</Alert></Box>;
   }
 
-  // ---- Step 1: choose a hub ------------------------------------------------------------------
+  // ---- Step 1: the plan and the hub ----------------------------------------------------------
+  // Plans side by side (price first), hubs as a short list — each a selectable card with a radio
+  // mark, the chosen one tinted rather than filled — then what was chosen, and Continue.
   if (stage === 'hub') {
+    const chosenPrice = plan ? planPrice(plan, 1) : null;
     return (
-      <Box ref={flowRef} sx={{ ...box, display: 'grid', gap: 2 }}>
+      <Box ref={flowRef} sx={{ ...box, display: 'grid', gap: 2.5 }}>
         {stepper(0)}
         <Box>
           <Typography variant="h5" component="h2" sx={{ fontWeight: 800 }}>Enrol in {pathway.name}</Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>Choose a plan, then where the learner is based.</Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>Every stage’s courses, self-paced. It renews automatically — the courses stay open while it’s paid.</Typography>
         </Box>
-        {plans.length > 0 && (
-          <Box sx={{ display: 'grid', gap: 1.5 }} role="radiogroup" aria-label="How to pay">
-            {plans.map((p) => ({ id: p.id, title: p.name, line: `${planLabel(p)} · ${planChildren(p)}`, note: 'Renews automatically — the courses stay open while it’s paid.', badge: p.badge })).map((o) => {
-              const selected = planId === o.id;
+
+        <Box component="fieldset" sx={{ border: 0, p: 0, m: 0, display: 'grid', gap: 1.25 }}>
+          <Typography component="legend" sx={sectionTitle}>1 · Choose a plan</Typography>
+          <Box role="radiogroup" aria-label="Plan" sx={{ display: 'grid', gap: 1.25, gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: 'repeat(auto-fit, minmax(190px, 1fr))' } }}>
+            {plans.map((p) => {
+              const selected = planId === p.id;
               return (
-                <Box key={o.id} component="button" type="button" role="radio" aria-checked={selected} onClick={() => setPlanId(o.id)}
-                  sx={{ display: 'grid', gap: 0.25, width: '100%', textAlign: 'left', p: 2, borderRadius: 3, border: '2px solid', borderColor: selected ? 'primary.main' : 'divider', bgcolor: selected ? 'primary.main' : 'background.paper', color: selected ? 'primary.contrastText' : 'text.primary', cursor: 'pointer', font: 'inherit' }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-                    <Typography sx={{ fontWeight: 800 }}>{o.title}</Typography>
-                    {o.badge && <Box component="span" sx={{ fontSize: 11, fontWeight: 800, px: 1, py: 0.25, borderRadius: 999, bgcolor: selected ? 'rgba(255,255,255,.2)' : 'warning.light', color: selected ? 'inherit' : 'warning.dark' }}>{o.badge}</Box>}
+                <Box key={p.id} component="button" type="button" role="radio" aria-checked={selected} onClick={() => setPlanId(p.id)} sx={choiceCard(selected)}>
+                  <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1 }}>
+                    <Box sx={{ minWidth: 0 }}>
+                      <Typography sx={{ fontWeight: 800, lineHeight: 1.3 }}>{p.name}</Typography>
+                      {p.badge && <Box component="span" sx={{ display: 'inline-block', mt: 0.5, fontSize: 11, fontWeight: 800, px: 1, py: 0.25, borderRadius: 999, bgcolor: 'primary.main', color: 'primary.contrastText' }}>{p.badge}</Box>}
+                    </Box>
+                    <RadioMark on={selected} />
                   </Box>
-                  <Typography variant="body2" sx={{ fontWeight: 700 }}>{o.line}</Typography>
-                  <Typography variant="body2" sx={{ opacity: selected ? 0.85 : 1, color: selected ? 'inherit' : 'text.secondary' }}>{o.note}</Typography>
+                  <Typography sx={{ mt: 1.25, lineHeight: 1.1 }}>
+                    <Box component="span" sx={{ fontWeight: 800, fontSize: '1.45rem' }}>{formatKsh(p.amount, p.currency)}</Box>
+                    <Box component="span" sx={{ color: 'text.secondary', fontWeight: 600 }}> / {periodUnit(p.billingPeriod)}</Box>
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 0.75 }}>
+                    {planChildren(p)}{p.allowExtraChildren && p.extraChildAmount ? ` · +${formatKsh(p.extraChildAmount, p.currency)} per extra child` : ''}
+                  </Typography>
                 </Box>
               );
             })}
           </Box>
-        )}
-        {plans.length > 0 && <Typography sx={{ fontWeight: 700, mt: 1 }}>Where is the learner based?</Typography>}
-        <Box sx={{ display: 'grid', gap: 1.5 }}>
-          {hubs.map((h) => {
-            const selected = hubId === h.id;
-            return (
-              <Box key={h.id} component="button" type="button" onClick={() => setHubId(h.id)}
-                sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, width: '100%', textAlign: 'left', p: 2, borderRadius: 3, border: '2px solid', borderColor: selected ? 'primary.main' : 'divider', bgcolor: selected ? 'primary.main' : 'background.paper', color: selected ? 'primary.contrastText' : 'text.primary', cursor: 'pointer', font: 'inherit' }}>
-                <PlaceOutlinedIcon sx={{ mt: 0.25 }} />
-                <Box sx={{ minWidth: 0 }}>
-                  <Typography sx={{ fontWeight: 700 }}>{h.name}</Typography>
-                  <Typography variant="body2" sx={{ opacity: selected ? 0.85 : 1, color: selected ? 'inherit' : 'text.secondary' }}>{hubLine(h)}</Typography>
-                </Box>
-              </Box>
-            );
-          })}
         </Box>
+
+        <Box component="fieldset" sx={{ border: 0, p: 0, m: 0, display: 'grid', gap: 1.25 }}>
+          <Typography component="legend" sx={sectionTitle}>2 · Where is the learner based?</Typography>
+          <Box role="radiogroup" aria-label="Hub" sx={{ display: 'grid', gap: 1 }}>
+            {hubs.map((h) => {
+              const selected = hubId === h.id;
+              return (
+                <Box key={h.id} component="button" type="button" role="radio" aria-checked={selected} onClick={() => setHubId(h.id)}
+                  sx={{ ...choiceCard(selected), display: 'flex', alignItems: 'center', gap: 1.5, py: 1.5 }}>
+                  <PlaceOutlinedIcon sx={{ color: selected ? 'primary.main' : 'text.secondary', flexShrink: 0 }} />
+                  <Box sx={{ minWidth: 0, flex: 1 }}>
+                    <Typography sx={{ fontWeight: 700, lineHeight: 1.3 }}>{h.name}</Typography>
+                    <Typography variant="body2" color="text.secondary">{hubLine(h)}</Typography>
+                  </Box>
+                  <RadioMark on={selected} />
+                </Box>
+              );
+            })}
+          </Box>
+        </Box>
+
+        {plan && hub && (
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1.5, flexWrap: 'wrap', p: 1.75, borderRadius: 3, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider' }}>
+            <Typography variant="body2" sx={{ minWidth: 0 }}>
+              <strong>{plan.name}</strong> at <strong>{hub.name}</strong>
+            </Typography>
+            <Typography variant="body2" sx={{ fontWeight: 800, whiteSpace: 'nowrap' }}>{formatKsh(chosenPrice, plan.currency)} / {periodUnit(plan.billingPeriod)}</Typography>
+          </Box>
+        )}
         <Button variant="contained" size="large" disabled={!hubId || !planId} onClick={() => goTo('details')}>Continue</Button>
       </Box>
     );
