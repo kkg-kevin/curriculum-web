@@ -59,6 +59,10 @@ export default api;
 // ---- Public API surface (spec §4) --------------------------------------------
 
 export const publicApi = {
+  // "What parents say" — comments parents agreed to share about the educators teaching their
+  // children, featured by the team in the portal (server: modules/mentor-reviews/). No names.
+  listTestimonials: () => api.get('/api/public/testimonials').then((r) => (Array.isArray(r.data?.data) ? r.data.data : [])),
+
   listPathways: () => api.get('/api/public/pathways').then((r) => r.data),
   getPathway: (slug) => api.get(`/api/public/pathways/${encodeURIComponent(slug)}`).then((r) => r.data),
 

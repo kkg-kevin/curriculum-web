@@ -171,7 +171,7 @@ export default function DiagnosticAnswerForm({ diagnostic, contactForm, onAnswer
         {onSkip && (
           <Typography sx={{ mt: -1, fontSize: 13.5, color: 'text.secondary' }}>
             {adult
-              ? 'Only one diagnostic is needed. Skip this one and you take it under “My learning” after enrolling.'
+              ? 'Only one diagnostic is needed. Skip this one and you take it in your training (sign in as TOT learner) after enrolling.'
               : `Only one diagnostic is needed. Skip this one and ${childName || 'the learner'} takes it in their Digifunzi portal after enrolling.`}
           </Typography>
         )}

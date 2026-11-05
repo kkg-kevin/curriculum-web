@@ -3,7 +3,9 @@ import Typography from '@mui/material/Typography';
 import Section from '../common/Section.jsx';
 import SectionHeading from '../common/SectionHeading.jsx';
 import Reveal from '../common/Reveal.jsx';
-import { testimonials } from '../../content/home.js';
+import { useQuery } from '@tanstack/react-query';
+import { testimonials as written } from '../../content/home.js';
+import { publicApi } from '../../services/api.js';
 
 /**
  * "What parents and schools say" — not three equal quote boxes. The first
@@ -59,7 +61,11 @@ function QuoteMark({ sx }) {
 }
 
 export default function Testimonials() {
-  // No real quotes yet (content/home.js) — no section, rather than an empty "Proof" heading.
+  // Real quotes only: the ones written into content/home.js, then what parents said in the portal and
+  // agreed to share (featured by the team — GET /api/public/testimonials). None — no section, rather
+  // than an empty "Proof" heading.
+  const { data: shared = [] } = useQuery({ queryKey: ['public-testimonials'], queryFn: publicApi.listTestimonials, staleTime: 10 * 60 * 1000 });
+  const testimonials = [...written, ...shared.filter((t) => t?.quote && t?.name)];
   if (testimonials.length === 0) return null;
   const [feature, ...rest] = testimonials;
 

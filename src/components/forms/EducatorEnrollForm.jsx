@@ -27,7 +27,7 @@ import { CopyableField, HubOption } from './BootcampEnrollForm.jsx';
  * hub, when it runs at more than one) → Your details → Payment, the same shape as the children's
  * BootcampEnrollForm. Submitting creates their educator account and login, their place in the
  * bootcamp's class and one invoice (server: bootcamp-enrollment/educator-enrollment.service.js);
- * paying it starts their training, which they follow in the teacher portal's "My learning".
+ * paying it starts their training, which they follow by signing in as TOT learner (a portal of its own).
  */
 // Defaults from the steps before it (BootcampEnrollPage): the name and phone typed for the
 // diagnostic, their date of birth, and the diagnostic they took (`attemptId`), which places them.
@@ -102,7 +102,7 @@ export default function EducatorEnrollForm({ bootcampSlug, bootcampName, default
           </Typography>
         </Box>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5 }}>
-          Your educator account is ready. Sign in to follow your training under “My learning” — it opens fully
+          Your account is ready. Sign in to follow your training (as TOT learner) — it opens fully
           {hasPrice ? ' as soon as your payment is confirmed.' : ' once the hub confirms your place.'}
         </Typography>
 
