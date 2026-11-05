@@ -4,6 +4,12 @@ import MainLayout from '../layouts/MainLayout.jsx';
 import HomePage from '../pages/HomePage.jsx';
 import { projectPath, STORE_PROJECTS_PATH } from '../utils/storePaths.js';
 
+// /pathways/<slug>/<stage> → /pathways/<slug>?stage=<stage> (the stage chosen on the pathway's page).
+function OldStageAddress() {
+  const { slug, stageSlug } = useParams();
+  return <Navigate to={`/pathways/${slug}?stage=${encodeURIComponent(stageSlug)}`} replace />;
+}
+
 function OldProjectAddress() {
   const { slug } = useParams();
   return <Navigate to={projectPath(slug)} replace />;
@@ -19,7 +25,6 @@ function OldProjectAddress() {
  */
 const PathwaysListPage = lazy(() => import('../pages/PathwaysListPage.jsx'));
 const PathwayDetailPage = lazy(() => import('../pages/PathwayDetailPage.jsx'));
-const PathwayStagePage = lazy(() => import('../pages/PathwayStagePage.jsx'));
 const DiagnosticPage = lazy(() => import('../pages/DiagnosticPage.jsx'));
 const DiagnosticReportPage = lazy(() => import('../pages/DiagnosticReportPage.jsx'));
 const BootcampsPage = lazy(() => import('../pages/BootcampsPage.jsx'));
@@ -58,8 +63,9 @@ export const routes = [
       { path: 'pathways/:slug', element: <PathwayDetailPage /> },
       { path: 'pathways/:slug/diagnostic', element: <DiagnosticPage /> },
       { path: 'pathways/:slug/diagnostic/report/:attemptId', element: <DiagnosticReportPage /> },
-      // A developmental stage of a pathway (after the fixed diagnostic routes, which outrank it anyway).
-      { path: 'pathways/:slug/:stageSlug', element: <PathwayStagePage /> },
+      // A stage's old page (retired Nov 2026 — a pathway's stages are chosen on its own page): open
+      // the pathway with that stage chosen. After the fixed diagnostic routes, which outrank it.
+      { path: 'pathways/:slug/:stageSlug', element: <OldStageAddress /> },
       // Projects are sold in the Store (Oct 2026); their old addresses lead there. public/.htaccess
       // does the same as real 301s.
       { path: 'projects', element: <Navigate to={STORE_PROJECTS_PATH} replace /> },

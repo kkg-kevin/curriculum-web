@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
@@ -30,11 +30,15 @@ import { formatKsh } from '../../cart/format.js';
 import { startFor, planPrice, planChildren, periodUnit } from '../../utils/pathwayPrice.js';
 import { APP_URL } from '../../config/env.js';
 import useScrollToFlowTop from '../../hooks/useScrollToFlowTop.js';
+import { useEnrolCheckout } from '../enrol/EnrolCheckout.jsx';
+import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
+import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
 
 const STEPS = ['Plan & hub', 'Your details', 'Payment'];
 const MAX_CHILDREN = 6;
 const emptyChild = (name = '', dateOfBirth = '') => ({ learnerName: name, learnerDateOfBirth: dateOfBirth, username: '', password: '', confirmPassword: '' });
-const box = { p: { xs: 2.5, md: 3.5 }, borderRadius: 4, border: '1px solid', borderColor: 'divider', bgcolor: 'surface.subtle' };
+// The white step card of the enrolment checkout (EnrolCheckout's StepCard).
+const box = { p: { xs: 2.5, md: 3.5 }, borderRadius: 4, border: '1px solid', borderColor: 'surface.ring', bgcolor: 'surface.card', boxShadow: 'shadow.sm' };
 const hubLine = (hub) => [hub.town, hub.deliveryMode !== 'in_person' ? hub.deliveryLabel : null].filter(Boolean).join(' · ') || hub.deliveryLabel;
 
 // A selectable card (plan or hub): white, its border and a light tint marking the chosen one.
@@ -70,7 +74,7 @@ function RadioMark({ on }) {
  * defaultLearnerDateOfBirth?, defaultParentName?, defaultParentPhone? (from the diagnostic's contact
  * details — PathwayEnrolJourney)
  */
-export default function PathwayEnrollForm({ pathway, defaultHubId = null, defaultPlanId = null, attemptId = null, defaultLearnerName = '', defaultLearnerDateOfBirth = '', defaultParentName = '', defaultParentPhone = '' }) {
+export default function PathwayEnrollForm({ pathway, defaultHubId = null, defaultPlanId = null, attemptId = null, defaultLearnerName = '', defaultLearnerDateOfBirth = '', defaultParentName = '', defaultParentPhone = '', onBack = null }) {
   const hubs = pathway.hubs || [];
   // The pathway's subscription plans (renewing every period): the family picks one with the hub —
   // the one they chose on the pathway's page, else the first.
@@ -147,7 +151,14 @@ export default function PathwayEnrollForm({ pathway, defaultHubId = null, defaul
   };
 
   const flowRef = useScrollToFlowTop(`${moves}:${mutation.isSuccess}:${spamBlocked}`);
-  const stepper = (active) => (
+  // Inside the enrolment checkout: tell it where we are and what's chosen (its step bar and
+  // summary); on its own (no checkout) draw our own step bar.
+  const checkout = useEnrolCheckout();
+  const currentStep = mutation.isSuccess ? 'pay' : stage === 'hub' ? 'plan' : 'details';
+  useEffect(() => {
+    checkout?.report({ step: currentStep, plan, hub: hub || null, learners: Math.max(1, children.length) });
+  }, [checkout, currentStep, plan, hub, children.length]);
+  const stepper = (active) => checkout ? null : (
     <Stepper activeStep={active} alternativeLabel sx={{ mb: 1 }}>
       {steps.map((label) => <Step key={label}><StepLabel>{label}</StepLabel></Step>)}
     </Stepper>
@@ -226,8 +237,9 @@ export default function PathwayEnrollForm({ pathway, defaultHubId = null, defaul
       <Box ref={flowRef} sx={{ ...box, display: 'grid', gap: 2.5 }}>
         {stepper(0)}
         <Box>
-          <Typography variant="h5" component="h2" sx={{ fontWeight: 800 }}>Enrol in {pathway.name}</Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>Every stage’s courses, self-paced. It renews automatically — the courses stay open while it’s paid.</Typography>
+          <Typography sx={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'primary.main', mb: 0.5 }}>Plan & hub</Typography>
+          <Typography variant="h4" component="h2" sx={{ fontWeight: 800 }}>Choose a plan and a hub</Typography>
+          <Typography color="text.secondary" sx={{ mt: 0.75 }}>Every stage’s courses, self-paced. It renews automatically — the courses stay open while it’s paid.</Typography>
         </Box>
 
         <Box component="fieldset" sx={{ border: 0, p: 0, m: 0, display: 'grid', gap: 1.25 }}>
@@ -285,7 +297,10 @@ export default function PathwayEnrollForm({ pathway, defaultHubId = null, defaul
             <Typography variant="body2" sx={{ fontWeight: 800, whiteSpace: 'nowrap' }}>{formatKsh(chosenPrice, plan.currency)} / {periodUnit(plan.billingPeriod)}</Typography>
           </Box>
         )}
-        <Button variant="contained" size="large" disabled={!hubId || !planId} onClick={() => goTo('details')}>Continue</Button>
+        <Box sx={{ display: 'flex', gap: 1.5, justifyContent: onBack ? 'space-between' : 'flex-end', alignItems: 'center', flexWrap: 'wrap' }}>
+          {onBack && <Button startIcon={<ArrowBackRoundedIcon />} onClick={onBack}>Back</Button>}
+          <Button variant="contained" size="large" endIcon={<ArrowForwardRoundedIcon />} disabled={!hubId || !planId} onClick={() => goTo('details')} sx={{ minWidth: { xs: '100%', sm: 220 } }}>Continue</Button>
+        </Box>
       </Box>
     );
   }
@@ -294,9 +309,13 @@ export default function PathwayEnrollForm({ pathway, defaultHubId = null, defaul
   return (
     <Box ref={flowRef} component="form" onSubmit={handleSubmit(onSubmit)} noValidate sx={{ ...box, display: 'grid', gap: 2 }}>
       {stepper(1)}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-        <Button size="small" onClick={() => goTo('hub')} sx={{ px: 1 }}>{plans.length ? 'Change plan or hub' : 'Change hub'}</Button>
-        <Typography variant="body2" sx={{ fontWeight: 600 }}>{plan ? `${plan.name} · ` : ''}{hub?.name}{hub ? ` · ${hubLine(hub)}` : ''}</Typography>
+      <Box>
+        <Typography sx={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'primary.main', mb: 0.5 }}>Your details</Typography>
+        <Typography variant="h4" component="h2" sx={{ fontWeight: 800 }}>Your details and their login</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', mt: 0.75 }}>
+          <Typography variant="body2" color="text.secondary">{plan ? `${plan.name} · ` : ''}{hub?.name}{hub ? ` · ${hubLine(hub)}` : ''}</Typography>
+          <Button size="small" startIcon={<ArrowBackRoundedIcon />} onClick={() => goTo('hub')} sx={{ px: 1 }}>{plans.length ? 'Change plan or hub' : 'Change hub'}</Button>
+        </Box>
       </Box>
       <FormStatus status={mutation.isError ? 'error' : 'idle'} error={mutation.error} />
       <Honeypot register={register} />

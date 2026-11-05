@@ -1,4 +1,6 @@
-import { useSearchParams } from 'react-router-dom';
+import { Link as RouterLink, useSearchParams } from 'react-router-dom';
+import Button from '@mui/material/Button';
+import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import SeoHead from '../components/seo/SeoHead.jsx';
@@ -9,6 +11,7 @@ import EnrollForm from '../components/forms/EnrollForm.jsx';
 import PathwayEnrollForm from '../components/forms/PathwayEnrollForm.jsx';
 import { usePathway } from '../hooks/usePathways.js';
 import PathwayEnrolJourney from '../components/pathway/PathwayEnrolJourney.jsx';
+import EnrolCheckout, { enrolSteps } from '../components/enrol/EnrolCheckout.jsx';
 import { getProject } from '../content/projects.js';
 import { LoadingBlock } from '../components/common/StateViews.jsx';
 import { childrenLabel, packageEnquiryNote, priceForPackage } from '../content/homeSchooling.js';
@@ -58,6 +61,8 @@ export default function EnrollPage() {
   // enquiry (EnrollForm).
   const paidPathway = isPathwayFlow && (pathwayQuery.data?.plans || []).length > 0 && (pathwayQuery.data.hubs || []).length > 0 ? pathwayQuery.data : null;
   const clubName = (params.get('club') || '').trim().slice(0, 120);
+  const pathwayName = isPathwayFlow ? pathwayQuery.data?.name || null : null;
+  const hasQuiz = (pathwayQuery.data?.stages || []).some((st) => st.diagnostic?.available);
 
   // A project / store reference (or an explicit ?enquiry=1) switches to the lighter enquiry
   // variant — buying isn't always about one named child. A pathway enrol (`flow=pathway`) is
@@ -109,7 +114,7 @@ export default function EnrollPage() {
   return (
     <>
       <SeoHead
-        title={isHomeSchooling ? 'Home Schooling Enquiry' : isEnquiry ? 'Purchase Enquiry' : 'Enroll a Learner'}
+        title={pathwayName ? `Enrol in ${pathwayName}` : isHomeSchooling ? 'Home Schooling Enquiry' : isEnquiry ? 'Purchase Enquiry' : 'Enroll a Learner'}
         description={
           isHomeSchooling
             ? 'Enquire about Digifunzi Home Schooling family packages.'
@@ -121,6 +126,21 @@ export default function EnrollPage() {
       />
       <JsonLd data={organizationSchema()} />
 
+      {pathwayName ? (
+        <PageHeader
+          title={`Enrol in ${pathwayName}`}
+          lead={[
+            'Their date of birth',
+            hasQuiz ? 'an optional quick quiz' : null,
+            paidPathway ? 'a plan and a hub' : null,
+            'your details',
+          ].filter(Boolean).join(', ').replace(/, ([^,]*)$/, ' and $1') + (paidPathway ? ' — then pay.' : ' — then our team gets in touch to arrange a place.')}
+        >
+          <Button component={RouterLink} to={`/pathways/${encodeURIComponent(referenceId)}`} startIcon={<ArrowBackRoundedIcon />} sx={{ mt: 2 }}>
+            Back to {pathwayName}
+          </Button>
+        </PageHeader>
+      ) : (
       <PageHeader
         title={isHomeSchooling ? 'Home Schooling enquiry' : isEnquiry ? 'Send an enquiry' : 'Enroll a learner'}
         lead={
@@ -135,6 +155,7 @@ export default function EnrollPage() {
               : 'Tell us about your child and what you’re interested in. This isn’t a payment or a binding sign-up — our team will get in touch to talk through options and next steps.'
         }
       />
+      )}
 
       <Section>
         {/* A pathway enrolment uses a wider page: its diagnostic result and the enrolment sit side
@@ -143,7 +164,7 @@ export default function EnrollPage() {
           {packageSlug && packageQuery.isLoading ? <LoadingBlock label="Loading package…" /> : isPathwayFlow && referenceId && pathwayQuery.isLoading ? <LoadingBlock label="Loading pathway…" /> : isPathwayFlow && pathwayQuery.data && !params.get('attempt') ? (
             // Every pathway enrolment starts with the learner's date of birth and, when there is
             // one for their age, the diagnostic — then the enrolment itself.
-            <PathwayEnrolJourney pathway={pathwayQuery.data} slug={referenceId} stageSlug={params.get('stage')}>
+            <PathwayEnrolJourney pathway={pathwayQuery.data} slug={referenceId} stageSlug={params.get('stage')} planId={params.get('plan')} paid={Boolean(paidPathway)}>
               {(start) => (paidPathway ? (
                 <PathwayEnrollForm
                   pathway={paidPathway}
@@ -154,20 +175,21 @@ export default function EnrollPage() {
                   defaultLearnerDateOfBirth={start.dateOfBirth}
                   defaultParentName={start.parentName}
                   defaultParentPhone={start.parentPhone}
+                  onBack={start.onBack}
                 />
               ) : enquiryForm({ parentName: start.parentName, parentPhone: start.parentPhone, learnerName: start.childName, learnerDateOfBirth: start.dateOfBirth }, start.attemptId))}
             </PathwayEnrolJourney>
           ) : paidPathway ? (
-            <Box sx={{ maxWidth: 720, mx: 'auto' }}><PathwayEnrollForm
+            <EnrolCheckout pathway={paidPathway} steps={enrolSteps({ learner: false, quiz: false, paid: true })} active="plan" paid><PathwayEnrollForm
               pathway={paidPathway}
               defaultHubId={params.get('hubId')}
               defaultPlanId={params.get('plan')}
               attemptId={params.get('attempt')}
               defaultLearnerName={params.get('childName') || ''}
               defaultLearnerDateOfBirth={params.get('dob') || ''}
-            /></Box>
+            /></EnrolCheckout>
           ) : <Box sx={{ maxWidth: isPathwayFlow ? 720 : 'none', mx: 'auto' }}>{enquiryForm({ learnerName: params.get('childName') || '', learnerDateOfBirth: params.get('dob') || '' }, params.get('attempt'))}</Box>}
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 4, maxWidth: 720, mx: 'auto' }}>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 4, maxWidth: 720, mx: 'auto', display: isPathwayFlow ? { md: 'none' } : undefined }}>
             Prefer to talk first? Use the <a href="/contact">contact form</a> and we’ll call you back.
           </Typography>
         </Box>

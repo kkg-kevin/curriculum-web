@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import { useParams, Link as RouterLink, useLocation, useSearchParams } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
@@ -8,7 +9,6 @@ import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
 import CakeOutlinedIcon from '@mui/icons-material/CakeOutlined';
 import LayersOutlinedIcon from '@mui/icons-material/LayersOutlined';
 import MenuBookOutlinedIcon from '@mui/icons-material/MenuBookOutlined';
-import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
 import SeoHead from '../components/seo/SeoHead.jsx';
 import DetailHero from '../components/common/DetailHero.jsx';
 import JsonLd, { organizationSchema, pathwayCourseSchema, breadcrumbSchema } from '../components/seo/JsonLd.jsx';
@@ -20,77 +20,36 @@ import FramedImage from '../components/media/FramedImage.jsx';
 import { usePathway } from '../hooks/usePathways.js';
 import { useDiagnosticAvailability } from '../hooks/useDiagnostic.js';
 import PathwayCourseStep from '../components/pathway/PathwayCourseStep.jsx';
-import StageLadder from '../components/pathway/StageLadder.jsx';
-import HowEnrollingWorks from '../components/pathway/HowEnrollingWorks.jsx';
+import StageExplorer from '../components/pathway/StageExplorer.jsx';
 import PathwayEnrolBar from '../components/pathway/PathwayEnrolBar.jsx';
-import DetailLayout, { AsideCard } from '../components/common/DetailLayout.jsx';
+import PathwayPlans from '../components/pathway/PathwayPlans.jsx';
 import { RelatedPathways } from '../components/common/Related.jsx';
 import { actionRowSx } from '../components/common/ActionRow.jsx';
-import { planLabel, planChildren, subscriptionShort, periodUnit, isSoldOnline } from '../utils/pathwayPrice.js';
-import { parseAge, pathwayAgeLabel, stageAgeLabel, stageForAge } from '../utils/pathwayAges.js';
+import { subscriptionShort, isSoldOnline } from '../utils/pathwayPrice.js';
+import { parseAge, pathwayAgeLabel, stageForAge } from '../utils/pathwayAges.js';
 
 const FALLBACK_ACCENT = '#25476a';
 
-/** "Where it runs" — the hubs a family chooses from; sold online, each goes straight to enrolling there. */
-function WhereItRuns({ hubs, enrollTo, paidEnrol, accent }) {
-  return (
-    <Box component="section" aria-labelledby="where-it-runs">
-      <Typography id="where-it-runs" variant="h3" component="h2" sx={{ mb: 2.5 }}>
-        Where it runs
-      </Typography>
-      <Box sx={{ display: 'grid', gap: 1.5, gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))' } }}>
-        {hubs.map((hub) => (
-          <Box
-            key={hub.id}
-            component={RouterLink}
-            to={`${enrollTo}&hubId=${encodeURIComponent(hub.id)}`}
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1.5,
-              p: 2,
-              borderRadius: 3,
-              border: '1px solid',
-              borderColor: 'divider',
-              bgcolor: 'background.paper',
-              color: 'text.primary',
-              textDecoration: 'none',
-              '&:hover': { borderColor: 'primary.main' },
-              '&:hover .hub-arrow': { transform: 'translateX(3px)' },
-            }}
-          >
-            <Box sx={{ width: 40, height: 40, flexShrink: 0, borderRadius: '50%', display: 'grid', placeItems: 'center', bgcolor: 'surface.subtle' }}>
-              <PlaceOutlinedIcon sx={{ color: accent }} />
-            </Box>
-            <Box sx={{ minWidth: 0, flex: 1 }}>
-              <Typography sx={{ fontWeight: 800, lineHeight: 1.3 }}>{hub.name}</Typography>
-              <Typography variant="body2" color="text.secondary">
-                {[hub.town, hub.deliveryMode !== 'in_person' && hub.town !== 'Online' ? hub.deliveryLabel : null].filter(Boolean).join(' · ') || hub.deliveryLabel}
-              </Typography>
-            </Box>
-            <Typography component="span" variant="body2" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, fontWeight: 700, color: 'primary.main', whiteSpace: 'nowrap' }}>
-              {paidEnrol ? 'Enrol here' : 'Ask here'}
-              <ArrowForwardRoundedIcon className="hub-arrow" sx={{ fontSize: 17, transition: 'transform 160ms ease' }} />
-            </Typography>
-          </Box>
-        ))}
-      </Box>
-    </Box>
-  );
-}
-
 /**
  * A pathway's page (`/pathways/:slug`): the picture, name, ages, stages and price up top with one
- * Enrol button; its stages as a ladder — choosing one shows that stage's courses right here
- * (`?stage=`, or the stage for `?age=` from the list page; each stage keeps its own page too);
- * how enrolling works; where it runs. The price and Enrol stay in view — the side panel on a large
- * screen, a bar along the bottom on a phone. Data: GET /api/public/pathways/:slug.
+ * Enrol button; its stages explored in place (StageExplorer — the stages down the left, the chosen
+ * one's courses on the right, with Enrol for that stage; an accordion on a phone; `?stage=`, or the
+ * stage for `?age=` from the list page — stages have no pages of their own); plans. The
+ * price and Enrol stay in reach — a bar along the bottom (on a large screen once the hero's Enrol
+ * button has scrolled away). Data: GET /api/public/pathways/:slug.
  */
 export default function PathwayDetailPage() {
   const { slug } = useParams();
   const { pathname } = useLocation();
   const [params, setParams] = useSearchParams();
   const { data, isLoading, isError, error, refetch } = usePathway(slug);
+  // The hero's Enrol button: once it scrolls out of view, the enrol bar takes over (PathwayEnrolBar).
+  const heroCta = useRef(null);
+  // The stage chosen just now — shown at once, while the address (?stage=) catches up (a router
+  // navigation is deferred); cleared once the address says the same, or changes (back button).
+  const [picked, setPicked] = useState(null);
+  const urlStage = params.get('stage');
+  useEffect(() => { setPicked(null); }, [urlStage]);
   // The detail response now embeds `diagnostic: { available, minAge, maxAge }` (resolved
   // rename-safely via the backend FK). Only fall back to the standalone availability call
   // once the detail has loaded and turns out NOT to carry it (an older backend).
@@ -145,9 +104,8 @@ export default function PathwayDetailPage() {
   const byStage = stages.length > 0 && stages.some((st) => st.name);
   const age = parseAge(params.get('age'));
   const stage = byStage
-    ? stages.find((st) => st.slug === params.get('stage')) || stageForAge(stages, age) || stages[0]
+    ? stages.find((st) => st.slug === (picked || urlStage)) || stageForAge(stages, age) || stages[0]
     : null;
-  const stageNumber = stage ? stages.indexOf(stage) + 1 : null;
   const enrollTo = `/enroll?flow=pathway&referenceId=${encodeURIComponent(slug)}`;
   // Where it runs (chosen in the curriculum system); the family picks one when they enrol.
   const hubs = data.hubs || [];
@@ -160,7 +118,13 @@ export default function PathwayDetailPage() {
   const headline = paidEnrol ? subscriptionShort(subscription) : null;
   const enrolLabel = paidEnrol ? 'Enrol & pay' : 'Enrol';
   const ages = pathwayAgeLabel(data);
-  const choose = (st) =>
+  const enrolNote = diagnostic?.available
+    ? 'Starts with a short quiz for their age, so they begin at the right course — you can skip it.'
+    : paidEnrol
+      ? 'They start at the right stage and course for their age.'
+      : 'Send your details and our team gets them set up at the right step.';
+  const choose = (st) => {
+    setPicked(st.slug);
     setParams(
       (prev) => {
         prev.set('stage', st.slug);
@@ -169,6 +133,7 @@ export default function PathwayDetailPage() {
       },
       { replace: true, preventScrollReset: true },
     );
+  };
 
   return (
     <>
@@ -214,7 +179,7 @@ export default function PathwayDetailPage() {
                 { key: 'places', Icon: PlaceOutlinedIcon, label: places.join(' · ') },
               ]}
             />
-            <Box sx={{ ...actionRowSx, mt: 3, alignItems: 'center' }}>
+            <Box ref={heroCta} sx={{ ...actionRowSx, mt: 3, alignItems: 'center' }}>
               <Button component={RouterLink} to={enrollTo} variant="contained" size="large">
                 {enrolLabel}
               </Button>
@@ -224,6 +189,9 @@ export default function PathwayDetailPage() {
                 </Typography>
               )}
             </Box>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1.5, maxWidth: 560 }}>
+              {enrolNote}
+            </Typography>
           </Box>
           {image && (
             <FramedImage src={image} alt={`${name} pathway`} ratio="16 / 10" rounded={3} eager sx={{ boxShadow: 'shadow.lg' }} />
@@ -232,40 +200,7 @@ export default function PathwayDetailPage() {
       </DetailHero>
 
       <Section>
-        <DetailLayout
-          aside={
-            <AsideCard>
-              <Box>
-                <Typography sx={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'text.secondary' }}>
-                  {headline ? 'Price' : 'Ready to start?'}
-                </Typography>
-                {headline ? (
-                  <>
-                    <Typography sx={{ fontWeight: 800, fontSize: '1.7rem', lineHeight: 1.2, mt: 0.5 }}>{subscriptionShort(subscription)}</Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                      A subscription — renews every {periodUnit(subscription.billingPeriod)}; every stage’s courses stay open while it’s paid.
-                    </Typography>
-                  </>
-                ) : (
-                  <Typography variant="h4" component="p" sx={{ mt: 0.5 }}>{name}</Typography>
-                )}
-              </Box>
-              <Button component={RouterLink} to={enrollTo} variant="contained" size="large" fullWidth>
-                {enrolLabel}
-              </Button>
-              <Typography variant="body2" color="text.secondary">
-                {diagnostic?.available
-                  ? 'Starts with a short quiz for their age, so they begin at the right course — you can skip it.'
-                  : paidEnrol
-                    ? 'They start at the right stage and course for their age.'
-                    : 'Send your details and our team gets them set up at the right step.'}
-              </Typography>
-              <Button component={RouterLink} to="/contact" variant="text" sx={{ alignSelf: 'flex-start', px: 0 }}>
-                Questions? Talk to us
-              </Button>
-            </AsideCard>
-          }
-        >
+        <Box>
           <Box sx={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: { xs: 6, md: 7 } }}>
             {byStage ? (
               <Box component="section" aria-labelledby="pathway-stages">
@@ -273,38 +208,9 @@ export default function PathwayDetailPage() {
                   Stages by age
                 </Typography>
                 <Typography color="text.secondary" sx={{ mb: 2.5, maxWidth: 720 }}>
-                  Each stage has its own courses for its age group. Choose one to see its courses.
+                  Each stage has its own courses for its age group. Choose a stage to see its courses, and enrol from there.
                 </Typography>
-                <StageLadder stages={stages} activeSlug={stage.slug} onSelect={choose} label={`Stages of ${name}`} />
-
-                <Box sx={{ mt: 3, p: { xs: 2, sm: 3 }, borderRadius: 3, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
-                  <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', mb: 2.5 }}>
-                    <Box sx={{ minWidth: 0, flex: '1 1 280px' }}>
-                      <Typography variant="overline" component="p" sx={{ color: 'text.secondary', fontWeight: 800, lineHeight: 1.6 }}>
-                        Stage {stageNumber} · {stageAgeLabel(stage.minAge, stage.maxAge) || 'All ages'}
-                      </Typography>
-                      <Typography variant="h4" component="h3">{stage.name || 'More courses'}</Typography>
-                      {stage.description && (
-                        <ExpandableText lines={3} variant="body2" color="text.secondary" sx={{ mt: 1, whiteSpace: 'pre-line', lineHeight: 1.6 }}>
-                          {stage.description}
-                        </ExpandableText>
-                      )}
-                    </Box>
-                    <Button
-                      component={RouterLink}
-                      to={`/pathways/${slug}/${stage.slug}`}
-                      endIcon={<ArrowForwardRoundedIcon />}
-                      sx={{ flexShrink: 0 }}
-                    >
-                      Stage page
-                    </Button>
-                  </Box>
-                  <Box component="ol" sx={{ listStyle: 'none', m: 0, p: 0 }}>
-                    {(stage.courses || []).map((course, i) => (
-                      <PathwayCourseStep key={`${stage.slug}-${course.name}-${i}`} index={i} total={stage.courses.length} course={course} accent={accent} />
-                    ))}
-                  </Box>
-                </Box>
+                <StageExplorer stages={stages} activeSlug={stage.slug} onSelect={choose} accent={accent} label={`Stages of ${name}`} enrolTo={enrollTo} enrolLabel={enrolLabel} />
               </Box>
             ) : (
               <Box component="section" aria-labelledby="pathway-courses">
@@ -330,42 +236,18 @@ export default function PathwayDetailPage() {
                 <Typography color="text.secondary" sx={{ mb: 2.5, maxWidth: 720 }}>
                   Pay as you go — every stage’s courses, self-paced. It renews automatically; if a payment is missed the courses pause and pick up where they left off once it’s paid.
                 </Typography>
-                <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: 'repeat(auto-fill, minmax(240px, 1fr))' } }}>
-                  {plans.map((plan) => (
-                    <Box key={plan.id} sx={{ p: 2.5, borderRadius: 3, border: '1px solid', borderColor: plan.badge ? 'primary.main' : 'divider', bgcolor: 'background.paper', display: 'flex', flexDirection: 'column', gap: 1, minWidth: 0 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, flexWrap: 'wrap' }}>
-                        <Typography sx={{ fontWeight: 800 }}>{plan.name}</Typography>
-                        {plan.badge && <Box component="span" sx={{ fontSize: 11, fontWeight: 800, px: 1, py: 0.25, borderRadius: 999, bgcolor: 'primary.main', color: 'primary.contrastText' }}>{plan.badge}</Box>}
-                      </Box>
-                      <Typography sx={{ fontWeight: 800, fontSize: '1.4rem', lineHeight: 1.2 }}>{planLabel(plan)}</Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {planChildren(plan)}{plan.allowExtraChildren && plan.extraChildAmount ? ` · +${planLabel(plan, plan.extraChildAmount)} per extra child` : ''}
-                      </Typography>
-                      {plan.summary && <Typography variant="body2" color="text.secondary">{plan.summary}</Typography>}
-                      {(plan.features || []).length > 0 && (
-                        <Box component="ul" sx={{ m: 0, pl: 2.25, color: 'text.secondary', fontSize: 14, display: 'grid', gap: 0.5 }}>
-                          {plan.features.map((feature) => <li key={feature}>{feature}</li>)}
-                        </Box>
-                      )}
-                      <Button component={RouterLink} to={`${enrollTo}&plan=${encodeURIComponent(plan.id)}`} variant={plan.badge ? 'contained' : 'outlined'} sx={{ mt: 'auto' }}>
-                        Choose {plan.name}
-                      </Button>
-                    </Box>
-                  ))}
-                </Box>
+                <PathwayPlans plans={plans} enrollTo={enrollTo} />
               </Box>
             )}
 
-            <HowEnrollingWorks paid={paidEnrol} diagnostic={Boolean(diagnostic?.available)} places={places} />
-
-            {hubs.length > 0 && <WhereItRuns hubs={hubs} enrollTo={enrollTo} paidEnrol={paidEnrol} accent={accent} />}
           </Box>
-        </DetailLayout>
+        </Box>
       </Section>
 
       <RelatedPathways currentSlug={slug} />
 
       <PathwayEnrolBar
+        watchRef={heroCta}
         to={enrollTo}
         label={enrolLabel}
         price={headline}

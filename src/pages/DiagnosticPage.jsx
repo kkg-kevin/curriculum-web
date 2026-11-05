@@ -150,7 +150,7 @@ export default function DiagnosticPage() {
               {pathwayName}
             </Link>
             {stage && (
-              <Link component={RouterLink} to={`/pathways/${slug}/${stage.slug}`} underline="hover" color="inherit">
+              <Link component={RouterLink} to={`/pathways/${slug}?stage=${encodeURIComponent(stage.slug)}`} underline="hover" color="inherit">
                 {stage.name}
               </Link>
             )}
