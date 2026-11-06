@@ -50,6 +50,7 @@ const COLUMNS = [
       { label: 'About', to: '/about' },
       { label: 'Contact', to: '/contact' },
       { label: 'Enroll', to: '/enroll' },
+      { label: 'Become an affiliate', to: '/become-an-affiliate' },
     ],
   },
 ];

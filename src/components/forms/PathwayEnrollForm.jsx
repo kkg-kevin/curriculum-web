@@ -31,6 +31,7 @@ import { formatKsh } from '../../cart/format.js';
 import { startFor, planPrice, planChildren, periodUnit } from '../../utils/pathwayPrice.js';
 import { atPeriod, defaultPeriodOf, pricesOf } from '../../content/homeSchooling.js';
 import PeriodSwitch from '../common/PeriodSwitch.jsx';
+import ReferralCodeField, { useReferralCode } from './ReferralCodeField.jsx';
 import { APP_URL } from '../../config/env.js';
 import useScrollToFlowTop from '../../hooks/useScrollToFlowTop.js';
 import { useEnrolCheckout } from '../enrol/EnrolCheckout.jsx';
@@ -86,6 +87,8 @@ export default function PathwayEnrollForm({ pathway, defaultHubId = null, defaul
   // The period chosen on the plan's card (?period=), switchable here; the plan priced for it
   // (atPeriod — its default when it isn't offered for it).
   const [period, setPeriod] = useState(defaultPeriod || null);
+  // Whoever referred them (an affiliate's link or code) — optional.
+  const [referralCode, setReferralCode] = useReferralCode();
   const chosenPlan = plans.find((p) => p.id === planId) || null;
   const plan = chosenPlan ? atPeriod(chosenPlan, period || defaultPeriodOf(chosenPlan)) : null;
   const steps = STEPS;
@@ -148,6 +151,7 @@ export default function PathwayEnrollForm({ pathway, defaultHubId = null, defaul
       hubId,
       packageId: plan?.id,
       billingPeriod: plan?.billingPeriod,
+      referralCode: referralCode || undefined,
       parentName: values.parentName,
       parentEmail: values.parentEmail,
       parentPhone: values.parentPhone,
@@ -421,6 +425,7 @@ export default function PathwayEnrollForm({ pathway, defaultHubId = null, defaul
       {fields.length < MAX_CHILDREN && (
         <Button variant="outlined" startIcon={<AddRoundedIcon />} onClick={() => append(emptyChild())} sx={{ justifySelf: 'start' }}>Add another child</Button>
       )}
+      <ReferralCodeField value={referralCode} onChange={setReferralCode} />
 
       {plan && planTotal == null && (
         <Alert severity="warning">{plan.name} takes {plan.allowExtraChildren ? `up to ${plan.maxChildren}` : plan.childrenIncluded} {plan.childrenIncluded === 1 && !plan.allowExtraChildren ? 'child' : 'children'} — choose a larger plan or remove a learner.</Alert>

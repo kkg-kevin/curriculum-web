@@ -29,6 +29,7 @@ import PrivacyNote from './PrivacyNote.jsx';
 import Honeypot, { HONEYPOT_DEFAULT, isBot } from './Honeypot.jsx';
 import DateOfBirthField from './DateOfBirthField.jsx';
 import PasswordField from './PasswordField.jsx';
+import ReferralCodeField, { useReferralCode } from './ReferralCodeField.jsx';
 import { ageOn } from '../../utils/dates.js';
 import useScrollToFlowTop from '../../hooks/useScrollToFlowTop.js';
 
@@ -208,6 +209,8 @@ export default function BootcampEnrollForm({
 }) {
   const mutation = useSubmitBootcampEnrollment();
   const [spamBlocked, setSpamBlocked] = useState(false);
+  // Whoever referred them (an affiliate's link or code) — optional.
+  const [referralCode, setReferralCode] = useReferralCode();
   // The passwords never come back from the API (they're never round-tripped once set) — captured
   // here right before submit so the success screen below can still show each child's alongside
   // their username. They're the values just typed into the form, not secrets exposed anywhere else.
@@ -291,6 +294,7 @@ export default function BootcampEnrollForm({
     setSubmittedPhone(values.parentPhone);
     await mutation.mutateAsync({
       bootcampIdOrSlug: bootcampSlug,
+      referralCode: referralCode || undefined,
       parentName: values.parentName,
       parentEmail: values.parentEmail,
       parentPhone: values.parentPhone,
@@ -658,6 +662,7 @@ export default function BootcampEnrollForm({
           Add another child
         </Button>
       )}
+      <ReferralCodeField value={referralCode} onChange={setReferralCode} />
 
       <Button type="submit" variant="contained" size="large" disabled={isSubmitting || mutation.isPending}>
         {isSubmitting || mutation.isPending ? 'Setting up the accounts…' : 'Continue to payment'}

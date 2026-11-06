@@ -16,7 +16,7 @@ const UPDATED = '8 October 2026';
 export const privacyPolicy = {
   title: 'Privacy Policy',
   description: 'What personal information Digifunzi collects on this website, why, who sees it, and how to see, correct or delete it.',
-  updated: '15 October 2026', // how a visitor first found the site (utils/visitSource.js)
+  updated: '6 November 2026', // how a visitor first found the site, and a referral code (utils/visitSource.js)
   intro:
     'This page explains what Digifunzi collects when you use this website, what we do with it, and the choices you have. Most of what we collect is about children, given to us by a parent or guardian, so we try to ask for as little as we need.',
   sections: [
@@ -37,13 +37,14 @@ export const privacyPolicy = {
         'Enroll and enquiry forms: your name, email and phone number; the learner’s name and age; what you are interested in; the kind of learning hub you chose; and any note you add.',
         'Pathway diagnostic: your name and phone number, the child’s age, the child’s first name if you give it, and the answers and results.',
         'Bootcamp enrolment: the details on the Enroll form, plus a username and password that become the learner’s login.',
+        'Becoming an affiliate: your name, email and phone number, how you would share Digifunzi, and how you would like to be paid (an M-Pesa number or bank details). As an affiliate you see only the first name of each family you referred and what they signed up for.',
         'Home Schooling sign-up: your name, email, phone number and password; each child’s name, gender, date of birth if you give it, current school and grade, and a username and password; and your home’s county, town, address and directions, so an educator can reach you.',
       ],
     },
     {
       heading: 'What we do not collect',
       paragraphs: [
-        'This website does not use advertising or analytics cookies, and it does not track you across other sites. It keeps two small things in your own browser: whether you chose the light or dark theme, and how you first reached this website (the first page you opened, the site that linked you here, and any campaign tag on that link). The second is sent to us only with a form you submit, so we know which of our pages and posts help families find us. A visit more than 30 days later starts it afresh. Club pages show a map from Google Maps; when it loads, Google may set its own cookies under Google’s privacy policy. We do not take card or mobile-money details on this site.',
+        'This website does not use advertising or analytics cookies, and it does not track you across other sites. It keeps two small things in your own browser: whether you chose the light or dark theme, and how you first reached this website (the first page you opened, the site that linked you here, and any campaign tag on that link). The second is sent to us only with a form you submit, so we know which of our pages and posts help families find us. If you came by someone’s referral link, or type their referral code when signing up, we note that code so they can be thanked for referring you — they see only your first name and what you signed up for, never your contact details. A visit more than 30 days later starts it afresh. Club pages show a map from Google Maps; when it loads, Google may set its own cookies under Google’s privacy policy. We do not take card or mobile-money details on this site.',
       ],
     },
     {
@@ -99,6 +100,86 @@ export const privacyPolicy = {
       paragraphs: [
         'When we change what we collect or how we use it, we will update this page and the date at the top.',
       ],
+    },
+  ],
+};
+
+/**
+ * The Affiliate Terms (/affiliate-terms) — what an affiliate agrees to when they apply on the
+ * website (pages/BecomeAffiliatePage.jsx) or join from their portal.
+ *
+ * ⚠️ DRAFT WORDING (6 Nov 2026) — a starting point written from how the affiliate programme in the
+ * curriculum system works (modules/affiliates/), to be changed by Digifunzi and reviewed before
+ * relying on it. The figures (share, periods, days, minimum) are set in the system's Affiliates →
+ * Settings; the wording here says "as shown on the Become an affiliate page" so it stays true
+ * when they change.
+ */
+export const affiliateTerms = {
+  title: 'Affiliate Terms',
+  description: 'The terms for Digifunzi affiliates: how referrals are credited, what you earn, when you are paid, and the rules for sharing.',
+  updated: '6 November 2026',
+  intro:
+    'These terms apply to anyone who joins the Digifunzi affiliate programme — whether you applied on this website or joined from your Digifunzi account. By applying or joining you agree to them.',
+  sections: [
+    {
+      heading: 'Joining',
+      paragraphs: [
+        'We review every application and may approve or decline it without giving a reason. Once approved you get your own referral link, a short referral code and a dashboard showing your referrals, earnings and payouts.',
+        'You must be at least 18 and give us true details, including how you would like to be paid. Keep them up to date by contacting {email}.',
+      ],
+    },
+    {
+      heading: 'How a referral is credited to you',
+      bullets: [
+        'A family is credited to you when they open your link and sign up within the number of days shown on the Become an affiliate page, or when they type your code while signing up.',
+        'A code typed at sign-up counts over a link. If a family followed another affiliate’s link first, the first affiliate within that time keeps the credit.',
+        'A sign-up by you or your own household (your account, email or phone number) is never credited to you.',
+        'A family who blocks or clears their browser’s storage, or signs up on a different device, may not carry your link with them — ask them to type your code.',
+      ],
+    },
+    {
+      heading: 'What you earn',
+      paragraphs: [
+        'You earn the share shown on the Become an affiliate page of what a family you referred actually pays — never on an invoice that is unpaid or only partly paid. For programmes paid every week, month, quarter or year, you earn on the number of paid periods shown there; one-off purchases earn once.',
+        'Each amount waits for the number of days shown before it can be paid out, in case a payment is reversed or refunded. Amounts linked to a reversed or refunded payment, a sign-up that was not genuine, or a breach of these terms are cancelled.',
+        'We may change the share, the number of periods, the waiting time or the minimum payout for the future. A change never reduces an amount you have already earned.',
+      ],
+    },
+    {
+      heading: 'Getting paid',
+      paragraphs: [
+        'Once your available amount reaches the minimum payout, ask for a payout from your dashboard. We pay by M-Pesa or bank transfer to the details you gave us, usually within 14 days of your request; parents with a Digifunzi account can choose to have it taken off their own invoices instead.',
+        'You are responsible for any tax on what you earn. Where the law requires it, we may ask for your KRA PIN and withhold tax before paying you.',
+        'If we cannot pay a request (for example, the payout details are wrong), we tell you why and the amount stays available to you.',
+      ],
+    },
+    {
+      heading: 'Sharing responsibly',
+      paragraphs: ['When you share Digifunzi, you agree not to:'],
+      bullets: [
+        'send spam, or message people who have not agreed to hear from you;',
+        'make promises on our behalf about prices, results, places or discounts that we have not published;',
+        'pretend to be Digifunzi, use our name in paid search ads or in a website or social account name that could be mistaken for ours;',
+        'collect families’ details for us, or sign families up yourself — they sign up on our website;',
+        'offer cash or gifts to families for signing up through you, unless we have agreed to it in writing.',
+      ],
+    },
+    {
+      heading: 'Privacy',
+      paragraphs: [
+        'You see only the first name of each family you referred, what they signed up for and what you earned — never their contact details. We use your own details only to run the programme and pay you, as our Privacy Policy explains.',
+        'Your dashboard link needs no password: keep it to yourself. If you think someone else has it, ask us for a new one and the old one stops working.',
+      ],
+    },
+    {
+      heading: 'Ending',
+      paragraphs: [
+        'You can leave the programme at any time by telling us. We can pause or end your place if these terms are broken or the programme closes. When your place ends, we pay what you had already earned and was available, unless it was cancelled under these terms.',
+      ],
+    },
+    {
+      heading: 'Questions',
+      paragraphs: ['Write to {email}. These terms are governed by the laws of Kenya.'],
     },
   ],
 };

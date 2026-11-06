@@ -85,6 +85,8 @@ export const STATIC_ROUTES = [
   { path: '/contact' },
   { path: '/privacy' },
   { path: '/terms' },
+  { path: '/become-an-affiliate' },
+  { path: '/affiliate-terms' },
 ];
 
 /** Fallback base URL if none is provided by env (e.g. a script run without .env). */
