@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  bestPackageFor, cheapestPrice, fromLabel, homeSchoolingEnquiryPath, maxChildrenOffered, packageEnquiryNote, perChildAmount, perChildBaseline, periodUnit, priceForPackage, sharedPeriodWord,
+  atPeriod, bestPackageFor, bestYearlySaving, cheapestPrice, periodsHint, periodsOffered, defaultPeriodOf, fromLabel, homeSchoolingEnquiryPath, maxChildrenOffered, packageEnquiryNote, perChildAmount, perChildBaseline, periodUnit, priceForPackage, pricesOf, savingVsMonthly, sharedPeriodWord,
 } from './homeSchooling.js';
 
 const one = { slug: 'one-child', name: 'One child', childrenIncluded: 1, amount: 8000, billingPeriod: 'monthly', allowExtraChildren: false, extraChildAmount: null, maxChildren: 1 };
@@ -74,5 +74,51 @@ describe('packages on different billing periods', () => {
     expect(perChildBaseline([one, three, weekly], weekly)).toBe(1500);
     expect(sharedPeriodWord([one, three])).toBe('monthly');
     expect(sharedPeriodWord([one, weekly])).toBe(null);
+  });
+});
+
+// A package priced for several periods (6 Nov 2026): the card's switch reprices it.
+describe('packages with several periods', () => {
+  const pkg = {
+    slug: 'gold', name: 'Gold', childrenIncluded: 2, allowExtraChildren: true, maxChildren: 4,
+    amount: 8000, billingPeriod: 'monthly', extraChildAmount: 3000, defaultPeriod: 'monthly',
+    prices: [
+      { billingPeriod: 'annually', amount: 80000, extraChildAmount: 30000 },
+      { billingPeriod: 'weekly', amount: 2500, extraChildAmount: 900 },
+      { billingPeriod: 'monthly', amount: 8000, extraChildAmount: 3000 },
+    ],
+  };
+
+  it('lists its periods in order and opens on the default', () => {
+    expect(pricesOf(pkg).map((p) => p.billingPeriod)).toEqual(['weekly', 'monthly', 'annually']);
+    expect(defaultPeriodOf(pkg)).toBe('monthly');
+  });
+
+  it('prices the package for the period chosen', () => {
+    expect(priceForPackage(atPeriod(pkg, 'weekly'), 3)).toEqual({ childCount: 3, amount: 3400, billingPeriod: 'weekly' });
+    expect(priceForPackage(atPeriod(pkg, 'annually'), 2)).toEqual({ childCount: 2, amount: 80000, billingPeriod: 'annually' });
+    // Not offered every 3 months: its default.
+    expect(atPeriod(pkg, 'quarterly').billingPeriod).toBe('monthly');
+  });
+
+  it('shows what paying yearly saves against monthly', () => {
+    expect(savingVsMonthly(pkg, 'annually')).toBe(17); // 80,000 a year vs 96,000 monthly
+    expect(savingVsMonthly(pkg, 'monthly')).toBe(0);
+  });
+
+  it('reads an older single-price package as its one period', () => {
+    const old = { childrenIncluded: 1, amount: 5000, billingPeriod: 'weekly' };
+    expect(pricesOf(old)).toEqual([{ billingPeriod: 'weekly', amount: 5000, extraChildAmount: undefined }]);
+  });
+
+  it('heads cards with each package at its shown-first period, never the yearly price', () => {
+    expect(cheapestPrice([pkg])).toEqual({ amount: 8000, billingPeriod: 'monthly' });
+  });
+
+  it('says which periods there are, and what yearly saves', () => {
+    expect(periodsOffered([pkg])).toEqual(['weekly', 'monthly', 'annually']);
+    expect(bestYearlySaving([pkg])).toBe(17);
+    expect(periodsHint(periodsOffered([pkg]), bestYearlySaving([pkg]))).toBe('Weekly, monthly or yearly · save 17% paying yearly');
+    expect(periodsHint(['monthly'])).toBe('');
   });
 });

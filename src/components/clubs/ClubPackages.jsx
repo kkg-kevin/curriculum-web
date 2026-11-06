@@ -3,7 +3,7 @@ import Typography from '@mui/material/Typography';
 import SellIcon from '@mui/icons-material/Sell';
 import DetailSection from '../common/DetailSection.jsx';
 import PackageCard from '../homeSchooling/PackageCard.jsx';
-import { childrenLabel, perChildBaseline, hasVolumeDiscount, cheapestPrice, sharedPeriodWord, fromLabel } from '../../content/homeSchooling.js';
+import { childrenLabel, hasVolumeDiscount, cheapestPrice, sharedPeriodWord, fromLabel } from '../../content/homeSchooling.js';
 import { clubJoinPath } from '../../utils/clubs.js';
 
 /**
@@ -16,9 +16,6 @@ import { clubJoinPath } from '../../utils/clubs.js';
  * package made for it.
  */
 export default function ClubPackages({ hub, packages }) {
-  // "Save … per child" is measured against the smallest package (usually one child), and shown
-  // only on the bigger family packages — never one single-child package against another.
-  const savingBase = (pkg) => perChildBaseline(packages, pkg);
   const volumeDiscount = hasVolumeDiscount(packages);
   const withExtras = packages.filter((p) => p.allowExtraChildren && p.extraChildAmount != null);
   const extraSlug = withExtras.length ? withExtras.reduce((big, p) => (p.childrenIncluded > big.childrenIncluded ? p : big)).slug : null;
@@ -39,15 +36,14 @@ export default function ClubPackages({ hub, packages }) {
           <PackageCard
             key={pkg.slug}
             pkg={pkg}
-            highestPerChild={savingBase(pkg)}
-            to={clubJoinPath(hub, pkg.slug)}
+            linkFor={(period) => clubJoinPath(hub, pkg.slug, null, period)}
             fallbackFeature={`Club sessions for ${childrenLabel(pkg.childrenIncluded)}`}
             showExtra={pkg.slug === extraSlug}
           />
         ))}
       </Box>
       <Typography variant="body2" color="text.secondary" sx={{ mt: 2.5 }}>
-        Prices are in Kenyan shillings, per the period shown on each package{lowest ? ` — ${fromLabel(lowest).toLowerCase()}` : ''}. You pay the
+        Prices are in Kenyan shillings, per the period chosen on each package{lowest ? ` — ${fromLabel(lowest).toLowerCase()}` : ''}. You pay the
         first period when you sign up; after that, one invoice each period, from the day you joined.
       </Typography>
     </DetailSection>

@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
+import Button from '@mui/material/Button';
 import { alpha } from '@mui/material/styles';
 import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
@@ -11,6 +13,8 @@ import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import FramedImage from '../media/FramedImage.jsx';
 import { subscriptionShort } from '../../utils/pathwayPrice.js';
+import { periodsHint } from '../../content/homeSchooling.js';
+import PlansDialog from '../common/PlansDialog.jsx';
 import { pathwayAgeLabel, stageAgeShort, stageForAge } from '../../utils/pathwayAges.js';
 
 const MAX_STAGE_CHIPS = 5;
@@ -25,14 +29,23 @@ const MAX_STAGE_CHIPS = 5;
  * `age` — the age picked on the list page: the card then says which stage fits that age, and
  * the link carries it (`?age=`) so the pathway's page opens on that stage.
  *
+ * Below, the price — each plan at the period it's shown first, "From KSh 10,000 / month", and the
+ * choice of periods ("Weekly, monthly or yearly · save 17% paying yearly") — with See plans (the
+ * plan cards over the list: switch, price, Choose — straight to enrolling) and Explore.
+ *
  * Data shape (GET /api/public/pathways): { slug, name, description, courseCount, stages[{ slug,
- * name, minAge, maxAge, courseCount }], price, image, places[], hubCount }.
+ * name, minAge, maxAge, courseCount }], subscription { from, billingPeriod, periods, yearlySaving },
+ * plans[], image, places[], hubCount }.
  */
 export default function PathwayCard({ pathway, age = null }) {
   const { slug, name, description, courseCount, image, places = [] } = pathway;
   const stages = (pathway.stages || []).filter((s) => s.minAge != null && s.maxAge != null);
   // Sold by subscription plans: the cheapest, "From KSh 3,000 / month".
   const subscription = subscriptionShort(pathway.subscription);
+  const hint = periodsHint(pathway.subscription?.periods, pathway.subscription?.yearlySaving);
+  const plans = pathway.plans || [];
+  const [plansOpen, setPlansOpen] = useState(false);
+  const enrollTo = `/enroll?flow=pathway&referenceId=${encodeURIComponent(slug)}`;
   const ages = pathwayAgeLabel(pathway);
   const fit = age != null ? stageForAge(stages, age) : null;
   const fitIndex = fit ? stages.indexOf(fit) : -1;
@@ -68,7 +81,7 @@ export default function PathwayCard({ pathway, age = null }) {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'stretch',
-          height: '100%',
+          flexGrow: 1,
           '&:hover': { backgroundColor: 'transparent' },
         }}
       >
@@ -179,42 +192,56 @@ export default function PathwayCard({ pathway, age = null }) {
             </Box>
           )}
 
-          <Box
-            sx={{
-              mt: 'auto',
-              pt: 2.5,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: 1,
-              flexWrap: 'wrap',
-            }}
-          >
-            {subscription ? (
-              <Typography component="span" sx={{ fontWeight: 800, fontSize: '1rem', color: 'text.primary' }}>
-                {subscription}
-              </Typography>
-            ) : (
-              <Typography component="span" sx={{ fontWeight: 600, fontSize: 13, color: 'text.secondary' }}>
-                Enquire for pricing
-              </Typography>
-            )}
-            <Box
-              sx={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 0.75,
-                fontWeight: 700,
-                fontSize: '0.9rem',
-                color: (t) => (t.palette.mode === 'dark' ? t.palette.primary.light : t.palette.primary.main),
-              }}
-            >
-              Explore
-              <ArrowForwardIcon className="pw-arrow" sx={{ fontSize: 18, transition: 'transform 200ms ease' }} />
-            </Box>
-          </Box>
         </CardContent>
       </CardActionArea>
+
+      {/* The price and the two ways on — outside the card's link, so See plans is its own button. */}
+      <Box sx={{ px: 3, pb: 2.5, pt: 0.5 }}>
+        {subscription ? (
+          <>
+            <Typography component="p" sx={{ fontWeight: 800, fontSize: '1.05rem', color: 'text.primary' }}>{subscription}</Typography>
+            {hint && <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>{hint}</Typography>}
+          </>
+        ) : (
+          <Typography component="p" sx={{ fontWeight: 600, fontSize: 13, color: 'text.secondary' }}>Enquire for pricing</Typography>
+        )}
+        <Box sx={{ mt: 1.75, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, flexWrap: 'wrap' }}>
+          {plans.length > 0 ? (
+            <Button variant="contained" size="small" onClick={() => setPlansOpen(true)} sx={{ borderRadius: 999, px: 2 }}>
+              See {plans.length === 1 ? 'plan' : `${plans.length} plans`}
+            </Button>
+          ) : <span />}
+          <Box
+            component={RouterLink}
+            to={to}
+            sx={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 0.75,
+              fontWeight: 700,
+              fontSize: '0.9rem',
+              textDecoration: 'none',
+              color: (t) => (t.palette.mode === 'dark' ? t.palette.primary.light : t.palette.primary.main),
+            }}
+          >
+            Explore
+            <ArrowForwardIcon className="pw-arrow" sx={{ fontSize: 18, transition: 'transform 200ms ease' }} />
+          </Box>
+        </Box>
+      </Box>
+
+      {plans.length > 0 && (
+        <PlansDialog
+          open={plansOpen}
+          onClose={() => setPlansOpen(false)}
+          title={`${plans.length === 1 ? 'Plan' : 'Plans'} for ${name}`}
+          lead="Every stage’s courses, self-paced. Renews automatically — the courses stay open while it’s paid."
+          plans={plans}
+          linkFor={(plan, period) => `${enrollTo}&plan=${encodeURIComponent(plan.id)}&period=${encodeURIComponent(period)}`}
+          fallbackFeature="Every course of the pathway, self-paced"
+          actionLabel="Choose plan"
+        />
+      )}
     </Card>
   );
 }

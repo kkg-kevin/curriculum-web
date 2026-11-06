@@ -14,10 +14,10 @@ export const clubSlug = (hub) => slugify(hub?.name);
 export const clubPath = (hub) => `${CLUBS_PATH}/${clubSlug(hub)}`;
 
 /** The club's sign-up form, optionally with a package and number of children chosen. */
-export function clubJoinPath(hub, packageSlug, children) {
+export function clubJoinPath(hub, packageSlug, children, period) {
   const base = `${clubPath(hub)}/join`;
   if (!packageSlug) return base;
-  return `${base}?package=${encodeURIComponent(packageSlug)}${children ? `&children=${Number(children)}` : ''}`;
+  return `${base}?package=${encodeURIComponent(packageSlug)}${children ? `&children=${Number(children)}` : ''}${period ? `&period=${encodeURIComponent(period)}` : ''}`;
 }
 
 const WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];

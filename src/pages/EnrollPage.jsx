@@ -164,12 +164,13 @@ export default function EnrollPage() {
           {packageSlug && packageQuery.isLoading ? <LoadingBlock label="Loading package…" /> : isPathwayFlow && referenceId && pathwayQuery.isLoading ? <LoadingBlock label="Loading pathway…" /> : isPathwayFlow && pathwayQuery.data && !params.get('attempt') ? (
             // Every pathway enrolment starts with the learner's date of birth and, when there is
             // one for their age, the diagnostic — then the enrolment itself.
-            <PathwayEnrolJourney pathway={pathwayQuery.data} slug={referenceId} stageSlug={params.get('stage')} planId={params.get('plan')} paid={Boolean(paidPathway)}>
+            <PathwayEnrolJourney pathway={pathwayQuery.data} slug={referenceId} stageSlug={params.get('stage')} planId={params.get('plan')} period={params.get('period')} paid={Boolean(paidPathway)}>
               {(start) => (paidPathway ? (
                 <PathwayEnrollForm
                   pathway={paidPathway}
                   defaultHubId={params.get('hubId')}
                   defaultPlanId={params.get('plan')}
+                  defaultPeriod={params.get('period')}
                   attemptId={start.attemptId}
                   defaultLearnerName={start.childName}
                   defaultLearnerDateOfBirth={start.dateOfBirth}
@@ -184,6 +185,7 @@ export default function EnrollPage() {
               pathway={paidPathway}
               defaultHubId={params.get('hubId')}
               defaultPlanId={params.get('plan')}
+                  defaultPeriod={params.get('period')}
               attemptId={params.get('attempt')}
               defaultLearnerName={params.get('childName') || ''}
               defaultLearnerDateOfBirth={params.get('dob') || ''}

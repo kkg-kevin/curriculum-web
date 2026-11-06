@@ -21,6 +21,57 @@ const PER_MONTH = { daily: 30, weekly: 52 / 12, monthly: 1, quarterly: 1 / 3, an
 
 export const periodOf = (pkg) => pkg?.billingPeriod || 'monthly';
 
+/*
+ * A package can be offered for several periods (6 Nov 2026): `prices` — [{ billingPeriod, amount,
+ * extraChildAmount }] in order — and `defaultPeriod`, the one its card opens on. An older API
+ * sends only one amount + billingPeriod, which reads as the one price.
+ */
+const PERIOD_ORDER = ['weekly', 'monthly', 'quarterly', 'annually'];
+export const PERIOD_LABEL = { weekly: 'Weekly', monthly: 'Monthly', quarterly: '3 months', annually: 'Yearly' };
+const PERIOD_WORD = { weekly: 'weekly', monthly: 'monthly', quarterly: 'every 3 months', annually: 'yearly' };
+export const periodWord = (period) => PERIOD_WORD[period] || period;
+
+export function pricesOf(pkg) {
+  if (!pkg) return [];
+  const list = Array.isArray(pkg.prices) && pkg.prices.length
+    ? pkg.prices
+    : [{ billingPeriod: periodOf(pkg), amount: pkg.amount, extraChildAmount: pkg.extraChildAmount }];
+  return [...list].sort((a, b) => PERIOD_ORDER.indexOf(a.billingPeriod) - PERIOD_ORDER.indexOf(b.billingPeriod));
+}
+
+/** The period a package's card opens on. */
+export const defaultPeriodOf = (pkg) => pkg?.defaultPeriod || periodOf(pkg);
+
+/**
+ * The package as priced for `period` — its amount, extra-child price and billingPeriod for that
+ * period (the default when it isn't offered for it). Everything that prices a package (priceForPackage,
+ * the totals) then works on it unchanged.
+ */
+export function atPeriod(pkg, period) {
+  if (!pkg) return pkg;
+  const prices = pricesOf(pkg);
+  const entry = prices.find((p) => p.billingPeriod === period) || prices.find((p) => p.billingPeriod === defaultPeriodOf(pkg)) || prices[0];
+  if (!entry) return pkg;
+  return { ...pkg, amount: Number(entry.amount), extraChildAmount: entry.extraChildAmount ?? null, billingPeriod: entry.billingPeriod };
+}
+
+/** Whether a package is offered for `period`. */
+export const offersPeriod = (pkg, period) => pricesOf(pkg).some((p) => p.billingPeriod === period);
+
+/**
+ * How much less `period` costs than paying monthly, as a whole percentage — or 0 (no monthly price
+ * to compare with, or no saving).
+ */
+export function savingVsMonthly(pkg, period) {
+  if (period === 'monthly') return 0;
+  const prices = pricesOf(pkg);
+  const monthly = prices.find((p) => p.billingPeriod === 'monthly');
+  const chosen = prices.find((p) => p.billingPeriod === period);
+  if (!monthly || !chosen || !(monthly.amount > 0)) return 0;
+  const saving = 1 - monthlyEquivalent(chosen.amount, period) / Number(monthly.amount);
+  return saving >= 0.01 ? Math.round(saving * 100) : 0;
+}
+
 /** "month", "week", … for a package or a billingPeriod. */
 export function periodUnit(pkgOrPeriod) {
   const period = typeof pkgOrPeriod === 'string' ? pkgOrPeriod : periodOf(pkgOrPeriod);
@@ -32,19 +83,49 @@ export function monthlyEquivalent(amount, billingPeriod) {
   return Number(amount) * (PER_MONTH[billingPeriod] ?? 1);
 }
 
-/** The cheapest package price on offer: { amount, billingPeriod } or null. */
+/**
+ * The "From …" price: each package at the period it's shown first (its default — never the
+ * cheapest-per-month period, which made a yearly price the headline), the cheapest of those
+ * compared per month. { amount, billingPeriod } or null.
+ */
 export function cheapestPrice(packages) {
   let best = null;
   for (const pkg of packages || []) {
-    const price = { amount: pkg.amount, billingPeriod: periodOf(pkg) };
+    const shown = atPeriod(pkg, defaultPeriodOf(pkg));
+    const price = { amount: Number(shown.amount), billingPeriod: shown.billingPeriod };
     if (!best || monthlyEquivalent(price.amount, price.billingPeriod) < monthlyEquivalent(best.amount, best.billingPeriod)) best = price;
   }
   return best;
 }
 
+/** Every period any of these packages is offered for, in order. */
+export function periodsOffered(packages) {
+  const all = new Set((packages || []).flatMap((p) => pricesOf(p).map((x) => x.billingPeriod)));
+  return PERIOD_ORDER.filter((period) => all.has(period));
+}
+
+/** The best saving paying yearly instead of monthly, across these packages (a whole %), or 0. */
+export function bestYearlySaving(packages) {
+  return Math.max(0, ...(packages || []).map((p) => savingVsMonthly(p, 'annually')));
+}
+
+const HINT_WORD = { weekly: 'weekly', monthly: 'monthly', quarterly: 'every 3 months', annually: 'yearly' };
+/**
+ * "Weekly, monthly or yearly · save 17% paying yearly" — under a card's price when there's a choice
+ * of period; '' when there's one. `periods` / `yearlySaving` from periodsOffered / bestYearlySaving
+ * (or a pathway's `subscription`).
+ */
+export function periodsHint(periods, yearlySaving = 0) {
+  if (!periods || periods.length < 2) return '';
+  const words = periods.map((p) => HINT_WORD[p] || p);
+  const list = `${words.slice(0, -1).join(', ')} or ${words[words.length - 1]}`;
+  return `${list.charAt(0).toUpperCase()}${list.slice(1)}${yearlySaving > 0 ? ` · save ${yearlySaving}% paying yearly` : ''}`;
+}
+
 /** The cheapest extra-child price on offer: { amount, billingPeriod } or null. */
 export function cheapestExtra(packages) {
-  return cheapestPrice((packages || []).filter((p) => p.allowExtraChildren && p.extraChildAmount != null).map((p) => ({ ...p, amount: p.extraChildAmount })));
+  return cheapestPrice((packages || []).filter((p) => p.allowExtraChildren && p.extraChildAmount != null)
+    .map((p) => ({ ...p, prices: pricesOf(p).filter((x) => x.extraChildAmount != null).map((x) => ({ ...x, amount: x.extraChildAmount })) })));
 }
 
 /** "From KSh 2,500 a week" — `price` from cheapestPrice. */
@@ -54,7 +135,8 @@ export function fromLabel(price, joiner = ' a ') {
 
 /** "monthly", "weekly", … when every package shares one period, else null. */
 export function sharedPeriodWord(packages) {
-  const periods = new Set((packages || []).map(periodOf));
+  // Every period any package is offered for — one only when they all share a single period.
+  const periods = new Set((packages || []).flatMap((p) => pricesOf(p).map((x) => x.billingPeriod)));
   if (periods.size !== 1) return null;
   return { weekly: 'weekly', monthly: 'monthly', quarterly: 'quarterly', annually: 'yearly' }[[...periods][0]] || null;
 }
@@ -122,10 +204,10 @@ export function homeSchoolingEnquiryPath(packageSlug, children) {
   return `/enroll?${query}`;
 }
 
-/** The Home Schooling sign-up form, optionally with a package and number of children chosen. */
-export function homeSchoolingSignupPath(packageSlug, children) {
+/** The Home Schooling sign-up form, optionally with a package, number of children and period chosen. */
+export function homeSchoolingSignupPath(packageSlug, children, period) {
   if (!packageSlug) return '/home-schooling/signup';
-  return `/home-schooling/signup?package=${encodeURIComponent(packageSlug)}${children ? `&children=${Number(children)}` : ''}`;
+  return `/home-schooling/signup?package=${encodeURIComponent(packageSlug)}${children ? `&children=${Number(children)}` : ''}${period ? `&period=${encodeURIComponent(period)}` : ''}`;
 }
 
 /**

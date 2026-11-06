@@ -30,7 +30,8 @@ import { clubSignupSchema } from '../forms/schemas.js';
 import { useClubSignup } from '../../hooks/usePublicClubs.js';
 import useScrollToFlowTop from '../../hooks/useScrollToFlowTop.js';
 import { APP_URL } from '../../config/env.js';
-import { bestPackageFor, childrenLabel, formatKsh, maxChildrenOffered, priceForPackage, periodUnit } from '../../content/homeSchooling.js';
+import { bestPackageFor, childrenLabel, formatKsh, maxChildrenOffered, priceForPackage, periodUnit, atPeriod, defaultPeriodOf, pricesOf } from '../../content/homeSchooling.js';
+import PeriodSwitch from '../common/PeriodSwitch.jsx';
 
 const STEPS = ['Package', 'Parent', 'Children', 'Review', 'Payment'];
 const REVIEW = 3; // submitting here creates the accounts, then the Payment step opens
@@ -57,7 +58,7 @@ function Confirmation({ result }) {
           <CheckCircleRoundedIcon sx={{ fontSize: 48, color: 'success.main', mb: 1 }} />
           <Typography variant="h3" component="h2" sx={{ mb: 1 }}>Your accounts are ready — now pay</Typography>
           <Typography color="text.secondary" sx={{ maxWidth: 520, mx: 'auto', mb: 3 }}>
-            We’ve created your family’s accounts for <strong>{result.clubName}</strong> ({result.packageName}). They unlock as soon as your first month’s payment is confirmed.
+            We’ve created your family’s accounts for <strong>{result.clubName}</strong> ({result.packageName}){result.amount != null && <> — {formatKsh(result.amount)} a {periodUnit(result.billingPeriod)}</>}. They unlock as soon as your first {periodUnit(result.billingPeriod)}’s payment is confirmed.
           </Typography>
         </Box>
 
@@ -104,7 +105,7 @@ function Confirmation({ result }) {
  * packages offered there, `initialSlug` / `initialChildren` what the club page linked with.
  * `enquirePath` is the club's "ask a question" link.
  */
-export default function ClubSignupForm({ hub, packages, initialSlug, initialChildren, enquirePath }) {
+export default function ClubSignupForm({ hub, packages, initialSlug, initialChildren, initialPeriod, enquirePath }) {
   const maxChildren = Math.max(1, maxChildrenOffered(packages));
   const startCount = Math.min(maxChildren, Math.max(1, Number(initialChildren) || packages.find((p) => p.slug === initialSlug)?.childrenIncluded || 1));
   const startSlug = packages.some((p) => p.slug === initialSlug) ? initialSlug : bestPackageFor(packages, startCount)?.pkg.slug || '';
@@ -128,7 +129,11 @@ export default function ClubSignupForm({ hub, packages, initialSlug, initialChil
   const { fields, append, remove } = useFieldArray({ control, name: 'children' });
 
   const slug = watch('packageSlug');
-  const pkg = packages.find((p) => p.slug === slug);
+  // The period chosen on the package card (?period=), switchable on the package step; a package not
+  // offered for it is priced at its own default (atPeriod).
+  const [period, setPeriod] = useState(initialPeriod || null);
+  const chosenPkg = packages.find((p) => p.slug === slug);
+  const pkg = chosenPkg ? atPeriod(chosenPkg, period || defaultPeriodOf(chosenPkg)) : undefined;
   const count = fields.length;
   const price = priceForPackage(pkg, count);
   const better = !price ? bestPackageFor(packages, count) : null;
@@ -175,6 +180,7 @@ export default function ClubSignupForm({ hub, packages, initialSlug, initialChil
       const data = await signup.mutateAsync({
         hubId: hub.id,
         packageSlug: values.packageSlug,
+        billingPeriod: price?.billingPeriod,
         parent,
         children: values.children,
         consent: values.consent,
@@ -219,7 +225,7 @@ export default function ClubSignupForm({ hub, packages, initialSlug, initialChil
           <Box role="radiogroup" aria-label="Package" sx={{ display: 'grid', gap: 1.5 }}>
             {packages.map((p) => {
               const selected = p.slug === slug;
-              const fits = priceForPackage(p, count);
+              const fits = priceForPackage(atPeriod(p, period || defaultPeriodOf(p)), count);
               return (
                 <Box
                   key={p.slug}
@@ -250,6 +256,12 @@ export default function ClubSignupForm({ hub, packages, initialSlug, initialChil
             })}
           </Box>
 
+          {chosenPkg && pricesOf(chosenPkg).length > 1 && (
+            <Box sx={{ mt: 2.5, display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+              <Typography sx={{ fontWeight: 700 }}>Pay</Typography>
+              <PeriodSwitch periods={pricesOf(chosenPkg).map((x) => x.billingPeriod)} value={pkg.billingPeriod} onChange={setPeriod} size="medium" />
+            </Box>
+          )}
           {pkg && !price && (
             <Alert severity="warning" sx={{ mt: 2 }} action={better && <Button color="inherit" size="small" onClick={() => setValue('packageSlug', better.pkg.slug)}>Switch to {better.pkg.name}</Button>}>
               {pkg.name} doesn’t cover {childrenLabel(count)}.{better ? ` ${better.pkg.name} does, for ${formatKsh(better.price.amount)} a ${periodUnit(better.price.billingPeriod)}.` : ''}

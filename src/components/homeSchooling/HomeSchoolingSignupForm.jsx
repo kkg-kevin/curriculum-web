@@ -30,7 +30,8 @@ import { homeSchoolingSignupSchema } from '../forms/schemas.js';
 import { useHomeLearningSignup } from '../../hooks/usePublicHomeLearning.js';
 import useScrollToFlowTop from '../../hooks/useScrollToFlowTop.js';
 import { APP_URL } from '../../config/env.js';
-import { bestPackageFor, childrenLabel, formatKsh, homeSchoolingEnquiryPath, maxChildrenOffered, priceForPackage, periodUnit } from '../../content/homeSchooling.js';
+import { bestPackageFor, childrenLabel, formatKsh, homeSchoolingEnquiryPath, maxChildrenOffered, priceForPackage, periodUnit, atPeriod, defaultPeriodOf, pricesOf } from '../../content/homeSchooling.js';
+import PeriodSwitch from '../common/PeriodSwitch.jsx';
 
 const STEPS = ['Package', 'Parent', 'Children', 'Home', 'Review', 'Payment'];
 const REVIEW = 4; // submitting here creates the accounts, then the Payment step opens
@@ -57,7 +58,7 @@ function Confirmation({ result }) {
           <CheckCircleRoundedIcon sx={{ fontSize: 48, color: 'success.main', mb: 1 }} />
           <Typography variant="h3" component="h2" sx={{ mb: 1 }}>Your accounts are ready — now pay</Typography>
           <Typography color="text.secondary" sx={{ maxWidth: 520, mx: 'auto', mb: 3 }}>
-            We’ve created your family’s accounts for <strong>{result.packageName}</strong>. They unlock as soon as your first month’s payment is confirmed.
+            We’ve created your family’s accounts for <strong>{result.packageName}</strong>{result.amount != null && <> — {formatKsh(result.amount)} a {periodUnit(result.billingPeriod)}</>}. They unlock as soon as your first {periodUnit(result.billingPeriod)}’s payment is confirmed.
           </Typography>
         </Box>
 
@@ -103,7 +104,7 @@ function Confirmation({ result }) {
  * unlock once it's confirmed. `packages` are the published packages; `initialSlug` / `initialChildren`
  * come from the package card or price calculator that linked here.
  */
-export default function HomeSchoolingSignupForm({ packages, initialSlug, initialChildren }) {
+export default function HomeSchoolingSignupForm({ packages, initialSlug, initialChildren, initialPeriod }) {
   const maxChildren = Math.max(1, maxChildrenOffered(packages));
   const startCount = Math.min(maxChildren, Math.max(1, Number(initialChildren) || packages.find((p) => p.slug === initialSlug)?.childrenIncluded || 1));
   const startSlug = packages.some((p) => p.slug === initialSlug) ? initialSlug : bestPackageFor(packages, startCount)?.pkg.slug || '';
@@ -128,7 +129,11 @@ export default function HomeSchoolingSignupForm({ packages, initialSlug, initial
   const { fields, append, remove } = useFieldArray({ control, name: 'children' });
 
   const slug = watch('packageSlug');
-  const pkg = packages.find((p) => p.slug === slug);
+  // The period chosen on the package card (?period=), switchable on the package step; a package not
+  // offered for it is priced at its own default (atPeriod).
+  const [period, setPeriod] = useState(initialPeriod || null);
+  const chosenPkg = packages.find((p) => p.slug === slug);
+  const pkg = chosenPkg ? atPeriod(chosenPkg, period || defaultPeriodOf(chosenPkg)) : undefined;
   const count = fields.length;
   const price = priceForPackage(pkg, count);
   const better = !price ? bestPackageFor(packages, count) : null;
@@ -175,6 +180,7 @@ export default function HomeSchoolingSignupForm({ packages, initialSlug, initial
     try {
       const data = await signup.mutateAsync({
         packageSlug: values.packageSlug,
+        billingPeriod: price?.billingPeriod,
         parent,
         children: values.children,
         home: values.home,
@@ -220,7 +226,7 @@ export default function HomeSchoolingSignupForm({ packages, initialSlug, initial
           <Box role="radiogroup" aria-label="Package" sx={{ display: 'grid', gap: 1.5 }}>
             {packages.map((p) => {
               const selected = p.slug === slug;
-              const fits = priceForPackage(p, count);
+              const fits = priceForPackage(atPeriod(p, period || defaultPeriodOf(p)), count);
               return (
                 <Box
                   key={p.slug}
@@ -251,6 +257,12 @@ export default function HomeSchoolingSignupForm({ packages, initialSlug, initial
             })}
           </Box>
 
+          {chosenPkg && pricesOf(chosenPkg).length > 1 && (
+            <Box sx={{ mt: 2.5, display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+              <Typography sx={{ fontWeight: 700 }}>Pay</Typography>
+              <PeriodSwitch periods={pricesOf(chosenPkg).map((x) => x.billingPeriod)} value={pkg.billingPeriod} onChange={setPeriod} size="medium" />
+            </Box>
+          )}
           {pkg && !price && (
             <Alert severity="warning" sx={{ mt: 2 }} action={better && <Button color="inherit" size="small" onClick={() => setValue('packageSlug', better.pkg.slug)}>Switch to {better.pkg.name}</Button>}>
               {pkg.name} doesn’t cover {childrenLabel(count)}.{better ? ` ${better.pkg.name} does, for ${formatKsh(better.price.amount)} a ${periodUnit(better.price.billingPeriod)}.` : ''}

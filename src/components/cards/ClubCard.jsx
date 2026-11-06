@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
+import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
 import CardContent from '@mui/material/CardContent';
@@ -9,18 +11,24 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import FramedImage from '../media/FramedImage.jsx';
 import ClubLogo from '../hubs/ClubLogo.jsx';
-import { clubPath, scheduleLabel } from '../../utils/clubs.js';
-import { formatKsh, periodUnit } from '../../content/homeSchooling.js';
+import { clubJoinPath, clubPath, scheduleLabel } from '../../utils/clubs.js';
+import { bestYearlySaving, cheapestPrice, childrenLabel, formatKsh, periodUnit, periodsHint, periodsOffered } from '../../content/homeSchooling.js';
+import PlansDialog from '../common/PlansDialog.jsx';
 
 /**
  * One card on the Estate Tech Clubs page (`/estate-tech-clubs`). `hub` is the list entry from
  * GET /api/public/hubs ({ id, name, hubTypeLabel, deliveryLabel, isVirtual, town, schedule });
  * `profile` is its full profile from GET /api/public/hubs/:id once loaded (photo, address) — the
  * card shows the brand band and the town until then. Links to the club's own page.
- * `fromPrice` is the cheapest package on offer there — { amount, billingPeriod } (none = the club
- * takes enquiries only).
+ * `packages` are the packages offered there (none = the club takes enquiries only): the card shows
+ * "From …" (each at the period it's shown first), the choice of periods, and See packages — the
+ * package cards over the list, Choose going straight to the club's sign-up. `fromPrice` (older
+ * callers) is used when no packages are passed.
  */
-export default function ClubCard({ hub, profile, fromPrice }) {
+export default function ClubCard({ hub, profile, fromPrice: givenFrom, packages = [] }) {
+  const fromPrice = packages.length ? cheapestPrice(packages) : givenFrom;
+  const hint = periodsHint(periodsOffered(packages), bestYearlySaving(packages));
+  const [plansOpen, setPlansOpen] = useState(false);
   // A photo of the space, never the logo (that's the badge beside the name).
   const photo = profile?.photos?.[0];
   const where = hub.isVirtual ? 'Online' : profile?.address || hub.town;
@@ -42,7 +50,7 @@ export default function ClubCard({ hub, profile, fromPrice }) {
       <CardActionArea
         component={RouterLink}
         to={clubPath(hub)}
-        sx={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', height: '100%', '&:hover': { backgroundColor: 'transparent' } }}
+        sx={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', flexGrow: 1, '&:hover': { backgroundColor: 'transparent' } }}
       >
         {/* A photo of the space, clean (no title over it), shown whole. No photo yet: the brand
             panel with the club's logo, the same shape, so a row of cards lines up. */}
@@ -92,17 +100,43 @@ export default function ClubCard({ hub, profile, fromPrice }) {
               <Typography variant="body2" color="text.secondary">{when}</Typography>
             </Box>
           )}
-          {fromPrice && (
-            <Typography variant="body2" sx={{ fontWeight: 700 }}>
+        </CardContent>
+      </CardActionArea>
+
+      {/* The price and the two ways on — outside the card's link, so See packages is its own button. */}
+      <Box sx={{ px: 2.5, pb: 2.25, pt: 0.5 }}>
+        {fromPrice && (
+          <>
+            <Typography sx={{ fontWeight: 800 }}>
               From {formatKsh(fromPrice.amount)} <Box component="span" sx={{ fontWeight: 400, color: 'text.secondary' }}>/ {periodUnit(fromPrice.billingPeriod)} · join online</Box>
             </Typography>
-          )}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mt: 'auto', pt: 1, color: 'primary.main', fontWeight: 700 }}>
+            {hint && <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>{hint}</Typography>}
+          </>
+        )}
+        <Box sx={{ mt: fromPrice ? 1.5 : 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, flexWrap: 'wrap' }}>
+          {packages.length > 0 ? (
+            <Button variant="contained" size="small" onClick={() => setPlansOpen(true)} sx={{ borderRadius: 999, px: 2 }}>
+              See {packages.length === 1 ? 'package' : `${packages.length} packages`}
+            </Button>
+          ) : <span />}
+          <Box component={RouterLink} to={clubPath(hub)} sx={{ display: 'flex', alignItems: 'center', gap: 0.75, color: 'primary.main', fontWeight: 700, textDecoration: 'none' }}>
             <Typography variant="body2" sx={{ fontWeight: 700, color: 'inherit' }}>View club</Typography>
             <ArrowForwardIcon className="club-arrow" sx={{ fontSize: 18, transition: 'transform 200ms ease' }} />
           </Box>
-        </CardContent>
-      </CardActionArea>
+        </Box>
+      </Box>
+
+      {packages.length > 0 && (
+        <PlansDialog
+          open={plansOpen}
+          onClose={() => setPlansOpen(false)}
+          title={`Membership at ${hub.name}`}
+          lead="One price covers your family’s place in the club. You pay the first period when you sign up; then one invoice each period."
+          plans={packages}
+          linkFor={(pkg, period) => clubJoinPath(hub, pkg.slug, null, period)}
+          fallbackFeature={(pkg) => `Club sessions for ${childrenLabel(pkg.childrenIncluded)}`}
+        />
+      )}
     </Card>
   );
 }

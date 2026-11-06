@@ -102,7 +102,7 @@ export default function EstateTechClubsPage() {
         {!isLoading && !isError && count > 0 && (
           <Box sx={{ ...GRID_SX, ...shortListSx(count) }}>
             {hubs.map((hub) => (
-              <ClubCard key={hub.id} hub={hub} profile={profiles[hub.id]} fromPrice={fromPrice(hub.id)} />
+              <ClubCard key={hub.id} hub={hub} profile={profiles[hub.id]} fromPrice={fromPrice(hub.id)} packages={packagesForClub(packages, hub.id)} />
             ))}
           </Box>
         )}

@@ -21,6 +21,7 @@ import DiagnosticReport from '../diagnostic/DiagnosticReport.jsx';
 import DateOfBirthField from '../forms/DateOfBirthField.jsx';
 import EnrolCheckout, { StepCard, enrolSteps } from '../enrol/EnrolCheckout.jsx';
 import useScrollToFlowTop from '../../hooks/useScrollToFlowTop.js';
+import { atPeriod, defaultPeriodOf } from '../../content/homeSchooling.js';
 
 const STEP = { AGE: 'age', QUESTIONS: 'questions', REPORT: 'report', ENROL: 'enrol' };
 
@@ -161,9 +162,10 @@ function LearnerStep({ pathway, groups, restrictTo, defaultDateOfBirth, defaultQ
  * `children(start)` renders the enrolment — PathwayEnrollForm (plan & hub → details → payment) or
  * EnrollForm (an enquiry) — with start = { attemptId, dateOfBirth, childName, parentName,
  * parentPhone, onBack }. `stageSlug` (from a stage page) limits it to that stage's diagnostic and ages.
- * `planId` the plan picked on the pathway's page; `paid` whether it's sold online.
+ * `planId` / `period` the plan and period picked on the pathway's page (or since, at Plan & hub —
+ * PathwayEnrollForm keeps them in the address); `paid` whether it's sold online.
  */
-export default function PathwayEnrolJourney({ pathway, slug, stageSlug = null, planId = null, paid = false, children }) {
+export default function PathwayEnrolJourney({ pathway, slug, stageSlug = null, planId = null, period = null, paid = false, children }) {
   const { stage: restrictTo, groups } = diagnosticGroups(pathway, stageSlug);
   const [step, setStep] = useState(STEP.AGE);
   const [age, setAge] = useState(null);
@@ -208,7 +210,8 @@ export default function PathwayEnrolJourney({ pathway, slug, stageSlug = null, p
   const active = step === STEP.AGE ? 'learner' : step === STEP.ENROL ? (paid ? 'plan' : 'details') : 'quiz';
 
   const plans = pathway.plans || [];
-  const plan = plans.find((p) => p.id === planId) || plans[0] || null;
+  const found = plans.find((p) => p.id === planId) || plans[0] || null;
+  const plan = found ? atPeriod(found, period || defaultPeriodOf(found)) : null;
   const shownDob = step === STEP.AGE ? previewDob : dateOfBirth;
   const est = shownDob ? startFor(pathway, shownDob) : null;
   const info = {

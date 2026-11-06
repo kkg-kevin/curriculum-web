@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import { alpha } from '@mui/material/styles';
 import TextField from '@mui/material/TextField';
@@ -28,6 +29,8 @@ import { CopyableField, ParentSignIn } from './BootcampEnrollForm.jsx';
 import { ageOn } from '../../utils/dates.js';
 import { formatKsh } from '../../cart/format.js';
 import { startFor, planPrice, planChildren, periodUnit } from '../../utils/pathwayPrice.js';
+import { atPeriod, defaultPeriodOf, pricesOf } from '../../content/homeSchooling.js';
+import PeriodSwitch from '../common/PeriodSwitch.jsx';
 import { APP_URL } from '../../config/env.js';
 import useScrollToFlowTop from '../../hooks/useScrollToFlowTop.js';
 import { useEnrolCheckout } from '../enrol/EnrolCheckout.jsx';
@@ -74,13 +77,17 @@ function RadioMark({ on }) {
  * defaultLearnerDateOfBirth?, defaultParentName?, defaultParentPhone? (from the diagnostic's contact
  * details — PathwayEnrolJourney)
  */
-export default function PathwayEnrollForm({ pathway, defaultHubId = null, defaultPlanId = null, attemptId = null, defaultLearnerName = '', defaultLearnerDateOfBirth = '', defaultParentName = '', defaultParentPhone = '', onBack = null }) {
+export default function PathwayEnrollForm({ pathway, defaultHubId = null, defaultPlanId = null, defaultPeriod = null, attemptId = null, defaultLearnerName = '', defaultLearnerDateOfBirth = '', defaultParentName = '', defaultParentPhone = '', onBack = null }) {
   const hubs = pathway.hubs || [];
   // The pathway's subscription plans (renewing every period): the family picks one with the hub —
   // the one they chose on the pathway's page, else the first.
   const plans = pathway.plans || [];
   const [planId, setPlanId] = useState(() => (plans.some((p) => p.id === defaultPlanId) ? defaultPlanId : plans[0]?.id || ''));
-  const plan = plans.find((p) => p.id === planId) || null;
+  // The period chosen on the plan's card (?period=), switchable here; the plan priced for it
+  // (atPeriod — its default when it isn't offered for it).
+  const [period, setPeriod] = useState(defaultPeriod || null);
+  const chosenPlan = plans.find((p) => p.id === planId) || null;
+  const plan = chosenPlan ? atPeriod(chosenPlan, period || defaultPeriodOf(chosenPlan)) : null;
   const steps = STEPS;
   const [hubId, setHubId] = useState(() => (hubs.some((h) => h.id === defaultHubId) ? defaultHubId : hubs.length === 1 ? hubs[0].id : ''));
   const [stage, setStage] = useState('hub');
@@ -92,6 +99,19 @@ export default function PathwayEnrollForm({ pathway, defaultHubId = null, defaul
   const [submitted, setSubmitted] = useState({ children: [], phone: '' });
   const mutation = useMutation({ mutationFn: (payload) => publicApi.submitPathwayEnrollment(payload) });
   const hub = hubs.find((h) => h.id === hubId);
+
+  // What's chosen goes into the address (?plan= &period= &hubId=), so going Back to the date of
+  // birth or quiz and returning — or reloading — opens with the same plan, period and hub, and
+  // the summary beside the steps (PathwayEnrolJourney) reads the same thing.
+  const [, setParams] = useSearchParams();
+  useEffect(() => {
+    setParams((prev) => {
+      const wanted = { plan: planId || null, period: period || prev.get('period'), hubId: hubId || null };
+      if (Object.entries(wanted).every(([k, v]) => (prev.get(k) || null) === (v || null))) return prev;
+      Object.entries(wanted).forEach(([k, v]) => (v ? prev.set(k, v) : prev.delete(k)));
+      return prev;
+    }, { replace: true, preventScrollReset: true });
+  }, [planId, period, hubId, setParams]);
 
   const { register, control, handleSubmit, reset, setValue, watch, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(bootcampEnrollmentSchema),
@@ -127,6 +147,7 @@ export default function PathwayEnrollForm({ pathway, defaultHubId = null, defaul
       pathwayIdOrSlug: pathway.slug,
       hubId,
       packageId: plan?.id,
+      billingPeriod: plan?.billingPeriod,
       parentName: values.parentName,
       parentEmail: values.parentEmail,
       parentPhone: values.parentPhone,
@@ -245,7 +266,8 @@ export default function PathwayEnrollForm({ pathway, defaultHubId = null, defaul
         <Box component="fieldset" sx={{ border: 0, p: 0, m: 0, display: 'grid', gap: 1.25 }}>
           <Typography component="legend" sx={sectionTitle}>1 · Choose a plan</Typography>
           <Box role="radiogroup" aria-label="Plan" sx={{ display: 'grid', gap: 1.25, gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: 'repeat(auto-fit, minmax(190px, 1fr))' } }}>
-            {plans.map((p) => {
+            {plans.map((raw) => {
+              const p = atPeriod(raw, period || defaultPeriodOf(raw));
               const selected = planId === p.id;
               return (
                 <Box key={p.id} component="button" type="button" role="radio" aria-checked={selected} onClick={() => setPlanId(p.id)} sx={choiceCard(selected)}>
@@ -268,6 +290,13 @@ export default function PathwayEnrollForm({ pathway, defaultHubId = null, defaul
             })}
           </Box>
         </Box>
+
+        {chosenPlan && pricesOf(chosenPlan).length > 1 && (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap', mt: -1 }}>
+            <Typography sx={{ fontWeight: 700 }}>Pay</Typography>
+            <PeriodSwitch periods={pricesOf(chosenPlan).map((x) => x.billingPeriod)} value={plan.billingPeriod} onChange={setPeriod} size="medium" />
+          </Box>
+        )}
 
         <Box component="fieldset" sx={{ border: 0, p: 0, m: 0, display: 'grid', gap: 1.25 }}>
           <Typography component="legend" sx={sectionTitle}>2 · Where is the learner based?</Typography>

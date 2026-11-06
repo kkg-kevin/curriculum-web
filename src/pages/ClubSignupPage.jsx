@@ -53,7 +53,7 @@ export default function ClubSignupPage() {
             />
           )}
           {!isLoading && !isError && hub && packages.length > 0 && (
-            <ClubSignupForm hub={hub} packages={packages} initialSlug={params.get('package')} initialChildren={params.get('children')} enquirePath={enquirePath} />
+            <ClubSignupForm hub={hub} packages={packages} initialSlug={params.get('package')} initialChildren={params.get('children')} initialPeriod={params.get('period')} enquirePath={enquirePath} />
           )}
           <Box sx={{ mt: 4, textAlign: 'center' }}>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>Rather talk to us first?</Typography>
