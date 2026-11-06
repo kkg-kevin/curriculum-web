@@ -41,7 +41,7 @@ export default function HomeSchoolingSignupPage() {
             />
           )}
           {!isLoading && !isError && packages.length > 0 && (
-            <HomeSchoolingSignupForm packages={packages} initialSlug={params.get('package')} initialChildren={params.get('children')} />
+            <HomeSchoolingSignupForm packages={packages} initialSlug={params.get('package')} initialChildren={params.get('children')} initialPeriod={params.get('period')} />
           )}
           <Box sx={{ mt: 4, textAlign: 'center' }}>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>Rather talk to us first?</Typography>

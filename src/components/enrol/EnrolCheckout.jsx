@@ -13,6 +13,7 @@ import FramedImage from '../media/FramedImage.jsx';
 import { formatKsh } from '../../cart/format.js';
 import { periodUnit, planPrice } from '../../utils/pathwayPrice.js';
 import { stageAgeLabel } from '../../utils/pathwayAges.js';
+import { PERIOD_LABEL, pricesOf } from '../../content/homeSchooling.js';
 
 /**
  * The pathway enrolment, laid out like a checkout: one step bar for the whole journey across the
@@ -101,7 +102,14 @@ function SummaryBody({ pathway, info, paid }) {
   const cheapest = (pathway.plans || []).reduce((min, p) => (min == null || p.amount < min.amount ? p : min), null);
   return (
     <Box sx={{ display: 'grid', gap: 1.25 }}>
-      <Row label="Plan">{plan ? plan.name : paid && cheapest ? `From ${formatKsh(cheapest.amount, cheapest.currency)} / ${periodUnit(cheapest.billingPeriod)}` : 'Our team confirms'}</Row>
+      <Row label="Plan">{plan ? (
+        <>
+          {plan.name}
+          <Box component="span" sx={{ display: 'block', fontWeight: 500, color: 'text.secondary', fontSize: 13 }}>
+            {`Paid ${(PERIOD_LABEL[plan.billingPeriod] || 'monthly').toLowerCase()}`}{pricesOf(plan).length > 1 && step !== 'pay' ? ' — change it at Plan & hub' : ''}
+          </Box>
+        </>
+      ) : paid && cheapest ? `From ${formatKsh(cheapest.amount, cheapest.currency)} / ${periodUnit(cheapest.billingPeriod)}` : 'Our team confirms'}</Row>
       {age != null && (
         <Row label="Learner">{`Age ${age}`}{learners > 1 ? ` + ${learners - 1} more` : ''}</Row>
       )}

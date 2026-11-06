@@ -25,7 +25,8 @@ import PathwayEnrolBar from '../components/pathway/PathwayEnrolBar.jsx';
 import PathwayPlans from '../components/pathway/PathwayPlans.jsx';
 import { RelatedPathways } from '../components/common/Related.jsx';
 import { actionRowSx } from '../components/common/ActionRow.jsx';
-import { subscriptionShort, isSoldOnline } from '../utils/pathwayPrice.js';
+import { subscriptionShort, isSoldOnline, periodUnit } from '../utils/pathwayPrice.js';
+import { atPeriod, offersPeriod, formatKsh } from '../content/homeSchooling.js';
 import { parseAge, pathwayAgeLabel, stageForAge } from '../utils/pathwayAges.js';
 
 const FALLBACK_ACCENT = '#25476a';
@@ -106,16 +107,27 @@ export default function PathwayDetailPage() {
   const stage = byStage
     ? stages.find((st) => st.slug === (picked || urlStage)) || stageForAge(stages, age) || stages[0]
     : null;
-  const enrollTo = `/enroll?flow=pathway&referenceId=${encodeURIComponent(slug)}`;
+  // The period chosen on a plan card (?period=): every plan card follows it, and every Enrol on
+  // the page carries it, so the enrolment opens priced the way the family chose.
+  const plans = data.plans || [];
+  const chosenPeriod = plans.some((p) => offersPeriod(p, params.get('period'))) ? params.get('period') : null;
+  const enrollTo = `/enroll?flow=pathway&referenceId=${encodeURIComponent(slug)}${chosenPeriod ? `&period=${chosenPeriod}` : ''}`;
+  const choosePeriod = (period) => setParams(
+    (prev) => { prev.set('period', period); return prev; },
+    { replace: true, preventScrollReset: true },
+  );
   // Where it runs (chosen in the curriculum system); the family picks one when they enrol.
   const hubs = data.hubs || [];
   const places = [...new Set(hubs.map((h) => (h.town || '').split(',')[0].trim()).filter(Boolean))];
   // Sold online when it has subscription plans and hubs to choose from: Enrol then takes payment.
-  const plans = data.plans || [];
   const subscription = data.subscription || null;
   const paidEnrol = isSoldOnline(data);
-  // The headline price: the cheapest plan's "from".
-  const headline = paidEnrol ? subscriptionShort(subscription) : null;
+  // The headline price: the cheapest plan's "from" — at the period chosen on a plan card, if any.
+  const atChosen = chosenPeriod ? plans.filter((p) => offersPeriod(p, chosenPeriod)).map((p) => atPeriod(p, chosenPeriod)) : [];
+  const cheapestAtChosen = atChosen.reduce((min, p) => (min == null || p.amount < min.amount ? p : min), null);
+  const headline = !paidEnrol ? null
+    : cheapestAtChosen ? `From ${formatKsh(cheapestAtChosen.amount)} / ${periodUnit(chosenPeriod)}`
+      : subscriptionShort(subscription);
   const enrolLabel = paidEnrol ? 'Enrol & pay' : 'Enrol';
   const ages = pathwayAgeLabel(data);
   const enrolNote = diagnostic?.available
@@ -236,7 +248,7 @@ export default function PathwayDetailPage() {
                 <Typography color="text.secondary" sx={{ mb: 2.5, maxWidth: 720 }}>
                   Pay as you go — every stage’s courses, self-paced. It renews automatically; if a payment is missed the courses pause and pick up where they left off once it’s paid.
                 </Typography>
-                <PathwayPlans plans={plans} enrollTo={enrollTo} />
+                <PathwayPlans plans={plans} enrollTo={`/enroll?flow=pathway&referenceId=${encodeURIComponent(slug)}`} period={chosenPeriod} onPeriodChange={choosePeriod} />
               </Box>
             )}
 

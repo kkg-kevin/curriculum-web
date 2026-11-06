@@ -22,7 +22,7 @@ import { ErrorBlock, EmptyBlock } from '../components/common/StateViews.jsx';
 import PriceCalculator from '../components/homeSchooling/PriceCalculator.jsx';
 import PackageCard from '../components/homeSchooling/PackageCard.jsx';
 import { usePublicHomeLearningPackages } from '../hooks/usePublicHomeLearning.js';
-import { formatKsh, homeSchoolingBenefits, homeSchoolingEnquiryPath, homeSchoolingFaqs, homeSchoolingHero, homeSchoolingSignupPath, homeSchoolingSteps, maxChildrenOffered, cheapestPrice, cheapestExtra, fromLabel, hasVolumeDiscount, perChildBaseline, periodUnit, sharedPeriodWord } from '../content/homeSchooling.js';
+import { formatKsh, homeSchoolingBenefits, homeSchoolingEnquiryPath, homeSchoolingFaqs, homeSchoolingHero, homeSchoolingSignupPath, homeSchoolingSteps, maxChildrenOffered, cheapestPrice, cheapestExtra, fromLabel, hasVolumeDiscount, periodUnit, sharedPeriodWord } from '../content/homeSchooling.js';
 
 const BENEFIT_ICONS = { home: HomeRoundedIcon, level: SchoolRoundedIcon, progress: AutoGraphRoundedIcon, billing: ReceiptLongRoundedIcon };
 
@@ -197,7 +197,7 @@ function Packages({ packages, isLoading, isError, error, refetch }) {
           <Box sx={packagesGridSx}>
             {packages.map((pkg, i) => (
               <Reveal key={pkg.slug} delay={i * 90} sx={{ height: '100%' }}>
-                <PackageCard pkg={pkg} highestPerChild={perChildBaseline(packages, pkg)} />
+                <PackageCard pkg={pkg} />
               </Reveal>
             ))}
           </Box>
