@@ -4,10 +4,10 @@ import SeoHead from '../components/seo/SeoHead.jsx';
 import PageHeader from '../components/common/PageHeader.jsx';
 import Section from '../components/common/Section.jsx';
 import { ORG } from '../config/site.js';
-import { privacyPolicy, termsOfUse } from '../content/legal.js';
+import { affiliateTerms, privacyPolicy, termsOfUse } from '../content/legal.js';
 import { NARROW_COLUMN } from '../theme/layout.js';
 
-const DOCS = { privacy: privacyPolicy, terms: termsOfUse };
+const DOCS = { privacy: privacyPolicy, terms: termsOfUse, affiliate: affiliateTerms };
 
 // `{email}` in the copy becomes a mailto link to ORG.email.
 function withEmail(text) {

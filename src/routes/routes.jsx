@@ -24,6 +24,9 @@ function OldProjectAddress() {
  * initial bundle stays lean (spec §7 — keep the JS bundle small).
  */
 const PathwaysListPage = lazy(() => import('../pages/PathwaysListPage.jsx'));
+// Affiliates who aren't users: applying, and their private dashboard (no sign-in).
+const BecomeAffiliatePage = lazy(() => import('../pages/BecomeAffiliatePage.jsx'));
+const AffiliateDashboardPage = lazy(() => import('../pages/AffiliateDashboardPage.jsx'));
 const PathwayDetailPage = lazy(() => import('../pages/PathwayDetailPage.jsx'));
 const DiagnosticPage = lazy(() => import('../pages/DiagnosticPage.jsx'));
 const DiagnosticReportPage = lazy(() => import('../pages/DiagnosticReportPage.jsx'));
@@ -100,6 +103,9 @@ export const routes = [
       { path: 'about', element: <AboutPage /> },
       { path: 'privacy', element: <LegalPage doc="privacy" /> },
       { path: 'terms', element: <LegalPage doc="terms" /> },
+      { path: 'become-an-affiliate', element: <BecomeAffiliatePage /> },
+      { path: 'affiliate', element: <AffiliateDashboardPage /> },
+      { path: 'affiliate-terms', element: <LegalPage doc="affiliate" /> },
       { path: '*', element: <NotFoundPage /> },
     ],
   },

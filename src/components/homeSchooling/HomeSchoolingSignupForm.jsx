@@ -32,6 +32,7 @@ import useScrollToFlowTop from '../../hooks/useScrollToFlowTop.js';
 import { APP_URL } from '../../config/env.js';
 import { bestPackageFor, childrenLabel, formatKsh, homeSchoolingEnquiryPath, maxChildrenOffered, priceForPackage, periodUnit, atPeriod, defaultPeriodOf, pricesOf } from '../../content/homeSchooling.js';
 import PeriodSwitch from '../common/PeriodSwitch.jsx';
+import ReferralCodeField, { useReferralCode } from '../forms/ReferralCodeField.jsx';
 
 const STEPS = ['Package', 'Parent', 'Children', 'Home', 'Review', 'Payment'];
 const REVIEW = 4; // submitting here creates the accounts, then the Payment step opens
@@ -132,6 +133,8 @@ export default function HomeSchoolingSignupForm({ packages, initialSlug, initial
   // The period chosen on the package card (?period=), switchable on the package step; a package not
   // offered for it is priced at its own default (atPeriod).
   const [period, setPeriod] = useState(initialPeriod || null);
+  // Whoever referred them (an affiliate's link or code) — optional.
+  const [referralCode, setReferralCode] = useReferralCode();
   const chosenPkg = packages.find((p) => p.slug === slug);
   const pkg = chosenPkg ? atPeriod(chosenPkg, period || defaultPeriodOf(chosenPkg)) : undefined;
   const count = fields.length;
@@ -181,6 +184,7 @@ export default function HomeSchoolingSignupForm({ packages, initialSlug, initial
       const data = await signup.mutateAsync({
         packageSlug: values.packageSlug,
         billingPeriod: price?.billingPeriod,
+        referralCode: referralCode || undefined,
         parent,
         children: values.children,
         home: values.home,
@@ -289,6 +293,9 @@ export default function HomeSchoolingSignupForm({ packages, initialSlug, initial
             </Box>
             <PasswordField label="Create a password" {...register('parent.password')} error={errors.parent?.password} helperText="At least 8 characters" />
             <PasswordField label="Confirm password" {...register('parent.confirmPassword')} error={errors.parent?.confirmPassword} />
+            <Box sx={{ gridColumn: { sm: '1 / -1' } }}>
+              <ReferralCodeField value={referralCode} onChange={setReferralCode} />
+            </Box>
           </Box>
         </Box>
       )}

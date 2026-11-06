@@ -23,6 +23,7 @@ import Section from '../components/common/Section.jsx';
 import { EmptyBlock, LoadingBlock } from '../components/common/StateViews.jsx';
 import Honeypot from '../components/forms/Honeypot.jsx';
 import PrivacyNote from '../components/forms/PrivacyNote.jsx';
+import ReferralCodeField, { useReferralCode } from '../components/forms/ReferralCodeField.jsx';
 import DateOfBirthField from '../components/forms/DateOfBirthField.jsx';
 import PasswordField from '../components/forms/PasswordField.jsx';
 import { ageOn } from '../utils/dates.js';
@@ -142,6 +143,8 @@ export default function CheckoutPage() {
 
   const steps = useMemo(() => ['Your details', ...(hasPhysical ? ['Delivery'] : []), 'Review', 'Payment'], [hasPhysical]);
   const [step, setStep] = useState(0);
+  // Whoever referred them (an affiliate's link or code) — optional.
+  const [referralCode, setReferralCode] = useReferralCode();
   const [form, setForm] = useState({
     name: '', email: '', phone: '',
     parentPassword: '', parentPasswordAgain: '',
@@ -238,6 +241,7 @@ export default function CheckoutPage() {
       const data = await publicApi.placeOrder({
         lines: lines.map((l) => (l.type === 'project' ? { type: 'project', id: l.id, withKit: Boolean(l.withKit) } : { type: 'store_item', id: l.id, quantity: l.quantity })),
         customer: { name: form.name.trim(), email: form.email.trim(), phone: form.phone.trim() },
+        referralCode: referralCode || undefined,
         fulfilment: hasPhysical
           ? { method, hubId: method === 'pickup' ? form.hubId : null, address: form.address, town: form.town, county: form.county, note: form.note }
           : { method: 'none' },
@@ -285,6 +289,7 @@ export default function CheckoutPage() {
                         <TextField label="Email" type="email" value={form.email} onChange={set('email')} required autoComplete="email" helperText="We send your order and receipt here." />
                         <TextField label="Phone" value={form.phone} onChange={set('phone')} required autoComplete="tel" inputMode="tel" placeholder="0712 345 678" helperText="For M-Pesa and about delivery." />
                       </Box>
+                      <ReferralCodeField value={referralCode} onChange={setReferralCode} />
                     </Box>
                   </Box>
 
