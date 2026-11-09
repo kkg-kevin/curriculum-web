@@ -16,7 +16,7 @@ const UPDATED = '8 October 2026';
 export const privacyPolicy = {
   title: 'Privacy Policy',
   description: 'What personal information Digifunzi collects on this website, why, who sees it, and how to see, correct or delete it.',
-  updated: '6 November 2026', // how a visitor first found the site, and a referral code (utils/visitSource.js)
+  updated: '9 November 2026', // how a visitor first found the site, and a referral code (utils/visitSource.js)
   intro:
     'This page explains what Digifunzi collects when you use this website, what we do with it, and the choices you have. Most of what we collect is about children, given to us by a parent or guardian, so we try to ask for as little as we need.',
   sections: [
@@ -124,7 +124,7 @@ export const affiliateTerms = {
     {
       heading: 'Joining',
       paragraphs: [
-        'We review every application and may approve or decline it without giving a reason. Once approved you get your own referral link, a short referral code and a dashboard showing your referrals, earnings and payouts.',
+        'We review every application and may approve or decline it without giving a reason. Once approved you get your own referral link, a short referral code and a Digifunzi account, where you sign in to see your referrals, earnings and payouts.',
         'You must be at least 18 and give us true details, including how you would like to be paid. Keep them up to date by contacting {email}.',
       ],
     },
@@ -148,7 +148,7 @@ export const affiliateTerms = {
     {
       heading: 'Getting paid',
       paragraphs: [
-        'Once your available amount reaches the minimum payout, ask for a payout from your dashboard. We pay by M-Pesa or bank transfer to the details you gave us, usually within 14 days of your request; parents with a Digifunzi account can choose to have it taken off their own invoices instead.',
+        'Once your available amount reaches the minimum payout, ask for a payout from your Digifunzi account. We pay by M-Pesa or bank transfer to the details you gave us, usually within 14 days of your request; parents with a Digifunzi account can choose to have it taken off their own invoices instead.',
         'You are responsible for any tax on what you earn. Where the law requires it, we may ask for your KRA PIN and withhold tax before paying you.',
         'If we cannot pay a request (for example, the payout details are wrong), we tell you why and the amount stays available to you.',
       ],
@@ -168,7 +168,7 @@ export const affiliateTerms = {
       heading: 'Privacy',
       paragraphs: [
         'You see only the first name of each family you referred, what they signed up for and what you earned — never their contact details. We use your own details only to run the programme and pay you, as our Privacy Policy explains.',
-        'Your dashboard link needs no password: keep it to yourself. If you think someone else has it, ask us for a new one and the old one stops working.',
+        'Keep your account password to yourself. If you think someone else knows it, change it in your account, or use “Forgot password?” on the sign-in page.',
       ],
     },
     {

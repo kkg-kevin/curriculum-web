@@ -24,7 +24,8 @@ import { formatKsh } from '../cart/format.js';
  * who can send families our way. The offer (from the system's Affiliates → Settings), how it
  * works, and an application: name, email, phone, how they'd share, how they'd like to be paid,
  * agreeing to the affiliate terms (/affiliate-terms). An admin approves; they're then emailed
- * their link, code and private dashboard. Server: modules/affiliates/ (POST
+ * their link, code and how to sign in to their own Digifunzi account (Affiliate). Server:
+ * modules/affiliates/ (POST
  * /api/public/affiliate-applications).
  */
 
@@ -72,7 +73,7 @@ export default function BecomeAffiliatePage() {
       <Section>
         <Box sx={{ maxWidth: 980, mx: 'auto', display: 'grid', gap: 4 }}>
           <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' } }}>
-            <Step icon={ShareRoundedIcon} title="1. Share your link" text="Once you're approved you get your own link and a short code. Share them on WhatsApp, at your school, church or estate — anywhere." />
+            <Step icon={ShareRoundedIcon} title="1. Share your link" text="Once you're approved you get your own link, a short code and a Digifunzi account to follow them. Share them on WhatsApp, at your school, church or estate — anywhere." />
             <Step icon={FamilyRestroomRoundedIcon} title="2. Families sign up" text={`A family who opens your link (within ${p?.attributionDays || 30} days), or types your code when signing up, is credited to you.${p?.programmes?.length ? ` Counts for: ${p.programmes.join(', ')}.` : ''}`} />
             <Step icon={PaymentsRoundedIcon} title="3. You get paid" text={`You earn when they pay${p?.holdDays ? `; each amount can be paid out ${p.holdDays} days later` : ''}. Ask for a payout from ${p ? formatKsh(p.minimumPayout) : 'the minimum'} — by M-Pesa or bank.`} />
           </Box>
@@ -85,8 +86,8 @@ export default function BecomeAffiliatePage() {
               <Typography variant="h4" component="h2" sx={{ fontWeight: 800, mb: 1 }}>Thank you — we&rsquo;ve got your application</Typography>
               <Typography color="text.secondary" sx={{ maxWidth: 560, mx: 'auto' }}>
                 {p?.requireApproval === false
-                  ? 'Check your email: your link, your code and your dashboard are on their way.'
-                  : 'Our team will look at it and email you once you’re approved — with your own link, your code and your dashboard.'}
+                  ? 'Check your email: your link, your code and a link to set the password of your Digifunzi account are on their way.'
+                  : 'Our team will look at it and email you once you’re approved — with your own link, your code and how to sign in to your Digifunzi account.'}
               </Typography>
             </Box>
           ) : (
@@ -98,7 +99,7 @@ export default function BecomeAffiliatePage() {
               </Box>
               <TextField label="Your name" value={form.name} onChange={set('name')} required autoComplete="name" error={Boolean(errors.name)} helperText={errors.name} />
               <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
-                <TextField label="Email" type="email" value={form.email} onChange={set('email')} required autoComplete="email" error={Boolean(errors.email)} helperText={errors.email || 'Where we send your link and dashboard'} />
+                <TextField label="Email" type="email" value={form.email} onChange={set('email')} required autoComplete="email" error={Boolean(errors.email)} helperText={errors.email || 'You’ll sign in to your affiliate account with this'} />
                 <TextField label="Phone" value={form.phone} onChange={set('phone')} required autoComplete="tel" inputMode="tel" placeholder="0712 345 678" error={Boolean(errors.phone)} helperText={errors.phone} />
               </Box>
               <TextField label="How would you share Digifunzi? (optional)" value={form.promotion} onChange={set('promotion')} multiline minRows={3}

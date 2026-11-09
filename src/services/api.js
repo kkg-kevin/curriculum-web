@@ -169,12 +169,10 @@ export const publicApi = {
   // A referral code typed at sign-up: { valid } only — never whose it is (server: modules/affiliates/).
   checkReferralCode: (code) =>
     api.get(`/api/public/referral-codes/${encodeURIComponent(code)}`).then((r) => r.data.data),
-  // Affiliates who aren't users (server: modules/affiliates/): the programme's offer, applying,
-  // and their private dashboard (the token from their emails — no sign-in).
+  // Becoming an affiliate (server: modules/affiliates/): the programme's offer, and applying. An
+  // affiliate follows their referrals by signing in to their Digifunzi account (APP_URL).
   getAffiliateProgramme: () => api.get('/api/public/affiliate-programme').then((r) => r.data.data),
   applyAffiliate: (payload) => api.post('/api/public/affiliate-applications', payload).then((r) => r.data.data),
-  getAffiliateDashboard: (token) => api.get('/api/public/affiliate-dashboard', { params: { token } }).then((r) => r.data.data),
-  requestAffiliatePayout: (token) => api.post('/api/public/affiliate-dashboard/payouts', { token }).then((r) => r.data.data),
   // "Already have a Digifunzi account? Sign in" on a sign-up: a short-lived parent token and the
   // parent's details — never a portal session (server: auth/parent-signup.js).
   parentSignIn: (payload) =>
