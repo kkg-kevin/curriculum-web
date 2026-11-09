@@ -95,7 +95,8 @@ export default function PackageCard({ pkg, linkFor, to, fallbackFeature, showExt
         </Box>
 
         <Box>
-          <Typography variant="h4" component="p" sx={{ fontWeight: 800, lineHeight: 1.2 }}>{headline}</Typography>
+          {/* The package's short summary — plain text, not bold. */}
+          <Typography component="p" sx={{ fontWeight: 400, fontSize: '1.1rem', lineHeight: 1.45, color: 'text.primary' }}>{headline}</Typography>
           {description && (
             <Typography variant="body2" color="text.secondary" sx={{ mt: 0.75, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
               {description}
