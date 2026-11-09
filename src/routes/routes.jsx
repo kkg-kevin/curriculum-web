@@ -24,7 +24,7 @@ function OldProjectAddress() {
  * initial bundle stays lean (spec §7 — keep the JS bundle small).
  */
 const PathwaysListPage = lazy(() => import('../pages/PathwaysListPage.jsx'));
-// Affiliates who aren't users: applying, and their private dashboard (no sign-in).
+// Becoming an affiliate; /affiliate is where the old private dashboard links land (they now sign in).
 const BecomeAffiliatePage = lazy(() => import('../pages/BecomeAffiliatePage.jsx'));
 const AffiliateDashboardPage = lazy(() => import('../pages/AffiliateDashboardPage.jsx'));
 const PathwayDetailPage = lazy(() => import('../pages/PathwayDetailPage.jsx'));
