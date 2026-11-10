@@ -1,9 +1,8 @@
+import { useRef } from 'react';
 import { useParams, Link as RouterLink } from 'react-router-dom';
-import { alpha } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
 import Button from '@mui/material/Button';
 import Skeleton from '@mui/material/Skeleton';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -13,15 +12,14 @@ import Inventory2Icon from '@mui/icons-material/Inventory2';
 import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import SeoHead from '../components/seo/SeoHead.jsx';
-import DetailHero from '../components/common/DetailHero.jsx';
 import { DetailHeading } from '../components/common/DetailSection.jsx';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
 import JsonLd, { organizationSchema, productSchema, breadcrumbSchema } from '../components/seo/JsonLd.jsx';
-import Section from '../components/common/Section.jsx';
 import MediaGallery from '../components/media/MediaGallery.jsx';
-import BuyBox from '../components/catalog/BuyBox.jsx';
-import BuyAside from '../components/catalog/BuyAside.jsx';
+import ProductLayout from '../components/store/ProductLayout.jsx';
+import ProductBuyPanel from '../components/store/ProductBuyPanel.jsx';
+import StickyBuyBar from '../components/store/StickyBuyBar.jsx';
 import CTABanner from '../components/home/CTABanner.jsx';
 import { ErrorBlock } from '../components/common/StateViews.jsx';
 import { usePublicProject } from '../hooks/usePublicProjects.js';
@@ -32,7 +30,6 @@ import { resolveMediaUrl } from '../utils/media.js';
 import { titleWithKind } from '../utils/seo.js';
 import { projectPath, storeItemPath, STORE_PROJECTS_PATH } from '../utils/storePaths.js';
 import { PROSE_MAX_WIDTH } from '../theme/layout.js';
-import DetailLayout from '../components/common/DetailLayout.jsx';
 import { RelatedInStore } from '../components/common/Related.jsx';
 import { PRICING_IS_PLACEHOLDER } from '../content/catalog.js';
 
@@ -130,10 +127,10 @@ function GetTile({ icon, title, body }) {
         display: 'flex',
         gap: 1.5,
         alignItems: 'flex-start',
-        backgroundColor: 'background.paper',
+        backgroundColor: 'surface.card',
         border: '1px solid',
-        borderColor: 'divider',
-        borderRadius: 2,
+        borderColor: 'surface.ring',
+        borderRadius: 3,
         '& > svg': { fontSize: 22, color: 'primary.main', mt: 0.25, flexShrink: 0 },
       }}
     >
@@ -158,8 +155,14 @@ function findInStore(requirement, items) {
   );
 }
 
+/**
+ * A project in the Store (`/store/projects/:slug`), laid out like a Store good (ProductLayout): the
+ * cover and the one buy panel side by side, the details under the cover, a buy bar along the bottom
+ * once the panel's buttons have scrolled away, then more from the Store.
+ */
 export default function ProjectDetailPage() {
   const { slug } = useParams();
+  const buyRef = useRef(null);
   const { data, isLoading, isError, error, refetch } = usePublicProject(slug);
   const { data: storeItems = [] } = usePublicStore();
 
@@ -261,182 +264,148 @@ export default function ProjectDetailPage() {
         ]}
       />
 
-      {/* header band */}
-      <DetailHero
+      <ProductLayout
         crumbs={[
           { label: 'Home', to: '/' },
           { label: 'Store', to: '/store' },
           { label: 'Projects', to: STORE_PROJECTS_PATH },
           { label: name },
         ]}
+        gallery={coverImage
+          ? <MediaGallery images={[coverImage, ...gallery]} alt={name} ratio="4 / 3" />
+          : <ProjectCoverArt facts={coverFacts} />}
+        panel={(
+          <ProductBuyPanel
+            chips={[
+              { label: 'Guided project', tone: 'brand' },
+              { label: 'Available now', tone: 'good' },
+              level && { label: LEVEL_LABEL[level], tone: 'muted' },
+              age && { label: age, tone: 'muted' },
+            ].filter(Boolean)}
+            name={name}
+            tagline={tagline}
+            kind="project"
+            item={buyItem}
+            enquireTo={enquireTo}
+            contactTo={contactTo}
+            buyRef={buyRef}
+          />
+        )}
       >
-        <Box
-          sx={{
-            display: 'flex',
-            gap: { xs: 3, md: 5 },
-            flexWrap: { xs: 'wrap', md: 'nowrap' },
-            alignItems: 'flex-start',
-          }}
-        >
-          <Box sx={{ flex: 1, minWidth: 260 }}>
-            <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
-              <Chip
-                label="Guided project"
-                sx={{ bgcolor: (t) => alpha(t.palette.primary.dark, 0.102), color: 'text.primary', fontWeight: 600 }}
-              />
-              <Chip color="success" label="Available now" sx={{ fontWeight: 600 }} />
-              {level && <Chip variant="outlined" label={LEVEL_LABEL[level]} sx={{ fontWeight: 600 }} />}
-              {age && <Chip variant="outlined" label={age} sx={{ fontWeight: 600 }} />}
-            </Box>
-
-            <Typography variant="h1" component="h1" sx={{ mb: 1.5 }}>
-              {name}
+      {(description || overview) && (
+        <Box sx={{ maxWidth: 760, mb: 6 }}>
+          <DetailHeading title="About this project" icon={<InfoOutlinedIcon />} />
+          {description && (
+            <Typography sx={{ color: 'text.secondary', whiteSpace: 'pre-line', maxWidth: PROSE_MAX_WIDTH, lineHeight: 1.7 }}>
+              {description}
             </Typography>
-            {tagline && (
-              <Typography
-                variant="h4"
-                component="p"
-                sx={{ fontWeight: 400, color: 'text.secondary', maxWidth: 620 }}
-              >
-                {tagline}
-              </Typography>
-            )}
-
-            {/* price + buy */}
-            <Box sx={{ mt: 3 }}>
-              <BuyBox kind="project" item={buyItem} enquireTo={enquireTo} contactTo={contactTo} />
-            </Box>
-          </Box>
-
-          <Box sx={{ width: { xs: '100%', md: 460 }, flexShrink: 0 }}>
-            {coverImage ? (
-              <MediaGallery images={[coverImage, ...gallery]} alt={name} ratio="4 / 3" />
-            ) : (
-              <ProjectCoverArt facts={coverFacts} />
-            )}
-          </Box>
+          )}
+          {overview && (
+            <Typography
+              sx={{ color: 'text.secondary', whiteSpace: 'pre-line', maxWidth: PROSE_MAX_WIDTH, lineHeight: 1.7, mt: 2 }}
+            >
+              {overview}
+            </Typography>
+          )}
         </Box>
-      </DetailHero>
+      )}
 
-      <Section>
-        <DetailLayout
-          aside={(
-            <BuyAside
-              title={`Get ${name} for your learner`}
-              kind="project"
-              item={buyItem}
-              enquireTo={enquireTo}
-              contactTo={contactTo}
-            />
-          )}
-        >
-          {(description || overview) && (
-            <Box sx={{ maxWidth: 760, mb: 6 }}>
-              <DetailHeading title="About this project" icon={<InfoOutlinedIcon />} />
-              {description && (
-                <Typography sx={{ color: 'text.secondary', whiteSpace: 'pre-line', maxWidth: PROSE_MAX_WIDTH, lineHeight: 1.7 }}>
-                  {description}
-                </Typography>
-              )}
-              {overview && (
-                <Typography
-                  sx={{ color: 'text.secondary', whiteSpace: 'pre-line', maxWidth: PROSE_MAX_WIDTH, lineHeight: 1.7, mt: 2 }}
-                >
-                  {overview}
-                </Typography>
-              )}
-            </Box>
-          )}
+      <Box sx={{ mb: 6 }}>
+        <DetailHeading title="What you get" icon={<Inventory2Icon />} />
+        <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
+          {whatYouGet.map((g) => <GetTile key={g.title} {...g} />)}
+        </Box>
+      </Box>
 
-          <Box sx={{ mb: 6 }}>
-            <DetailHeading title="What you get" icon={<Inventory2Icon />} />
-            <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
-              {whatYouGet.map((g) => <GetTile key={g.title} {...g} />)}
-            </Box>
-          </Box>
+      {milestones.length > 0 && (
+        <Box sx={{ maxWidth: 820, mb: 6 }}>
+          <DetailHeading
+            title="The build, step by step"
+            icon={<FormatListNumberedIcon />}
+            lead="Worked through in order — each step builds on the last, and ends with something working."
+            sx={{ mb: 1.5 }}
+          />
+          {milestones.map((m, i) => (
+            <BuildStep key={`${m.name}-${i}`} index={i} total={milestones.length} step={m} />
+          ))}
+        </Box>
+      )}
 
-          {milestones.length > 0 && (
-            <Box sx={{ maxWidth: 820, mb: 6 }}>
-              <DetailHeading
-                title="The build, step by step"
-                icon={<FormatListNumberedIcon />}
-                lead="Worked through in order — each step builds on the last, and ends with something working."
-                sx={{ mb: 1.5 }}
-              />
-              {milestones.map((m, i) => (
-                <BuildStep key={`${m.name}-${i}`} index={i} total={milestones.length} step={m} />
+      <Box
+        sx={{
+          display: 'grid',
+          gap: 4,
+          gridTemplateColumns: { xs: '1fr', md: deliverables.length && requirements.length ? '1fr 1fr' : '1fr' },
+        }}
+      >
+        {deliverables.length > 0 && (
+          <Box>
+            <DetailHeading title="What you’ll build" icon={<BuildCircleIcon />} />
+            <Box component="ul" sx={{ m: 0, p: 0, listStyle: 'none', display: 'grid', gap: 1.5 }}>
+              {deliverables.map((d, i) => (
+                <Box component="li" key={`${d.name}-${i}`} sx={{ display: 'flex', gap: 1.25 }}>
+                  <CheckCircleIcon sx={{ fontSize: 20, color: 'success.main', flexShrink: 0, mt: 0.25 }} />
+                  <Box>
+                    <Typography sx={{ fontWeight: 600 }}>{d.name}</Typography>
+                    {d.description && (
+                      <Typography variant="body2" color="text.secondary">
+                        {d.description}
+                      </Typography>
+                    )}
+                  </Box>
+                </Box>
               ))}
             </Box>
-          )}
+          </Box>
+        )}
 
-          <Box
-            sx={{
-              display: 'grid',
-              gap: 4,
-              gridTemplateColumns: { xs: '1fr', md: deliverables.length && requirements.length ? '1fr 1fr' : '1fr' },
-            }}
-          >
-            {deliverables.length > 0 && (
-              <Box>
-                <DetailHeading title="What you’ll build" icon={<BuildCircleIcon />} />
-                <Box component="ul" sx={{ m: 0, p: 0, listStyle: 'none', display: 'grid', gap: 1.5 }}>
-                  {deliverables.map((d, i) => (
-                    <Box component="li" key={`${d.name}-${i}`} sx={{ display: 'flex', gap: 1.25 }}>
-                      <CheckCircleIcon sx={{ fontSize: 20, color: 'success.main', flexShrink: 0, mt: 0.25 }} />
-                      <Box>
-                        <Typography sx={{ fontWeight: 600 }}>{d.name}</Typography>
-                        {d.description && (
-                          <Typography variant="body2" color="text.secondary">
-                            {d.description}
-                          </Typography>
-                        )}
-                      </Box>
-                    </Box>
-                  ))}
-                </Box>
-              </Box>
-            )}
-
-            {requirements.length > 0 && (
-              <Box>
-                <DetailHeading title="What you’ll need" icon={<Inventory2Icon />} />
-                <Box component="ul" sx={{ m: 0, p: 0, listStyle: 'none', display: 'grid', gap: 1.25 }}>
-                  {requirements.map((r, i) => {
-                    const inStore = findInStore(r, storeItems);
-                    return (
-                      <Box component="li" key={`${r}-${i}`} sx={{ display: 'flex', gap: 1.25, alignItems: 'flex-start' }}>
-                        <CheckCircleIcon sx={{ fontSize: 20, color: inStore ? 'primary.main' : 'text.disabled', flexShrink: 0, mt: 0.25 }} />
-                        <Box sx={{ minWidth: 0 }}>
-                          <Typography>{r}</Typography>
-                          {inStore && (
-                            <Box
-                              component={RouterLink}
-                              to={storeItemPath(inStore.slug)}
-                              sx={{
-                                display: 'inline-flex', alignItems: 'center', gap: 0.75, mt: 0.25,
-                                fontSize: 13, fontWeight: 700, color: 'primary.main', textDecoration: 'none',
-                                '&:hover': { textDecoration: 'underline' },
-                              }}
-                            >
-                              {inStore.price ? `In our store · ${formatPrice(inStore.price)}` : 'In our store'}
-                              <ArrowForwardIcon sx={{ fontSize: 16 }} />
-                            </Box>
-                          )}
+        {requirements.length > 0 && (
+          <Box>
+            <DetailHeading title="What you’ll need" icon={<Inventory2Icon />} />
+            <Box component="ul" sx={{ m: 0, p: 0, listStyle: 'none', display: 'grid', gap: 1.25 }}>
+              {requirements.map((r, i) => {
+                const inStore = findInStore(r, storeItems);
+                return (
+                  <Box component="li" key={`${r}-${i}`} sx={{ display: 'flex', gap: 1.25, alignItems: 'flex-start' }}>
+                    <CheckCircleIcon sx={{ fontSize: 20, color: inStore ? 'primary.main' : 'text.disabled', flexShrink: 0, mt: 0.25 }} />
+                    <Box sx={{ minWidth: 0 }}>
+                      <Typography>{r}</Typography>
+                      {inStore && (
+                        <Box
+                          component={RouterLink}
+                          to={storeItemPath(inStore.slug)}
+                          sx={{
+                            display: 'inline-flex', alignItems: 'center', gap: 0.75, mt: 0.25,
+                            fontSize: 13, fontWeight: 700, color: 'primary.main', textDecoration: 'none',
+                            '&:hover': { textDecoration: 'underline' },
+                          }}
+                        >
+                          {inStore.price ? `In our store · ${formatPrice(inStore.price)}` : 'In our store'}
+                          <ArrowForwardIcon sx={{ fontSize: 16 }} />
                         </Box>
-                      </Box>
-                    );
-                  })}
-                </Box>
-                {kitPrice && (
-                  <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-                    Or add the materials kit (+{formatKsh(kitPrice.amount, kitPrice.currency)}) when you buy the project.
-                  </Typography>
-                )}
-              </Box>
+                      )}
+                    </Box>
+                  </Box>
+                );
+              })}
+            </Box>
+            {kitPrice && (
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+                Or add the materials kit (+{formatKsh(kitPrice.amount, kitPrice.currency)}) when you buy the project.
+              </Typography>
             )}
           </Box>
-        </DetailLayout>
-      </Section>
+        )}
+      </Box>
+      </ProductLayout>
+
+      <StickyBuyBar
+        watchRef={buyRef}
+        kind="project"
+        item={buyItem}
+        buyable={Boolean(price)}
+        enquireTo={enquireTo}
+      />
 
       <RelatedInStore currentKey={`project:${slug}`} />
 

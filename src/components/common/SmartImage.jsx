@@ -13,7 +13,7 @@ import { resolveMediaUrl } from '../../utils/media.js';
  * Props: src, alt (REQUIRED — always write real alt text), ratio (e.g. '16/9'),
  * eager (set true only for above-the-fold hero images).
  */
-export default function SmartImage({ src, alt, ratio = '16 / 9', eager = false, rounded = true, sx }) {
+export default function SmartImage({ src, alt, ratio = '16 / 9', eager = false, rounded = true, fit = 'cover', sx }) {
   const [failed, setFailed] = useState(false);
   const resolved = resolveMediaUrl(src);
   const showFallback = !resolved || failed;
@@ -51,7 +51,7 @@ export default function SmartImage({ src, alt, ratio = '16 / 9', eager = false, 
           loading={eager ? 'eager' : 'lazy'}
           decoding="async"
           onError={() => setFailed(true)}
-          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          style={{ width: '100%', height: '100%', objectFit: fit }}
         />
       )}
     </Box>
