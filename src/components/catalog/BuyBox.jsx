@@ -23,8 +23,9 @@ import { formatKsh } from '../../cart/format.js';
  *   status   'available' | 'preorder' | 'coming_soon' (Store only)
  *   enquireTo / contactTo   where the enquiry buttons go
  *   compact  the smaller version for a page's side rail
+ *   bare     no border or padding of its own — inside a panel that has them (ProductBuyPanel)
  */
-export default function BuyBox({ kind, item, status = 'available', enquireTo, contactTo, compact = false }) {
+export default function BuyBox({ kind, item, status = 'available', enquireTo, contactTo, compact = false, bare = false }) {
   const navigate = useNavigate();
   const [quantity, setQuantity] = useState(1);
   const [withKit, setWithKit] = useState(false);
@@ -42,7 +43,7 @@ export default function BuyBox({ kind, item, status = 'available', enquireTo, co
   };
 
   return (
-    <Box sx={{ p: compact ? 0 : 2.5, borderRadius: 2, border: compact ? 0 : '1px solid', borderColor: 'divider', bgcolor: compact ? 'transparent' : 'background.paper', maxWidth: compact ? 'none' : 440 }}>
+    <Box sx={{ p: compact || bare ? 0 : 2.5, borderRadius: 2, border: compact || bare ? 0 : '1px solid', borderColor: 'divider', bgcolor: compact || bare ? 'transparent' : 'background.paper', maxWidth: compact || bare ? 'none' : 440 }}>
       <PriceTag price={price} size={compact ? 'sm' : 'lg'} />
       {!compact && price?.note && <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>{price.note}</Typography>}
 
@@ -97,7 +98,7 @@ export default function BuyBox({ kind, item, status = 'available', enquireTo, co
             </Box>
           )}
 
-          {!compact && (
+          {!compact && !bare && (
             <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1.5 }}>
               {kind === 'project'
                 ? 'Pay by M-Pesa, bank or cash after checkout. The project opens in your child’s learner account once your payment is confirmed.'

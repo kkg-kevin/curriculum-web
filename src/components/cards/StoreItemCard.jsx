@@ -23,13 +23,17 @@ export default function StoreItemCard({ item }) {
       to={storeItemPath(slug)}
       image={image}
       photoCount={item.photoCount}
-      kicker={(CATEGORY_LABEL[storeCategory] || 'Store').toUpperCase()}
+      kicker={CATEGORY_LABEL[storeCategory] || 'Store'}
       name={name}
       tagline={tagline || 'A hands-on kit from the Digifunzi store.'}
       price={price}
+      fit="contain"
       facts={[notAvailable ? STOCK_LABEL[stockStatus] : 'In stock', 'Pickup or delivery']}
       motif={<SmartToyOutlinedIcon />}
-      badge={notAvailable ? { label: STOCK_LABEL[stockStatus], muted: true } : badge ? { label: badge } : null}
+      badges={[
+        notAvailable && { label: STOCK_LABEL[stockStatus], tone: 'muted' },
+        badge && { label: badge, tone: 'brand' },
+      ].filter(Boolean)}
       buy={buyable ? { kind: 'store_item', item: { id, slug, name, image, price } } : null}
     />
   );

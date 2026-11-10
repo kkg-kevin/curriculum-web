@@ -31,13 +31,15 @@ export default function ProjectCard({ project }) {
       to={projectPath(slug)}
       image={coverImage}
       photoCount={project.photoCount}
-      kicker={['Project', level && LEVEL_LABEL[level]].filter(Boolean).join(' · ').toUpperCase()}
+      kicker={['Project', level && LEVEL_LABEL[level]].filter(Boolean).join(' · ')}
       name={name}
       tagline={tagline || 'A guided build project a learner works through at their own pace.'}
       price={price}
       facts={facts}
+      fit="cover"
       motif={<BuildCircleOutlinedIcon />}
-      badge={{ label: 'Lifetime access' }}
+      cover={milestoneCount > 0 ? `${milestoneCount} guided ${milestoneCount === 1 ? 'step' : 'steps'}` : 'Guided build project'}
+      badges={[{ label: 'Lifetime access', tone: 'warm' }]}
       buy={price ? { kind: 'project', item: { id, slug, name, image: coverImage, price, kitPrice } } : null}
     />
   );

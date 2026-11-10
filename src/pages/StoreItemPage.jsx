@@ -1,14 +1,12 @@
+import { useRef } from 'react';
 import { useParams, Link as RouterLink } from 'react-router-dom';
-import { alpha } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
 import Button from '@mui/material/Button';
 import Skeleton from '@mui/material/Skeleton';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import SeoHead from '../components/seo/SeoHead.jsx';
-import DetailHero from '../components/common/DetailHero.jsx';
 import { DetailHeading } from '../components/common/DetailSection.jsx';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
@@ -16,15 +14,15 @@ import Inventory2Icon from '@mui/icons-material/Inventory2';
 import TuneIcon from '@mui/icons-material/Tune';
 import JsonLd, { organizationSchema, productSchema, breadcrumbSchema } from '../components/seo/JsonLd.jsx';
 import { resolveMediaUrl } from '../utils/media.js';
-import Section from '../components/common/Section.jsx';
 import MediaGallery from '../components/media/MediaGallery.jsx';
-import BuyBox from '../components/catalog/BuyBox.jsx';
-import BuyAside from '../components/catalog/BuyAside.jsx';
+import SmartImage from '../components/common/SmartImage.jsx';
+import ProductLayout from '../components/store/ProductLayout.jsx';
+import ProductBuyPanel from '../components/store/ProductBuyPanel.jsx';
+import StickyBuyBar from '../components/store/StickyBuyBar.jsx';
 import CTABanner from '../components/home/CTABanner.jsx';
 import { ErrorBlock } from '../components/common/StateViews.jsx';
 import { usePublicStoreItem } from '../hooks/usePublicStore.js';
 import { PROSE_MAX_WIDTH } from '../theme/layout.js';
-import DetailLayout from '../components/common/DetailLayout.jsx';
 import { RelatedInStore } from '../components/common/Related.jsx';
 import { PRICING_IS_PLACEHOLDER } from '../content/catalog.js';
 
@@ -38,8 +36,14 @@ function interestFor(storeCategory) {
   return storeCategory === 'kit' ? 'quarky' : 'general';
 }
 
+/**
+ * A good in the Store (`/store/:slug`): the photos and the one buy panel side by side (ProductLayout
+ * — the panel stays in view on a large screen), the details under the photos, a buy bar along the
+ * bottom once the panel's buttons have scrolled away, then more from the Store.
+ */
 export default function StoreItemPage() {
   const { slug } = useParams();
+  const buyRef = useRef(null);
   const { data, isLoading, isError, error, refetch } = usePublicStoreItem(slug);
 
   if (isLoading) {
@@ -112,164 +116,101 @@ export default function StoreItemPage() {
         ]}
       />
 
-      {/* header band */}
-      <DetailHero crumbs={[{ label: 'Home', to: '/' }, { label: 'Store', to: '/store' }, { label: name }]}>
-
-          <Box
-            sx={{
-              display: 'flex',
-              gap: { xs: 3, md: 5 },
-              flexWrap: { xs: 'wrap', md: 'nowrap' },
-              alignItems: 'flex-start',
-            }}
-          >
-            <Box sx={{ flex: 1, minWidth: 260 }}>
-              <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
-                {storeCategory && (
-                  <Chip
-                    label={CATEGORY_LABEL[storeCategory] || storeCategory}
-                    sx={{ bgcolor: (t) => alpha(t.palette.primary.dark, 0.102), color: 'text.primary', fontWeight: 600 }}
-                  />
-                )}
-                <Chip
-                  variant={notAvailable ? 'outlined' : 'filled'}
-                  color={notAvailable ? 'default' : 'success'}
-                  label={STOCK_LABEL[stockStatus] || 'Available now'}
-                  sx={{ fontWeight: 600 }}
-                />
-                {badge && <Chip variant="outlined" label={badge} sx={{ fontWeight: 600 }} />}
-              </Box>
-
-              <Typography variant="h1" component="h1" sx={{ mb: 1.5 }}>
-                {name}
-              </Typography>
-              {tagline && (
-                <Typography
-                  variant="h4"
-                  component="p"
-                  sx={{ fontWeight: 400, color: 'text.secondary', maxWidth: 620 }}
-                >
-                  {tagline}
-                </Typography>
-              )}
-
-              {/* price + buy */}
-              <Box sx={{ mt: 3 }}>
-                <BuyBox kind="store_item" item={buyItem} status={stockStatus || 'available'} enquireTo={enquireTo} contactTo={contactTo} />
-              </Box>
-            </Box>
-
-            {galleryImages.length > 0 && (
-              <Box sx={{ width: { xs: '100%', md: 460 }, flexShrink: 0 }}>
-                <MediaGallery images={galleryImages} alt={name} ratio="4 / 3" />
-              </Box>
-            )}
+      <ProductLayout
+        crumbs={[{ label: 'Home', to: '/' }, { label: 'Store', to: '/store' }, { label: name }]}
+        gallery={<MediaGallery images={galleryImages} alt={name} ratio="4 / 3" fallback={<SmartImage src={null} alt={name} ratio="4 / 3" />} />}
+        panel={(
+          <ProductBuyPanel
+            chips={[
+              storeCategory && { label: CATEGORY_LABEL[storeCategory] || storeCategory, tone: 'brand' },
+              { label: STOCK_LABEL[stockStatus] || 'Available now', tone: notAvailable ? 'muted' : 'good' },
+              badge && { label: badge, tone: 'muted' },
+            ].filter(Boolean)}
+            name={name}
+            tagline={tagline}
+            kind="store_item"
+            item={buyItem}
+            status={stockStatus || 'available'}
+            enquireTo={enquireTo}
+            contactTo={contactTo}
+            buyRef={buyRef}
+          />
+        )}
+      >
+        {description && (
+          <Box sx={{ mb: 6 }}>
+            <DetailHeading title={`About this${storeCategory === 'bundle' ? ' bundle' : ''}`} icon={<InfoOutlinedIcon />} />
+            <Typography sx={{ color: 'text.secondary', whiteSpace: 'pre-line', maxWidth: PROSE_MAX_WIDTH, lineHeight: 1.75 }}>
+              {description}
+            </Typography>
           </Box>
-      </DetailHero>
+        )}
 
-      <Section>
-        <DetailLayout
-          aside={(
-            <BuyAside
-              title={notAvailable && stockStatus === 'coming_soon' ? `Get notified about ${name}` : `Get ${name}`}
-              kind="store_item"
-              item={buyItem}
-              status={stockStatus || 'available'}
-              enquireTo={enquireTo}
-              contactTo={contactTo}
-            />
-          )}
-        >
-          {description && (
-            <Box sx={{ maxWidth: 760, mb: 6 }}>
-              <DetailHeading title={`About this${storeCategory === 'bundle' ? ' bundle' : ''}`} icon={<InfoOutlinedIcon />} />
-              <Typography sx={{ color: 'text.secondary', whiteSpace: 'pre-line', maxWidth: PROSE_MAX_WIDTH, lineHeight: 1.7 }}>
-                {description}
-              </Typography>
+        {highlights.length > 0 && (
+          <Box sx={{ mb: 6 }}>
+            <DetailHeading title="Highlights" icon={<AutoAwesomeIcon />} />
+            <Box sx={{ display: 'grid', gap: 1.5, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
+              {highlights.map((h, i) => (
+                <Box key={`${h}-${i}`} sx={{ display: 'flex', gap: 1.25, alignItems: 'flex-start' }}>
+                  <CheckCircleIcon sx={{ fontSize: 20, color: 'success.main', mt: 0.25, flexShrink: 0 }} />
+                  <Typography color="text.secondary">{h}</Typography>
+                </Box>
+              ))}
             </Box>
-          )}
+          </Box>
+        )}
 
-          {highlights.length > 0 && (
-            <Box sx={{ maxWidth: 760, mb: 6 }}>
-              <DetailHeading title="Highlights" icon={<AutoAwesomeIcon />} />
-              <Box sx={{ display: 'grid', gap: 1.25 }}>
-                {highlights.map((h, i) => (
-                  <Box key={`${h}-${i}`} sx={{ display: 'flex', gap: 1.25, alignItems: 'flex-start' }}>
-                    <CheckCircleIcon sx={{ fontSize: 20, color: 'success.main', mt: 0.25, flexShrink: 0 }} />
-                    <Typography color="text.secondary">{h}</Typography>
-                  </Box>
-                ))}
-              </Box>
+        {includes.length > 0 && (
+          <Box sx={{ mb: 6 }}>
+            <DetailHeading title="What's in the box" icon={<Inventory2Icon />} />
+            <Box sx={{ display: 'grid', gap: 1.5, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
+              {includes.map((inc, i) => (
+                <Box
+                  key={`${inc}-${i}`}
+                  sx={{ p: 2, display: 'flex', gap: 1.5, alignItems: 'flex-start', bgcolor: 'surface.card', border: '1px solid', borderColor: 'surface.ring', borderRadius: 3 }}
+                >
+                  <CheckCircleIcon sx={{ fontSize: 20, color: 'primary.main', mt: 0.25, flexShrink: 0 }} />
+                  <Typography variant="body2">{inc}</Typography>
+                </Box>
+              ))}
             </Box>
-          )}
+          </Box>
+        )}
 
-          {includes.length > 0 && (
-            <Box sx={{ mb: 6 }}>
-              <DetailHeading title="What you get" icon={<Inventory2Icon />} />
-              <Box
-                sx={{
-                  display: 'grid',
-                  gap: 2,
-                  gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
-                }}
-              >
-                {includes.map((inc, i) => (
-                  <Box
-                    key={`${inc}-${i}`}
-                    sx={{
-                      p: 2.5,
-                      display: 'flex',
-                      gap: 1.5,
-                      alignItems: 'flex-start',
-                      backgroundColor: 'background.paper',
-                      border: '1px solid',
-                      borderColor: 'divider',
-                      borderRadius: 2,
-                    }}
-                  >
-                    <CheckCircleIcon sx={{ fontSize: 20, color: 'primary.main', mt: 0.25, flexShrink: 0 }} />
-                    <Typography variant="body2">{inc}</Typography>
-                  </Box>
-                ))}
-              </Box>
+        {specs.length > 0 && (
+          <Box sx={{ mb: 2 }}>
+            <DetailHeading title="Specifications" icon={<TuneIcon />} />
+            {/* a spec table: label / value rows, easy to scan */}
+            <Box component="dl" sx={{ m: 0, borderRadius: 3, overflow: 'hidden', border: '1px solid', borderColor: 'surface.ring' }}>
+              {specs.map((sp, i) => (
+                <Box
+                  key={`${sp.label}-${i}`}
+                  sx={{
+                    display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '220px minmax(0, 1fr)' }, gap: { xs: 0.25, sm: 2 },
+                    px: 2.5, py: 1.75, bgcolor: i % 2 ? 'transparent' : 'surface.card',
+                    borderTop: i ? '1px solid' : 0, borderColor: 'divider',
+                  }}
+                >
+                  <Typography component="dt" sx={{ fontWeight: 700, color: 'text.secondary', fontSize: '0.9rem' }}>{sp.label}</Typography>
+                  <Typography component="dd" sx={{ m: 0 }}>{sp.value}</Typography>
+                </Box>
+              ))}
             </Box>
-          )}
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1.5 }}>
+              Details are indicative and subject to confirmation.
+            </Typography>
+          </Box>
+        )}
+      </ProductLayout>
 
-          {specs.length > 0 && (
-            <Box sx={{ mb: 2 }}>
-              <DetailHeading title="Specifications" icon={<TuneIcon />} />
-              <Box
-                sx={{
-                  display: 'grid',
-                  gap: 2,
-                  gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
-                }}
-              >
-                {specs.map((s, i) => (
-                  <Box
-                    key={`${s.label}-${i}`}
-                    sx={{
-                      p: 2.5,
-                      backgroundColor: 'background.paper',
-                      border: '1px solid',
-                      borderColor: 'divider',
-                      borderRadius: 2,
-                    }}
-                  >
-                    <Typography variant="overline" color="text.secondary">
-                      {s.label}
-                    </Typography>
-                    <Typography>{s.value}</Typography>
-                  </Box>
-                ))}
-              </Box>
-              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 2 }}>
-                Details are indicative and subject to confirmation.
-              </Typography>
-            </Box>
-          )}
-        </DetailLayout>
-      </Section>
+      <StickyBuyBar
+        watchRef={buyRef}
+        kind="store_item"
+        item={buyItem}
+        buyable={Boolean(price) && stockStatus !== 'coming_soon'}
+        status={stockStatus || 'available'}
+        enquireTo={stockStatus === 'coming_soon' ? contactTo : enquireTo}
+      />
 
       <RelatedInStore currentKey={`store_item:${slug}`} />
 
