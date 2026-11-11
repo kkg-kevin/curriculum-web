@@ -199,6 +199,8 @@ export default function ProjectDetailPage() {
     name, tagline, description, overview, level, ageMin, ageMax, coverImage, price,
     deliverables = [], milestones = [], requirements = [], gallery = [], kitPrice = null,
   } = data;
+  // More than three things to build: shown in two columns across the page (see below).
+  const longBuild = deliverables.length > 3;
 
   const age = ageLabel(ageMin, ageMax);
   const path = projectPath(slug);
@@ -331,17 +333,19 @@ export default function ProjectDetailPage() {
         </Box>
       )}
 
+      {/* A long "What you'll build" (more than three steps) takes the full width in two columns, so
+          the page doesn't run long; "What you'll need" then sits below it. A short one stays beside it. */}
       <Box
         sx={{
           display: 'grid',
           gap: 4,
-          gridTemplateColumns: { xs: '1fr', md: deliverables.length && requirements.length ? '1fr 1fr' : '1fr' },
+          gridTemplateColumns: { xs: '1fr', md: deliverables.length && requirements.length && !longBuild ? '1fr 1fr' : '1fr' },
         }}
       >
         {deliverables.length > 0 && (
           <Box>
             <DetailHeading title="What you’ll build" icon={<BuildCircleIcon />} />
-            <Box component="ul" sx={{ m: 0, p: 0, listStyle: 'none', display: 'grid', gap: 1.5 }}>
+            <Box component="ul" sx={{ m: 0, p: 0, listStyle: 'none', display: 'grid', columnGap: 4, rowGap: 1.5, gridTemplateColumns: { xs: '1fr', sm: longBuild ? '1fr 1fr' : '1fr' } }}>
               {deliverables.map((d, i) => (
                 <Box component="li" key={`${d.name}-${i}`} sx={{ display: 'flex', gap: 1.25 }}>
                   <CheckCircleIcon sx={{ fontSize: 20, color: 'success.main', flexShrink: 0, mt: 0.25 }} />
