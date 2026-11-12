@@ -16,6 +16,7 @@ import CampaignRoundedIcon from '@mui/icons-material/CampaignRounded';
 import EventRegisterFlow from './EventRegisterFlow.jsx';
 import { useEventPopup } from '../../hooks/usePublicEvents.js';
 import { resolveMediaUrl } from '../../utils/media.js';
+import { ProofChips, whenFromNow } from './eventBits.jsx';
 
 /**
  * The website's event pop-up and the slim bar that stays after it (server: GET
@@ -64,9 +65,7 @@ function Facts({ event }) {
       <Typography sx={{ display: 'flex', gap: 1, alignItems: 'center', color: 'text.secondary' }}>
         {event.format === 'online' ? <VideocamRoundedIcon sx={{ fontSize: 20 }} /> : <PlaceRoundedIcon sx={{ fontSize: 20 }} />} {event.where}
       </Typography>
-      <Typography variant="body2" sx={{ fontWeight: 700, color: event.registration.full ? 'warning.dark' : 'success.dark' }}>
-        Free{event.registration.seatsLeft != null && !event.registration.full ? ` · only ${event.registration.seatsLeft} ${event.registration.seatsLeft === 1 ? 'place' : 'places'} left` : ''}{event.registration.full ? ' · full — join the waiting list' : ''}
-      </Typography>
+      <ProofChips event={event} sx={{ mt: 0.5 }} />
     </Box>
   );
 }
@@ -121,7 +120,7 @@ export function EventPopup() {
         <IconButton onClick={close} aria-label="Close" sx={{ position: 'absolute', top: 10, right: 10, color: '#fff', bgcolor: 'rgba(255,255,255,0.18)', '&:hover': { bgcolor: 'rgba(255,255,255,0.3)' } }}>
           <CloseRoundedIcon />
         </IconButton>
-        <Typography variant="overline" sx={{ color: '#feb139', fontWeight: 800, lineHeight: 1.3 }}>You&rsquo;re invited · {event.kindLabel}</Typography>
+        <Typography variant="overline" sx={{ color: '#feb139', fontWeight: 800, lineHeight: 1.3 }}>You&rsquo;re invited · {event.kindLabel}{whenFromNow(event.startsAt) ? ` · ${whenFromNow(event.startsAt)}` : ''}</Typography>
         <Typography id="event-popup-title" variant="h4" component="h2" sx={{ fontWeight: 900, lineHeight: 1.2 }}>{event.title}</Typography>
         {step === 'contact' && event.tagline && <Typography sx={{ opacity: 0.9 }}>{event.tagline}</Typography>}
       </Box>

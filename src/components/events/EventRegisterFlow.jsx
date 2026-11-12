@@ -16,6 +16,7 @@ import HourglassTopRoundedIcon from '@mui/icons-material/HourglassTopRounded';
 import EventRoundedIcon from '@mui/icons-material/EventRounded';
 import { publicApi } from '../../services/api.js';
 import { downloadCalendar, googleCalendarUrl } from '../../utils/eventCalendar.js';
+import { ExplorePrograms } from './eventBits.jsx';
 
 /**
  * Registering for a general event, in as few steps as possible — the event's page and the
@@ -24,10 +25,37 @@ import { downloadCalendar, googleCalendarUrl } from '../../utils/eventCalendar.j
  *               Pressing Reserve saves the registration — that's all that's needed.
  *   2. about    optional, taps only: who they are, children's ages, interests, how they heard.
  *               Skipping (or closing the page) loses nothing.
- *   3. done     confirmation, add to calendar, share on WhatsApp, their registration page.
+ *   3. done     confirmation, add to calendar, share on WhatsApp, their registration page — and
+ *               the programmes their child could join, the ones they said interest them first.
+ * A step bar shows where they are ("Your details → About you → Done"), and the form says up front
+ * that it's free and quick.
  * `onStep(step)` tells a pop-up which step is showing; `compact` tightens it for the pop-up.
  */
 const AGES = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
+
+// "1 Your details — 2 About you (optional) — ✓ Done", the current step lit.
+function StepBar({ step, withAbout }) {
+  const steps = [['contact', 'Your details'], ...(withAbout ? [['about', 'About you']] : []), ['done', 'Done']];
+  const at = steps.findIndex(([k]) => k === step);
+  return (
+    <Box component="ol" aria-label="Steps" sx={{ display: 'flex', alignItems: 'center', gap: 1, listStyle: 'none', p: 0, m: 0 }}>
+      {steps.map(([key, label], i) => {
+        // The last step, once reached, is done too (a tick, not a number).
+        const done = i < at || (key === 'done' && step === 'done');
+        const now = i === at && !done;
+        return (
+          <Box component="li" key={key} aria-current={now ? 'step' : undefined} sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flex: i < steps.length - 1 ? 1 : '0 0 auto', minWidth: 0 }}>
+            <Box sx={{ width: 24, height: 24, borderRadius: '50%', flexShrink: 0, display: 'grid', placeItems: 'center', fontSize: 12, fontWeight: 900, bgcolor: done ? 'success.main' : now ? 'secondary.main' : 'action.hover', color: done ? '#fff' : now ? 'secondary.contrastText' : 'text.secondary' }}>
+              {done ? '✓' : i + 1}
+            </Box>
+            <Typography variant="body2" sx={{ fontWeight: now ? 900 : 600, color: now ? 'text.primary' : 'text.secondary', whiteSpace: 'nowrap', fontSize: 12.5 }}>{label}</Typography>
+            {i < steps.length - 1 && <Box aria-hidden sx={{ flex: 1, minWidth: 8, height: 2, borderRadius: 1, bgcolor: done ? 'success.main' : 'divider' }} />}
+          </Box>
+        );
+      })}
+    </Box>
+  );
+}
 const PHONE = /^[+\d][\d\s()-]{7,}$/;
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
@@ -137,7 +165,8 @@ export default function EventRegisterFlow({ event, source = 'page', compact = fa
   if (step === 'about') {
     return (
       <Box sx={{ display: 'grid', gap: 2.25 }}>
-        <Typography sx={{ color: 'text.secondary' }}>Your place is saved. A few taps help us make it great for you — or skip.</Typography>
+        <StepBar step="about" withAbout />
+        <Alert severity="success" sx={{ fontWeight: 600 }}>Your place is saved. A few taps help us make it great for your child — or skip.</Alert>
         <AboutYouFields questions={event.questions} value={about} onChange={setAbout} />
         <Box sx={{ display: 'flex', gap: 1.5, justifyContent: 'flex-end', flexDirection: { xs: 'column-reverse', sm: 'row' } }}>
           <Button variant="outlined" size="large" onClick={() => setStep('done')}>Skip</Button>
@@ -153,6 +182,7 @@ export default function EventRegisterFlow({ event, source = 'page', compact = fa
     const shareText = `I'm going to ${event.title} (${event.when}) — it's free, come too: ${typeof window !== 'undefined' ? `${window.location.origin}/events/${event.slug}` : ''}`;
     return (
       <Box sx={{ display: 'grid', gap: 2 }}>
+        <StepBar step="done" withAbout={event.askAboutYou && !already} />
         <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start' }}>
           {waiting ? <HourglassTopRoundedIcon color="warning" sx={{ fontSize: 40 }} /> : <CheckCircleRoundedIcon color="success" sx={{ fontSize: 40 }} />}
           <Box>
@@ -181,6 +211,22 @@ export default function EventRegisterFlow({ event, source = 'page', compact = fa
           )}
           {onClose && <Button onClick={onClose}>Close</Button>}
         </Box>
+        {/* The next step after the event: a programme to join — the ones they said interest them first. */}
+        {!compact && (
+          <ExplorePrograms
+            bootcamp={event.bootcamp}
+            interests={about.interests}
+            limit={2}
+            title="While you wait for the day"
+            lead="Have a look at what your child could join — you can ask our mentors about any of it on the day."
+            sx={{ mt: 1, '& h2': { fontSize: 20 }, '& > div:last-of-type': { gridTemplateColumns: '1fr' } }}
+          />
+        )}
+        {compact && (
+          <Button component={RouterLink} to={event.bootcamp ? `/bootcamps/${event.bootcamp.slug}` : (about.interests || []).includes('home_learning') ? '/home-schooling' : (about.interests || []).includes('tech_clubs') ? '/estate-tech-clubs' : '/bootcamps'} onClick={onClose} variant="text" sx={{ justifySelf: 'start', fontWeight: 800 }}>
+            {event.bootcamp ? `See ${event.bootcamp.name}` : 'See what your child could join'} →
+          </Button>
+        )}
       </Box>
     );
   }
@@ -191,6 +237,7 @@ export default function EventRegisterFlow({ event, source = 'page', compact = fa
 
   return (
     <Box component="form" noValidate onSubmit={submit} sx={{ display: 'grid', gap: compact ? 1.5 : 2, position: 'relative' }}>
+      {!compact && <StepBar step="contact" withAbout={event.askAboutYou} />}
       {/* Only a bot fills this. */}
       <Box aria-hidden="true" sx={{ position: 'absolute', left: '-9999px', top: 0, width: 1, height: 1, overflow: 'hidden' }}>
         <input tabIndex={-1} name="hp_field" value={form.hp_field} onChange={set('hp_field')} autoComplete="off" readOnly onFocus={(e) => { e.target.readOnly = false; }} />
@@ -214,9 +261,12 @@ export default function EventRegisterFlow({ event, source = 'page', compact = fa
         sx={{ alignItems: 'flex-start', '& .MuiCheckbox-root': { pt: 0.5 } }}
       />
       {problem && <Alert severity="error">{problem}</Alert>}
-      <Button type="submit" variant="contained" size="large" disabled={busy} sx={{ minHeight: 50, fontWeight: 800 }}>
+      <Button type="submit" variant="contained" color="secondary" size="large" disabled={busy} sx={{ minHeight: 52, fontWeight: 900, fontSize: 16 }}>
         {busy ? 'Saving…' : reg.full && reg.waitlist ? 'Join the waiting list' : form.partySize > 1 ? `Reserve ${form.partySize} places — free` : 'Reserve my place — free'}
       </Button>
+      <Typography variant="body2" sx={{ textAlign: 'center', color: 'text.secondary', fontWeight: 600, mt: -0.5 }}>
+        Free · No payment details · Cancel any time
+      </Typography>
       <Typography variant="caption" color="text.secondary">
         We use your details for this event{form.marketingConsent ? ' and to tell you about our programmes' : ''}. See our{' '}
         <RouterLink to="/privacy" target="_blank">Privacy Policy</RouterLink>.

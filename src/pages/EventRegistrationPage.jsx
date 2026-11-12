@@ -17,6 +17,7 @@ import { AboutYouFields } from '../components/events/EventRegisterFlow.jsx';
 import { useEventRegistration } from '../hooks/usePublicEvents.js';
 import { publicApi } from '../services/api.js';
 import { downloadCalendar, googleCalendarUrl } from '../utils/eventCalendar.js';
+import { Countdown, ExplorePrograms, ShareRow } from '../components/events/eventBits.jsx';
 
 /**
  * A person's own registration (`/events/registration/:token` — the link in every email about it):
@@ -91,6 +92,7 @@ export default function EventRegistrationPage() {
           </Box>
         </Box>
 
+        {live && reg.status === 'registered' && <Countdown startsAt={event.startsAt} />}
         {message && <Alert severity={message.severity} onClose={() => setMessage(null)}>{message.text}</Alert>}
         {event.state === 'cancelled' && <Alert severity="warning">This event has been cancelled{event.cancelReason ? `: ${event.cancelReason}` : '.'}</Alert>}
 
@@ -118,6 +120,15 @@ export default function EventRegistrationPage() {
             <Box><Button variant="contained" onClick={saveAbout} disabled={busy || !about}>{busy ? 'Saving…' : 'Save'}</Button></Box>
           </Box>
         )}
+
+        {live && reg.status !== 'cancelled' && <ShareRow event={event} />}
+
+        <ExplorePrograms
+          bootcamp={event.bootcamp}
+          interests={reg.interests}
+          title="What your child could join"
+          lead="Bring your questions on the day — our mentors will help you choose."
+        />
 
         <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', alignItems: 'center' }}>
           <Button component={RouterLink} to={`/events/${event.slug}`} variant="text">Event page</Button>
