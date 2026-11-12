@@ -21,6 +21,7 @@ export const NAV_LINKS = [
   { label: 'Estate Tech Clubs', to: '/estate-tech-clubs' },
   { label: 'Schools', to: '/schools' },
   { label: 'Pathways', to: '/pathways' },
+  { label: 'Events', to: '/events' },
 ];
 
 // Below this the full row of links no longer fits on one line, so the menu button takes over.

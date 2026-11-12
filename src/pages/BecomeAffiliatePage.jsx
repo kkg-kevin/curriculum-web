@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -43,7 +43,10 @@ function Step({ icon: Icon, title, text }) {
 }
 
 export default function BecomeAffiliatePage() {
-  const programme = useQuery({ queryKey: ['affiliate-programme'], queryFn: publicApi.getAffiliateProgramme, staleTime: 5 * 60 * 1000 });
+  // A manager's recruit link (?team=CODE): the applicant joins that manager's team once approved.
+  const [params] = useSearchParams();
+  const teamCode = (params.get('team') || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '') || null;
+  const programme = useQuery({ queryKey: ['affiliate-programme', teamCode], queryFn: () => publicApi.getAffiliateProgramme(teamCode), staleTime: 5 * 60 * 1000 });
   const [form, setForm] = useState(EMPTY);
   const [errors, setErrors] = useState({});
   const apply = useMutation({ mutationFn: publicApi.applyAffiliate });
@@ -60,7 +63,7 @@ export default function BecomeAffiliatePage() {
     if (!form.acceptTerms) next.acceptTerms = 'Please agree to the affiliate terms';
     setErrors(next);
     if (Object.keys(next).length) return;
-    apply.mutate({ ...form, payoutPhone: form.payoutPhone || form.phone });
+    apply.mutate({ ...form, payoutPhone: form.payoutPhone || form.phone, teamCode: p?.team?.code || undefined });
   };
 
   return (
@@ -78,6 +81,9 @@ export default function BecomeAffiliatePage() {
             <Step icon={PaymentsRoundedIcon} title="3. You get paid" text={`You earn when they pay${p?.holdDays ? `; each amount can be paid out ${p.holdDays} days later` : ''}. Ask for a payout from ${p ? formatKsh(p.minimumPayout) : 'the minimum'} — by M-Pesa or bank.`} />
           </Box>
 
+          {p?.team && (
+            <Alert severity="info" sx={{ fontWeight: 600 }}>You&rsquo;re joining {p.team.managerName}&rsquo;s affiliate team. You earn exactly the same — {p.team.managerName} leads the team.</Alert>
+          )}
           {programme.isLoading ? <LoadingBlock /> : p && !p.open ? (
             <Alert severity="info">We&rsquo;re not taking affiliate applications right now. Please check back later, or <RouterLink to="/contact">contact us</RouterLink>.</Alert>
           ) : apply.isSuccess ? (

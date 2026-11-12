@@ -48,6 +48,7 @@ function prerenderedSlugs(section) {
 // name, as in prerender.js and src/utils/clubs.js.
 async function getSectionSlugs(section, mockFixture, mockExport, toSlug = (x) => x.slug) {
   if (useMock) {
+    if (!mockFixture) return [];
     const mod = await import(mockFixture);
     return (mod[mockExport] || []).map(toSlug).filter(Boolean);
   }
@@ -105,13 +106,14 @@ function addNoindexHeader() {
 async function main() {
   ensureDist();
 
-  const [pathwaySlugs, projectSlugs, storeSlugs, bootcampSlugs, competitionSlugs, clubSlugs] = await Promise.all([
+  const [pathwaySlugs, projectSlugs, storeSlugs, bootcampSlugs, competitionSlugs, clubSlugs, eventSlugs] = await Promise.all([
     getSectionSlugs('pathways', '../src/mocks/fixtures/pathways.js', 'pathways'),
     getSectionSlugs('store/projects', '../src/mocks/fixtures/projects.js', 'projects'),
     getSectionSlugs('store', '../src/mocks/fixtures/store.js', 'storeList'),
     getSectionSlugs('bootcamps', '../src/mocks/fixtures/bootcamps.js', 'bootcampList'),
     getSectionSlugs('competitions', '../src/mocks/fixtures/competitions.js', 'competitionList'),
     getSectionSlugs('estate-tech-clubs', '../src/mocks/fixtures/hubs.js', 'hubs', (x) => slugify(x.name)),
+    getSectionSlugs('events', null, null),
   ]);
 
 
@@ -124,6 +126,7 @@ async function main() {
     ...bootcampSlugs.map((s) => `/bootcamps/${s}`),
     ...competitionSlugs.map((s) => `/competitions/${s}`),
     ...clubSlugs.map((s) => `/estate-tech-clubs/${s}`),
+    ...eventSlugs.filter((s) => s !== 'registration').map((s) => `/events/${s}`),
   ];
   const skipped = routes.filter((r) => isNoindex(r));
   const entries = routes.filter((r) => !skipped.includes(r)).map((r) => urlEntry(pageUrl(r)));

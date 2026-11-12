@@ -47,7 +47,7 @@ const NOT_FOUND_ROUTE = '/__prerender-not-found__';
 // reachable, otherwise we'd bake a "couldn't load" / empty page into static HTML.
 // Skipped routes still work as a normal client-rendered SPA via the index.html
 // fallback.
-const DATA_DRIVEN_STATIC = new Set(['/pathways', '/store', '/bootcamps', '/competitions', '/home-schooling', '/estate-tech-clubs']);
+const DATA_DRIVEN_STATIC = new Set(['/pathways', '/store', '/bootcamps', '/competitions', '/home-schooling', '/estate-tech-clubs', '/events']);
 
 // Most sections' items carry a slug; a learning hub doesn't, so an Estate Tech Club's address is
 // made from its name — the same rule as src/utils/clubs.js's clubSlug.
@@ -60,6 +60,8 @@ let apiReachable = useMock; // mock adapter always "reachable"
 // projects and the store, all of which return a bare array of { slug }.
 async function getApiSlugs(endpoint, mockFixture, mockExport, toSlug = bySlug) {
   if (useMock) {
+    // A section with no offline fixtures (general events) has nothing to prerender in mock mode.
+    if (!mockFixture) return [];
     const mod = await import(mockFixture);
     return (mod[mockExport] || []).map(toSlug).filter(Boolean);
   }
@@ -71,9 +73,11 @@ async function getApiSlugs(endpoint, mockFixture, mockExport, toSlug = bySlug) {
     try {
       const res = await fetch(`${apiUrl}${endpoint}`, { signal: AbortSignal.timeout(10000) });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const list = await res.json();
+      const body = await res.json();
       apiReachable = true;
-      return [...new Set((Array.isArray(list) ? list : []).map(toSlug).filter(Boolean))];
+      // Most sections answer a bare array; newer ones (general events) the { success, data } envelope.
+      const list = Array.isArray(body) ? body : Array.isArray(body?.data) ? body.data : [];
+      return [...new Set(list.map(toSlug).filter(Boolean))];
     } catch (err) {
       lastErr = err;
       if (attempt < 3) {
@@ -192,13 +196,14 @@ async function main() {
     return;
   }
 
-  const [pathwaySlugs, projectSlugs, storeSlugs, bootcampSlugs, competitionSlugs, clubSlugs] = await Promise.all([
+  const [pathwaySlugs, projectSlugs, storeSlugs, bootcampSlugs, competitionSlugs, clubSlugs, eventSlugs] = await Promise.all([
     getApiSlugs('/api/public/pathways', '../src/mocks/fixtures/pathways.js', 'pathways'),
     getApiSlugs('/api/public/projects', '../src/mocks/fixtures/projects.js', 'projects'),
     getApiSlugs('/api/public/store', '../src/mocks/fixtures/store.js', 'storeList'),
     getApiSlugs('/api/public/bootcamps', '../src/mocks/fixtures/bootcamps.js', 'bootcampList'),
     getApiSlugs('/api/public/competitions', '../src/mocks/fixtures/competitions.js', 'competitionList'),
     getApiSlugs('/api/public/hubs', '../src/mocks/fixtures/hubs.js', 'hubs', byNameSlug),
+    getApiSlugs('/api/public/events', null, null),
   ]);
 
 
@@ -217,6 +222,7 @@ async function main() {
     '/bootcamps': bootcampSlugs,
     '/competitions': competitionSlugs,
     '/estate-tech-clubs': clubSlugs,
+    '/events': eventSlugs,
   };
 
   const routes = [
@@ -227,6 +233,7 @@ async function main() {
     ...bootcampSlugs.map((s) => `/bootcamps/${s}`),
     ...competitionSlugs.map((s) => `/competitions/${s}`),
     ...clubSlugs.map((s) => `/estate-tech-clubs/${s}`),
+    ...eventSlugs.map((s) => `/events/${s}`),
     NOT_FOUND_ROUTE,
   ];
 

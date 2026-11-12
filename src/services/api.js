@@ -95,6 +95,17 @@ export const publicApi = {
   // Competitions = the designated admin's `competitions` records flipped "Show on the website"
   // in the portal's Competitions module, status Open/Closed (WEBSITE_INTEGRATION_CONTRACT.md
   // §3.13). Each has tracks[] — the Codeavour-style track cards. Added 10 Sep 2026.
+  // General events — showcases, open days, talks (server: modules/general-events/). Free; people
+  // register with name, phone and email, then optionally "about you". A registration's own page is
+  // reached by the private token in its link (never by email address).
+  listEvents: ({ past = false } = {}) => api.get('/api/public/events', { params: past ? { past: 1 } : {} }).then((r) => (Array.isArray(r.data?.data) ? r.data.data : [])),
+  getEvent: (slug) => api.get(`/api/public/events/${encodeURIComponent(slug)}`).then((r) => r.data.data),
+  getEventPopup: () => api.get('/api/public/events-popup').then((r) => r.data?.data || null),
+  registerForEvent: (slug, payload) => api.post(`/api/public/events/${encodeURIComponent(slug)}/registrations`, payload).then((r) => r.data.data),
+  getEventRegistration: (token) => api.get(`/api/public/event-registrations/${encodeURIComponent(token)}`).then((r) => r.data.data),
+  saveEventDetails: (token, payload) => api.put(`/api/public/event-registrations/${encodeURIComponent(token)}/details`, payload).then((r) => r.data.data),
+  cancelEventRegistration: (token) => api.post(`/api/public/event-registrations/${encodeURIComponent(token)}/cancel`).then((r) => r.data.data),
+
   listCompetitions: () => api.get('/api/public/competitions').then((r) => r.data),
   getCompetition: (idOrSlug) => api.get(`/api/public/competitions/${encodeURIComponent(idOrSlug)}`).then((r) => r.data),
 
@@ -171,7 +182,8 @@ export const publicApi = {
     api.get(`/api/public/referral-codes/${encodeURIComponent(code)}`).then((r) => r.data.data),
   // Becoming an affiliate (server: modules/affiliates/): the programme's offer, and applying. An
   // affiliate follows their referrals by signing in to their Digifunzi account (APP_URL).
-  getAffiliateProgramme: () => api.get('/api/public/affiliate-programme').then((r) => r.data.data),
+  // `team` = a manager's recruit link code (?team=CODE): the answer then names whose team it is.
+  getAffiliateProgramme: (team) => api.get('/api/public/affiliate-programme', { params: team ? { team } : {} }).then((r) => r.data.data),
   applyAffiliate: (payload) => api.post('/api/public/affiliate-applications', payload).then((r) => r.data.data),
   // "Already have a Digifunzi account? Sign in" on a sign-up: a short-lived parent token and the
   // parent's details — never a portal session (server: auth/parent-signup.js).
