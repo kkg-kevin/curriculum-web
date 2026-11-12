@@ -55,6 +55,10 @@ const bySlug = (x) => x.slug;
 const byNameSlug = (x) => slugify(x.name);
 
 let apiReachable = useMock; // mock adapter always "reachable"
+// Sections whose list endpoint this API doesn't have yet (404 — a website release that goes out
+// with the backend that adds them, e.g. general events): their pages are left client-rendered
+// rather than baked as "couldn't load", and they come in at the next build after the backend.
+const notOnApi = new Set();
 
 // Generic "list the slugs for an API-backed section" — used for pathways,
 // projects and the store, all of which return a bare array of { slug }.
@@ -72,6 +76,12 @@ async function getApiSlugs(endpoint, mockFixture, mockExport, toSlug = bySlug) {
   for (let attempt = 1; attempt <= 3; attempt += 1) {
     try {
       const res = await fetch(`${apiUrl}${endpoint}`, { signal: AbortSignal.timeout(10000) });
+      if (res.status === 404) {
+        apiReachable = true;
+        notOnApi.add(endpoint);
+        console.warn(`[prerender] ${endpoint} isn't on ${apiUrl} yet (404) — its pages stay client-rendered until the backend that adds it is up.`);
+        return [];
+      }
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const body = await res.json();
       apiReachable = true;
@@ -210,6 +220,7 @@ async function main() {
   // Static routes: prerender all, except the data-driven ones when the API is
   // unreachable in a real build (they'd snapshot an empty/error state).
   const staticRoutes = STATIC_ROUTES.map((r) => r.path).filter((p) => {
+    if (notOnApi.has(`/api/public${p}`)) return false;
     if (apiReachable || !DATA_DRIVEN_STATIC.has(p)) return true;
     console.warn(`[prerender] skipping ${p} — API unreachable, leaving it as a client-rendered SPA route.`);
     return false;
