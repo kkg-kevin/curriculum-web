@@ -1,39 +1,46 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { useParams, Link as RouterLink } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
+import Chip from '@mui/material/Chip';
 import Skeleton from '@mui/material/Skeleton';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import BuildCircleIcon from '@mui/icons-material/BuildCircle';
-import BuildCircleOutlinedIcon from '@mui/icons-material/BuildCircleOutlined';
 import Inventory2Icon from '@mui/icons-material/Inventory2';
 import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import SeoHead from '../components/seo/SeoHead.jsx';
-import { DetailHeading } from '../components/common/DetailSection.jsx';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
-import JsonLd, { organizationSchema, productSchema, breadcrumbSchema } from '../components/seo/JsonLd.jsx';
+import HelpOutlineRoundedIcon from '@mui/icons-material/HelpOutlineRounded';
+import RouteRoundedIcon from '@mui/icons-material/RouteRounded';
+import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
+import SeoHead from '../components/seo/SeoHead.jsx';
+import { DetailHeading } from '../components/common/DetailSection.jsx';
+import JsonLd, { organizationSchema, productSchema, breadcrumbSchema, faqSchema } from '../components/seo/JsonLd.jsx';
+import FaqList from '../components/common/FaqList.jsx';
 import MediaGallery from '../components/media/MediaGallery.jsx';
 import ProductLayout from '../components/store/ProductLayout.jsx';
 import ProductBuyPanel from '../components/store/ProductBuyPanel.jsx';
 import StickyBuyBar from '../components/store/StickyBuyBar.jsx';
+import {
+  ProjectOutcomeCover, AtAGlance, ValueLine, ProjectNeeds, ProjectHowItWorks, ParentQuotes, projectFaqs,
+} from '../components/store/ProjectPageParts.jsx';
 import CTABanner from '../components/home/CTABanner.jsx';
 import { ErrorBlock } from '../components/common/StateViews.jsx';
 import { usePublicProject } from '../hooks/usePublicProjects.js';
 import { usePublicStore } from '../hooks/usePublicStore.js';
-import { ageLabel, formatPrice } from '../utils/format.js';
+import { ageLabel } from '../utils/format.js';
 import { formatKsh } from '../cart/format.js';
 import { resolveMediaUrl } from '../utils/media.js';
 import { titleWithKind } from '../utils/seo.js';
-import { projectPath, storeItemPath, STORE_PROJECTS_PATH } from '../utils/storePaths.js';
+import { projectPath, STORE_PROJECTS_PATH } from '../utils/storePaths.js';
 import { PROSE_MAX_WIDTH } from '../theme/layout.js';
 import { RelatedInStore } from '../components/common/Related.jsx';
 import { PRICING_IS_PLACEHOLDER } from '../content/catalog.js';
 
 const LEVEL_LABEL = { beginner: 'Beginner', intermediate: 'Intermediate', advanced: 'Advanced' };
+const STEPS_SHOWN = 4;
 
 const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 
@@ -45,27 +52,19 @@ function BuildStep({ index, total, step }) {
       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
         <Box
           sx={{
-            width: 36,
-            height: 36,
-            borderRadius: '50%',
-            display: 'grid',
-            placeItems: 'center',
-            fontWeight: 700,
-            color: '#fff',
-            bgcolor: 'primary.main',
-            zIndex: 1,
+            width: 36, height: 36, borderRadius: '50%', display: 'grid', placeItems: 'center',
+            fontWeight: 700, color: '#fff', bgcolor: 'primary.main', zIndex: 1,
           }}
         >
           {index + 1}
         </Box>
-        {!isLast && (
-          <Box sx={{ flexGrow: 1, width: '2px', bgcolor: 'divider', minHeight: 20, mt: 0.5 }} />
-        )}
+        {!isLast && <Box sx={{ flexGrow: 1, width: '2px', bgcolor: 'divider', minHeight: 20, mt: 0.5 }} />}
       </Box>
       <Box sx={{ pb: isLast ? 0 : 3.5, minWidth: 0 }}>
-        <Typography variant="h5" component="h3">
-          {step.name}
-        </Typography>
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
+          <Typography variant="h5" component="h3">{step.name}</Typography>
+          {index === 0 && <Chip size="small" color="secondary" label="Start here" sx={{ fontWeight: 800 }} />}
+        </Box>
         {step.description && (
           <Typography sx={{ color: 'text.secondary', mt: 0.5, whiteSpace: 'pre-line', maxWidth: PROSE_MAX_WIDTH }}>
             {step.description}
@@ -76,61 +75,13 @@ function BuildStep({ index, total, step }) {
   );
 }
 
-// Stands in for the photo gallery when a project has no photos yet, so the top of the page isn't
-// half empty: the brand band with the project's numbers on it.
-function ProjectCoverArt({ facts }) {
-  return (
-    <Box
-      sx={{
-        position: 'relative',
-        aspectRatio: '4 / 3',
-        borderRadius: 3,
-        overflow: 'hidden',
-        color: '#fff',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'flex-end',
-        p: { xs: 2.5, sm: 3 },
-        boxShadow: 'shadow.md',
-        background: (t) => `linear-gradient(150deg, ${t.palette.primary.dark} 0%, ${t.palette.primary.main} 100%)`,
-      }}
-    >
-      <Box
-        aria-hidden
-        sx={{
-          position: 'absolute', right: '-18%', top: '-40%', width: '75%', paddingBottom: '75%', borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 70%)',
-        }}
-      />
-      <BuildCircleOutlinedIcon aria-hidden sx={{ position: 'absolute', right: 24, top: 20, fontSize: 132, opacity: 0.22 }} />
-      <Typography sx={{ position: 'relative', fontSize: 12, fontWeight: 800, letterSpacing: '0.09em', opacity: 0.85, mb: 1.5 }}>
-        GUIDED BUILD PROJECT
-      </Typography>
-      <Box sx={{ position: 'relative', display: 'grid', gridTemplateColumns: `repeat(${facts.length}, minmax(0, 1fr))`, gap: 1.25 }}>
-        {facts.map((f) => (
-          <Box key={f.label} sx={{ p: 1.5, borderRadius: 2, bgcolor: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.18)' }}>
-            <Typography sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' }, fontWeight: 800, lineHeight: 1.1 }}>{f.value}</Typography>
-            <Typography sx={{ fontSize: 12, opacity: 0.85, mt: 0.25 }}>{f.label}</Typography>
-          </Box>
-        ))}
-      </Box>
-    </Box>
-  );
-}
-
 // A "What you get" tile — the same look as on a Store item's page.
 function GetTile({ icon, title, body }) {
   return (
     <Box
       sx={{
-        p: 2.5,
-        display: 'flex',
-        gap: 1.5,
-        alignItems: 'flex-start',
-        backgroundColor: 'surface.card',
-        border: '1px solid',
-        borderColor: 'surface.ring',
-        borderRadius: 3,
+        p: 2.5, display: 'flex', gap: 1.5, alignItems: 'flex-start',
+        backgroundColor: 'surface.card', border: '1px solid', borderColor: 'surface.ring', borderRadius: 3,
         '& > svg': { fontSize: 22, color: 'primary.main', mt: 0.25, flexShrink: 0 },
       }}
     >
@@ -143,26 +94,20 @@ function GetTile({ icon, title, body }) {
   );
 }
 
-// A thing on "What you'll need" that the Store sells — matched by name, so a family can get it in
-// the same order.
-function findInStore(requirement, items) {
-  const want = requirement.trim().toLowerCase();
-  if (!want) return null;
-  return (
-    items.find((it) => it.name.toLowerCase() === want) ||
-    items.find((it) => want.includes(it.name.toLowerCase()) || it.name.toLowerCase().includes(want)) ||
-    null
-  );
-}
-
 /**
- * A project in the Store (`/store/projects/:slug`), laid out like a Store good (ProductLayout): the
- * cover and the one buy panel side by side, the details under the cover, a buy bar along the bottom
- * once the panel's buttons have scrolled away, then more from the Store.
+ * A project in the Store (`/store/projects/:slug`), laid out like a Store good (ProductLayout) and
+ * ordered the way a parent decides (12 Nov 2026):
+ *   cover      the photos, or — with none — what the child will build (ProjectOutcomeCover)
+ *   buy panel  price, value line (steps · a step's cost · for life), and "You'll also need" with the
+ *              Store's price and "Add to cart too", so the full cost is never a surprise
+ *   details    at a glance → what they'll build → about → the steps (folded after four) → what you
+ *              get → after you buy → parents' words (real ones only) → questions answered
+ * then a buy bar along the bottom once the panel's buttons have scrolled away, and more from the Store.
  */
 export default function ProjectDetailPage() {
   const { slug } = useParams();
   const buyRef = useRef(null);
+  const [allSteps, setAllSteps] = useState(false);
   const { data, isLoading, isError, error, refetch } = usePublicProject(slug);
   const { data: storeItems = [] } = usePublicStore();
 
@@ -187,9 +132,7 @@ export default function ProjectDetailPage() {
           onRetry={notFound ? undefined : refetch}
         />
         <Box sx={{ textAlign: 'center', mt: 2 }}>
-          <Button component={RouterLink} to={STORE_PROJECTS_PATH} variant="outlined">
-            See all projects
-          </Button>
+          <Button component={RouterLink} to={STORE_PROJECTS_PATH} variant="outlined">See all projects</Button>
         </Box>
       </Container>
     );
@@ -199,9 +142,13 @@ export default function ProjectDetailPage() {
     name, tagline, description, overview, level, ageMin, ageMax, coverImage, price,
     deliverables = [], milestones = [], requirements = [], gallery = [], kitPrice = null,
   } = data;
-  // More than three things to build: shown in two columns across the page (see below).
+  // More than three things to build: shown in two columns.
   const longBuild = deliverables.length > 3;
+  // Folded only when it hides a good few steps (never "Show all 5" for one more).
+  const foldSteps = milestones.length > STEPS_SHOWN + 2;
+  const shownSteps = allSteps || !foldSteps ? milestones : milestones.slice(0, STEPS_SHOWN);
 
+  const hasAges = ageMin != null || ageMax != null;
   const age = ageLabel(ageMin, ageMax);
   const path = projectPath(slug);
   const enquireTo = `/enroll?interestedIn=project&referenceId=${encodeURIComponent(slug)}`;
@@ -211,14 +158,19 @@ export default function ProjectDetailPage() {
   const coverFacts = [
     milestones.length > 0 && { value: milestones.length, label: milestones.length === 1 ? 'guided step' : 'guided steps' },
     deliverables.length > 0 && { value: deliverables.length, label: deliverables.length === 1 ? 'thing to build' : 'things to build' },
-    (ageMin != null || ageMax != null) && { value: age.replace(/^Ages /, ''), label: 'years old' },
+    hasAges && { value: age.replace(/^Ages /, ''), label: 'years old' },
+    LEVEL_LABEL[level] && { value: LEVEL_LABEL[level], label: 'level' },
   ].filter(Boolean);
+  const faqs = projectFaqs({ requirements, ages: hasAges ? age : null });
+  // Without photos the cover already lists what they'll build; the full list then only follows when
+  // the cover couldn't show it all.
+  const showBuildList = deliverables.length > 0 && (Boolean(coverImage) || deliverables.length > 4);
 
   const whatYouGet = [
     { icon: <CheckCircleIcon />, title: 'Lifetime access for one learner', body: 'Theirs to come back to — redo a step or show it off any time.' },
     milestones.length > 0 && {
       icon: <FormatListNumberedIcon />,
-      title: `${plural(milestones.length, 'guided step', 'guided steps')}`,
+      title: plural(milestones.length, 'guided step', 'guided steps'),
       body: 'Worked through at their own pace, each one ending with something working.',
     },
     deliverables.length > 0 && {
@@ -230,7 +182,7 @@ export default function ProjectDetailPage() {
     kitPrice && {
       icon: <CardGiftcardIcon />,
       title: `Optional materials kit (+${formatKsh(kitPrice.amount, kitPrice.currency)})`,
-      body: 'Everything under “What you’ll need”, ready to build with. Tick it when you buy.',
+      body: 'Everything they need to build with, in one box. Tick it when you buy.',
     },
   ].filter(Boolean);
 
@@ -250,6 +202,7 @@ export default function ProjectDetailPage() {
             { name: 'Store', path: '/store' },
             { name, path },
           ]),
+          faqSchema(faqs),
           productSchema(
             {
               name,
@@ -275,14 +228,14 @@ export default function ProjectDetailPage() {
         ]}
         gallery={coverImage
           ? <MediaGallery images={[coverImage, ...gallery]} alt={name} ratio="4 / 3" />
-          : <ProjectCoverArt facts={coverFacts} />}
+          : <ProjectOutcomeCover name={name} deliverables={deliverables} facts={coverFacts} />}
         panel={(
           <ProductBuyPanel
             chips={[
               { label: 'Guided project', tone: 'brand' },
               { label: 'Available now', tone: 'good' },
-              level && { label: LEVEL_LABEL[level], tone: 'muted' },
-              age && { label: age, tone: 'muted' },
+              LEVEL_LABEL[level] && { label: LEVEL_LABEL[level], tone: 'muted' },
+              hasAges && { label: age, tone: 'muted' },
             ].filter(Boolean)}
             name={name}
             tagline={tagline}
@@ -291,71 +244,27 @@ export default function ProjectDetailPage() {
             enquireTo={enquireTo}
             contactTo={contactTo}
             buyRef={buyRef}
+            extra={(
+              <Box sx={{ display: 'grid', gap: 2, mt: 2 }}>
+                <ValueLine price={price} steps={milestones.length} />
+                <ProjectNeeds requirements={requirements} storeItems={storeItems} kitPrice={kitPrice} />
+              </Box>
+            )}
           />
         )}
       >
-      {(description || overview) && (
-        <Box sx={{ maxWidth: 760, mb: 6 }}>
-          <DetailHeading title="About this project" icon={<InfoOutlinedIcon />} />
-          {description && (
-            <Typography sx={{ color: 'text.secondary', whiteSpace: 'pre-line', maxWidth: PROSE_MAX_WIDTH, lineHeight: 1.7 }}>
-              {description}
-            </Typography>
-          )}
-          {overview && (
-            <Typography
-              sx={{ color: 'text.secondary', whiteSpace: 'pre-line', maxWidth: PROSE_MAX_WIDTH, lineHeight: 1.7, mt: 2 }}
-            >
-              {overview}
-            </Typography>
-          )}
-        </Box>
-      )}
+        {coverImage && coverFacts.length > 0 && <AtAGlance facts={coverFacts} sx={{ mb: 6 }} />}
 
-      <Box sx={{ mb: 6 }}>
-        <DetailHeading title="What you get" icon={<Inventory2Icon />} />
-        <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
-          {whatYouGet.map((g) => <GetTile key={g.title} {...g} />)}
-        </Box>
-      </Box>
-
-      {milestones.length > 0 && (
-        <Box sx={{ maxWidth: 820, mb: 6 }}>
-          <DetailHeading
-            title="The build, step by step"
-            icon={<FormatListNumberedIcon />}
-            lead="Worked through in order — each step builds on the last, and ends with something working."
-            sx={{ mb: 1.5 }}
-          />
-          {milestones.map((m, i) => (
-            <BuildStep key={`${m.name}-${i}`} index={i} total={milestones.length} step={m} />
-          ))}
-        </Box>
-      )}
-
-      {/* A long "What you'll build" (more than three steps) takes the full width in two columns, so
-          the page doesn't run long; "What you'll need" then sits below it. A short one stays beside it. */}
-      <Box
-        sx={{
-          display: 'grid',
-          gap: 4,
-          gridTemplateColumns: { xs: '1fr', md: deliverables.length && requirements.length && !longBuild ? '1fr 1fr' : '1fr' },
-        }}
-      >
-        {deliverables.length > 0 && (
-          <Box>
-            <DetailHeading title="What you’ll build" icon={<BuildCircleIcon />} />
+        {showBuildList && (
+          <Box sx={{ mb: 6 }}>
+            <DetailHeading title="What your child will build" icon={<BuildCircleIcon />} />
             <Box component="ul" sx={{ m: 0, p: 0, listStyle: 'none', display: 'grid', columnGap: 4, rowGap: 1.5, gridTemplateColumns: { xs: '1fr', sm: longBuild ? '1fr 1fr' : '1fr' } }}>
               {deliverables.map((d, i) => (
                 <Box component="li" key={`${d.name}-${i}`} sx={{ display: 'flex', gap: 1.25 }}>
                   <CheckCircleIcon sx={{ fontSize: 20, color: 'success.main', flexShrink: 0, mt: 0.25 }} />
                   <Box>
-                    <Typography sx={{ fontWeight: 600 }}>{d.name}</Typography>
-                    {d.description && (
-                      <Typography variant="body2" color="text.secondary">
-                        {d.description}
-                      </Typography>
-                    )}
+                    <Typography sx={{ fontWeight: 700 }}>{d.name}</Typography>
+                    {d.description && <Typography variant="body2" color="text.secondary">{d.description}</Typography>}
                   </Box>
                 </Box>
               ))}
@@ -363,44 +272,63 @@ export default function ProjectDetailPage() {
           </Box>
         )}
 
-        {requirements.length > 0 && (
-          <Box>
-            <DetailHeading title="What you’ll need" icon={<Inventory2Icon />} />
-            <Box component="ul" sx={{ m: 0, p: 0, listStyle: 'none', display: 'grid', gap: 1.25 }}>
-              {requirements.map((r, i) => {
-                const inStore = findInStore(r, storeItems);
-                return (
-                  <Box component="li" key={`${r}-${i}`} sx={{ display: 'flex', gap: 1.25, alignItems: 'flex-start' }}>
-                    <CheckCircleIcon sx={{ fontSize: 20, color: inStore ? 'primary.main' : 'text.disabled', flexShrink: 0, mt: 0.25 }} />
-                    <Box sx={{ minWidth: 0 }}>
-                      <Typography>{r}</Typography>
-                      {inStore && (
-                        <Box
-                          component={RouterLink}
-                          to={storeItemPath(inStore.slug)}
-                          sx={{
-                            display: 'inline-flex', alignItems: 'center', gap: 0.75, mt: 0.25,
-                            fontSize: 13, fontWeight: 700, color: 'primary.main', textDecoration: 'none',
-                            '&:hover': { textDecoration: 'underline' },
-                          }}
-                        >
-                          {inStore.price ? `In our store · ${formatPrice(inStore.price)}` : 'In our store'}
-                          <ArrowForwardIcon sx={{ fontSize: 16 }} />
-                        </Box>
-                      )}
-                    </Box>
-                  </Box>
-                );
-              })}
-            </Box>
-            {kitPrice && (
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-                Or add the materials kit (+{formatKsh(kitPrice.amount, kitPrice.currency)}) when you buy the project.
+        {(description || overview) && (
+          <Box sx={{ maxWidth: 760, mb: 6 }}>
+            <DetailHeading title="About this project" icon={<InfoOutlinedIcon />} />
+            {description && (
+              <Typography sx={{ color: 'text.secondary', whiteSpace: 'pre-line', maxWidth: PROSE_MAX_WIDTH, lineHeight: 1.7 }}>
+                {description}
+              </Typography>
+            )}
+            {overview && (
+              <Typography sx={{ color: 'text.secondary', whiteSpace: 'pre-line', maxWidth: PROSE_MAX_WIDTH, lineHeight: 1.7, mt: 2 }}>
+                {overview}
               </Typography>
             )}
           </Box>
         )}
-      </Box>
+
+        {milestones.length > 0 && (
+          <Box sx={{ maxWidth: 820, mb: 6 }}>
+            <DetailHeading
+              title="The build, step by step"
+              icon={<FormatListNumberedIcon />}
+              lead="Worked through in order — each step builds on the last, and ends with something working."
+              sx={{ mb: 1.5 }}
+            />
+            {shownSteps.map((m, i) => (
+              <BuildStep key={`${m.name}-${i}`} index={i} total={shownSteps.length} step={m} />
+            ))}
+            {foldSteps && (
+              <Button
+                onClick={() => setAllSteps((v) => !v)}
+                endIcon={<ExpandMoreRoundedIcon sx={{ transform: allSteps ? 'rotate(180deg)' : 'none' }} />}
+                sx={{ mt: 2, ml: { xs: 6, sm: 7.5 } }}
+              >
+                {allSteps ? 'Show fewer steps' : `Show all ${milestones.length} steps`}
+              </Button>
+            )}
+          </Box>
+        )}
+
+        <Box sx={{ mb: 6 }}>
+          <DetailHeading title="What you get" icon={<Inventory2Icon />} />
+          <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
+            {whatYouGet.map((g) => <GetTile key={g.title} {...g} />)}
+          </Box>
+        </Box>
+
+        <Box sx={{ mb: 6 }}>
+          <DetailHeading title="After you buy" icon={<RouteRoundedIcon />} lead="No waiting for a class to start — they can begin the same day." />
+          <ProjectHowItWorks />
+        </Box>
+
+        <ParentQuotes sx={{ mb: 6 }} />
+
+        <Box sx={{ maxWidth: 820 }}>
+          <DetailHeading title="Questions parents ask" icon={<HelpOutlineRoundedIcon />} />
+          <FaqList faqs={faqs} />
+        </Box>
       </ProductLayout>
 
       <StickyBuyBar
