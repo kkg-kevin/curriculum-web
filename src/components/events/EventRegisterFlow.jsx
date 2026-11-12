@@ -194,7 +194,7 @@ export default function EventRegisterFlow({ event, source = 'page', compact = fa
                 ? 'That email is already registered for this event — we’ve emailed the details to it again.'
                 : waiting
                   ? 'It’s full right now. If a place frees up it’s yours in turn — we’ll email you straight away.'
-                  : `We’ve emailed your confirmation to ${form.email.trim()}, and we’ll remind you before the day.`}
+                  : `Your ticket is on its way to ${form.email.trim()} — show its QR code at the entrance. We’ll remind you before the day.`}
             </Typography>
           </Box>
         </Box>
@@ -207,7 +207,7 @@ export default function EventRegisterFlow({ event, source = 'page', compact = fa
         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', flexDirection: { xs: 'column', sm: 'row' } }}>
           <Button variant="contained" color="success" href={`https://wa.me/?text=${encodeURIComponent(shareText)}`} target="_blank" rel="noopener">Invite a friend on WhatsApp</Button>
           {result?.registration?.token && (
-            <Button variant="outlined" component={RouterLink} to={`/events/registration/${result.registration.token}`} onClick={onClose}>My registration</Button>
+            <Button variant="outlined" component={RouterLink} to={`/events/registration/${result.registration.token}`} onClick={onClose}>{result.registration.ticketCode ? 'View my ticket' : 'My registration'}</Button>
           )}
           {onClose && <Button onClick={onClose}>Close</Button>}
         </Box>

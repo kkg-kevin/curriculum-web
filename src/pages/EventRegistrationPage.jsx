@@ -18,10 +18,11 @@ import { useEventRegistration } from '../hooks/usePublicEvents.js';
 import { publicApi } from '../services/api.js';
 import { downloadCalendar, googleCalendarUrl } from '../utils/eventCalendar.js';
 import { Countdown, ExplorePrograms, ShareRow } from '../components/events/eventBits.jsx';
+import EventTicket from '../components/events/EventTicket.jsx';
 
 /**
  * A person's own registration (`/events/registration/:token` — the link in every email about it):
- * the event, their place, add to calendar, the join link on the day before (online events), the
+ * their ticket (QR + code, printable) once they have a place, the event, add to calendar, the join link on the day before (online events), the
  * optional "about you", and cancelling. Not indexed; the token is the only key.
  */
 const STATUS = { registered: ['You have a place', 'success'], waitlisted: ['On the waiting list', 'warning'], cancelled: ['Cancelled', 'default'] };
@@ -94,6 +95,10 @@ export default function EventRegistrationPage() {
 
         {live && reg.status === 'registered' && <Countdown startsAt={event.startsAt} />}
         {message && <Alert severity={message.severity} onClose={() => setMessage(null)}>{message.text}</Alert>}
+        {live && reg.status === 'registered' && reg.ticketCode && (
+          <EventTicket token={token} code={reg.ticketCode} name={reg.name} partySize={reg.partySize} event={event} />
+        )}
+        {live && reg.status === 'waitlisted' && <Alert severity="info">Your ticket comes by email the moment a place is yours.</Alert>}
         {event.state === 'cancelled' && <Alert severity="warning">This event has been cancelled{event.cancelReason ? `: ${event.cancelReason}` : '.'}</Alert>}
 
         <Box sx={{ p: { xs: 2.5, md: 3 }, borderRadius: 3, border: '1px solid', borderColor: 'divider', bgcolor: 'surface.card', display: 'grid', gap: 1.5 }}>
