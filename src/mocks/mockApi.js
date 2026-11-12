@@ -122,6 +122,11 @@ export async function mockAdapter(config) {
     return detail ? ok(detail, config) : fail(404, 'Bootcamp not found', config);
   }
 
+  // ---- General events (offline mode: none — the Events page shows its empty state) ----
+  if (method === 'get' && path === '/api/public/events') return ok([], config);
+  if (method === 'get' && path === '/api/public/events-popup') return ok(null, config);
+  if (method === 'get' && /^\/api\/public\/events\/[^/]+$/.test(path)) return fail(404, 'Event not found', config);
+
   // ---- GET /api/public/competitions (public competitions + track cards) ----
   if (method === 'get' && path === '/api/public/competitions') {
     return ok(competitionList, config);

@@ -75,6 +75,7 @@ export const STATIC_ROUTES = [
   { path: '/pathways' },
   { path: '/bootcamps' },
   { path: '/competitions' },
+  { path: '/events' }, // general events — showcases, open days (API-driven)
   { path: '/estate-tech-clubs' },
   { path: '/home-schooling' },
   { path: '/schools' },

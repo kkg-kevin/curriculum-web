@@ -5,6 +5,7 @@ import Header from '../components/layout/Header.jsx';
 import Footer from '../components/layout/Footer.jsx';
 import ThemeColorMeta from '../components/common/ThemeColorMeta.jsx';
 import WhatsAppButton from '../components/common/WhatsAppButton.jsx';
+import { EventBar, EventPopup } from '../components/events/EventPopup.jsx';
 import { LoadingBlock } from '../components/common/StateViews.jsx';
 
 /** Header + Footer + routed content. Also resets scroll on navigation. */
@@ -21,6 +22,8 @@ export default function MainLayout() {
       <a className="skip-link" href="#main-content">
         Skip to content
       </a>
+      {/* General events: a one-line reminder at the top, and the pop-up (components/events/). */}
+      <EventBar />
       <Header />
       <Box component="main" id="main-content" sx={{ flexGrow: 1 }}>
         {/* Fallback covers the brief moment a code-split page chunk loads. */}
@@ -30,6 +33,7 @@ export default function MainLayout() {
       </Box>
       <Footer />
       <WhatsAppButton />
+      <EventPopup />
     </Box>
   );
 }
