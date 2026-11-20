@@ -1,123 +1,78 @@
 import { useParams, Link as RouterLink } from 'react-router-dom';
-import { alpha } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
 import Button from '@mui/material/Button';
 import Skeleton from '@mui/material/Skeleton';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import SeoHead from '../components/seo/SeoHead.jsx';
-import DetailHero from '../components/common/DetailHero.jsx';
-import { DetailHeading } from '../components/common/DetailSection.jsx';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import PaymentsIcon from '@mui/icons-material/Payments';
+import EventRoundedIcon from '@mui/icons-material/EventRounded';
+import GroupsRoundedIcon from '@mui/icons-material/GroupsRounded';
+import SeoHead from '../components/seo/SeoHead.jsx';
+import CompetitionHero, { HeroPill, heroBackground } from '../components/competitions/CompetitionHero.jsx';
+import { DetailHeading } from '../components/common/DetailSection.jsx';
 import JsonLd, { organizationSchema, breadcrumbSchema, eventSchema } from '../components/seo/JsonLd.jsx';
 import Section from '../components/common/Section.jsx';
-import SmartImage from '../components/common/SmartImage.jsx';
 import CTABanner from '../components/home/CTABanner.jsx';
 import { ErrorBlock } from '../components/common/StateViews.jsx';
-import { FORMAT_LABEL, CADENCE_LABEL, competitionStatusLabel } from '../components/cards/CompetitionCard.jsx';
+import { CADENCE_LABEL, competitionStatusLabel, entryModesLabel } from '../components/cards/CompetitionCard.jsx';
+import { CompetitionInfoPanel, infoParts } from '../components/competitions/CompetitionInfo.jsx';
 import CoursePricingRoadmap from '../components/pathway/CoursePricingRoadmap.jsx';
 import { usePublicCompetition } from '../hooks/usePublicCompetitions.js';
 import { formatDateRange } from '../utils/dates.js';
 import { resolveMediaUrl } from '../utils/media.js';
+import { safeHtml } from '../utils/safeHtml.js';
 import { titleWithKind } from '../utils/seo.js';
+import { agesText, hasRich, registrationLine, trackPath } from '../utils/competitions.js';
+import { RegisterButton } from '../components/competitions/trackBits.jsx';
 import { PROSE_MAX_WIDTH } from '../theme/layout.js';
-import DetailLayout, { AsideCard } from '../components/common/DetailLayout.jsx';
 import { RelatedCompetitions } from '../components/common/Related.jsx';
 
-const TRACK_GREEN = '#2E7D32';
-
-// A track's Register button. An external http(s) URL opens in a new tab; a bare/relative value
-// (e.g. "/enroll?…") is an in-app route; nothing falls back to the generic enquiry.
-function registerTarget(url, competitionName) {
-  if (!url) {
-    return {
-      to: `/contact?subject=${encodeURIComponent(`${competitionName} — entry details`)}`,
-      external: false,
-    };
-  }
-  if (/^https?:\/\//i.test(url)) return { href: url, external: true };
-  return { to: url, external: false };
-}
-
-function TrackCard({ track, competitionName }) {
-  const reg = registerTarget(track.registerUrl, competitionName);
-  const knowMore = track.knowMoreUrl && /^https?:\/\//i.test(track.knowMoreUrl) ? track.knowMoreUrl : null;
-
+function TrackCard({ slug, track, index, registration, coverImage }) {
+  const ages = agesText(track.ageMin, track.ageMax);
+  const hasPage = hasRich(track.overview) || hasRich(track.whatToDo) || hasRich(track.rules) || track.judging?.length || track.faqs?.length || track.prizes?.length || track.timeline?.length || track.resources?.length;
   return (
     <Box
       component="article"
       sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        border: '1px solid',
-        borderColor: 'divider',
-        borderRadius: 3,
-        p: { xs: 3, md: 3.5 },
-        bgcolor: 'background.paper',
-        height: '100%',
+        display: 'flex', flexDirection: 'column', border: '1px solid', borderColor: 'divider', borderRadius: 3,
+        bgcolor: 'background.paper', height: '100%', overflow: 'hidden',
         transition: 'box-shadow 200ms ease, transform 200ms ease',
         '&:hover': { boxShadow: 4, transform: 'translateY(-2px)' },
       }}
     >
-      <Typography variant="h3" component="h3" sx={{ mb: 0.5 }}>
-        {track.name}
-      </Typography>
-      {track.subtitle && (
-        <Typography sx={{ color: TRACK_GREEN, fontWeight: 700, mb: 1.5 }}>{track.subtitle}</Typography>
-      )}
-      {track.description && (
-        <Typography sx={{ color: 'text.secondary', mb: 2, lineHeight: 1.7, whiteSpace: 'pre-line', maxWidth: PROSE_MAX_WIDTH }}>
-          {track.description}
-        </Typography>
-      )}
-
-      {track.highlights?.length > 0 && (
-        <Box component="ul" sx={{ m: 0, mb: 3, p: 0, listStyle: 'none', display: 'grid', gap: 1 }}>
-          {track.highlights.map((h, i) => (
-            <Box component="li" key={`${h}-${i}`} sx={{ display: 'flex', gap: 1.25 }}>
-              <CheckCircleIcon sx={{ fontSize: 20, color: 'success.main', flexShrink: 0, mt: 0.25 }} />
-              <Typography variant="body2">{h}</Typography>
-            </Box>
-          ))}
+      {/* The track's picture as the card's header, its name on top (the competition's picture
+          when the track has none of its own; the brand gradient when neither has one). */}
+      <Box sx={{ position: 'relative', minHeight: { xs: 190, md: 220 }, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', p: { xs: 2.5, md: 3 }, color: '#fff', background: track.coverImage || coverImage ? `linear-gradient(180deg, rgba(16,32,52,0.15) 0%, rgba(16,32,52,0.55) 45%, rgba(16,32,52,0.94) 100%), center / cover no-repeat url(${resolveMediaUrl(track.coverImage || coverImage)})` : heroBackground(null) }}>
+        <Typography variant="overline" sx={{ color: 'secondary.light', fontWeight: 900, letterSpacing: '0.1em', lineHeight: 1.4 }}>Track {index + 1}{ages ? ` · ${ages}` : ''}</Typography>
+        <Typography variant="h3" component="h3" sx={{ color: '#fff', fontWeight: 900, mt: 0.25 }}>{track.name}</Typography>
+        {track.subtitle && <Typography sx={{ color: 'rgba(255,255,255,0.88)', fontWeight: 700, mt: 0.25 }}>{track.subtitle}</Typography>}
+      </Box>
+      <Box sx={{ p: { xs: 3, md: 3.5 }, display: 'flex', flexDirection: 'column', flex: 1 }}>
+        {track.description && (
+          <Typography sx={{ color: 'text.secondary', mb: 2, lineHeight: 1.7, whiteSpace: 'pre-line', maxWidth: PROSE_MAX_WIDTH }}>
+            {track.description}
+          </Typography>
+        )}
+        {track.highlights?.length > 0 && (
+          <Box component="ul" sx={{ m: 0, mb: 2.5, p: 0, listStyle: 'none', display: 'grid', gap: 1 }}>
+            {track.highlights.map((h, i) => (
+              <Box component="li" key={`${h}-${i}`} sx={{ display: 'flex', gap: 1.25 }}>
+                <CheckCircleIcon sx={{ fontSize: 20, color: 'success.main', flexShrink: 0, mt: 0.25 }} />
+                <Typography variant="body2">{h}</Typography>
+              </Box>
+            ))}
+          </Box>
+        )}
+        <Box sx={{ mt: 'auto', display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
+          <RegisterButton slug={slug} track={track} registration={registration} />
+          {(hasPage || track.knowMoreUrl) && (
+            <Button component={RouterLink} to={trackPath(slug, track)} variant="outlined" sx={{ color: 'primary.dark', borderColor: 'primary.dark' }}>
+              Know more
+            </Button>
+          )}
         </Box>
-      )}
-
-      <Box sx={{ mt: 'auto', display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
-        {knowMore && (
-          <Button
-            component="a"
-            href={knowMore}
-            target="_blank"
-            rel="noopener noreferrer"
-            variant="outlined"
-            endIcon={<OpenInNewIcon />}
-            sx={{ color: 'primary.dark', borderColor: 'primary.dark' }}
-          >
-            Know more
-          </Button>
-        )}
-        {reg.external ? (
-          <Button
-            component="a"
-            href={reg.href}
-            target="_blank"
-            rel="noopener noreferrer"
-            variant="contained"
-            endIcon={<OpenInNewIcon />}
-          >
-            Register now
-          </Button>
-        ) : (
-          <Button component={RouterLink} to={reg.to} variant="contained" endIcon={<ArrowForwardIcon />}>
-            Register now
-          </Button>
-        )}
       </Box>
     </Box>
   );
@@ -144,40 +99,36 @@ export default function CompetitionDetailPage() {
       <Container maxWidth="lg" sx={{ py: 8 }}>
         <SeoHead title="Competition not found" noindex />
         <ErrorBlock
-          error={{
-            message: notFound
-              ? 'This competition doesn’t exist or isn’t running right now.'
-              : error?.message,
-          }}
+          error={{ message: notFound ? 'This competition doesn’t exist or isn’t running right now.' : error?.message }}
           onRetry={notFound ? undefined : refetch}
         />
         <Box sx={{ textAlign: 'center', mt: 2 }}>
-          <Button component={RouterLink} to="/competitions" variant="outlined">
-            View all competitions
-          </Button>
+          <Button component={RouterLink} to="/competitions" variant="outlined">View all competitions</Button>
         </Box>
       </Container>
     );
   }
 
   const {
-    name, edition, level, format, cadence, startDate, endDate, coverImage, status, description,
-    tracks = [], coursePricing = [],
+    name, edition, level, cadence, startDate, endDate, coverImage, status, description, descriptionHtml,
+    tracks = [], coursePricing = [], registration, registrationCloseDate, info = {},
   } = data;
 
   const dates = formatDateRange(startDate, endDate);
   const statusLabel = competitionStatusLabel(status, endDate);
   const enquireTo = `/contact?subject=${encodeURIComponent(`${name} — entry details`)}`;
+  const entryLabel = entryModesLabel(data);
+  const canRegister = Boolean(registration?.open) && tracks.length > 0;
+  const aboutHtml = hasRich(descriptionHtml) ? safeHtml(descriptionHtml) : '';
+  const hasInfo = infoParts(data).hasAnything;
 
   return (
     <>
       <SeoHead
         title={titleWithKind(name, 'Competition')}
-        description={description || `Enter a team for ${name}.`}
+        description={description || `Register for ${name}.`}
         image={resolveMediaUrl(coverImage) || undefined}
       />
-      {/* No venue is recorded for a competition season, so the Event carries dates only —
-          eventSchema never invents a location. */}
       <JsonLd
         data={[
           organizationSchema(),
@@ -186,130 +137,68 @@ export default function CompetitionDetailPage() {
             { name: 'Competitions', path: '/competitions' },
             { name, path: `/competitions/${slug}` },
           ]),
-          eventSchema({
-            name,
-            description,
-            startDate,
-            endDate,
-            image: resolveMediaUrl(coverImage),
-            path: `/competitions/${slug}`,
-          }),
+          eventSchema({ name, description, startDate, endDate, image: resolveMediaUrl(coverImage), path: `/competitions/${slug}` }),
         ]}
       />
 
-      {/* header band */}
-      <DetailHero crumbs={[{ label: 'Home', to: '/' }, { label: 'Competitions', to: '/competitions' }, { label: name }]}>
+      <CompetitionHero
+        image={coverImage}
+        crumbs={[{ label: 'Home', to: '/' }, { label: 'Competitions', to: '/competitions' }, { label: name }]}
+        overline={['Competition', edition, level].filter(Boolean).join(' · ')}
+        title={name}
+        description={aboutHtml || null}
+        lead={aboutHtml ? null : description || null}
+        // The competition's information sits in a panel on the right of the picture (user, 20 Nov
+        // 2026), so the key facts aren't repeated beside the title — only when there's no panel.
+        aside={hasInfo ? <CompetitionInfoPanel competition={data} /> : null}
+        facts={hasInfo ? [] : [
+          { icon: <EventRoundedIcon />, title: dates || 'Dates to be confirmed', line: statusLabel },
+          { icon: <GroupsRoundedIcon />, title: [entryLabel, agesText(info.ageMin, info.ageMax)].filter(Boolean).join(' · '), line: cadence ? CADENCE_LABEL[cadence] : null },
+          tracks.length > 0 && { icon: <EmojiEventsIcon />, title: `${tracks.length} ${tracks.length === 1 ? 'track' : 'tracks'} to choose from` },
+        ]}
+        badges={<HeroPill tone={registration?.open ? 'live' : 'muted'}>{registrationLine(registration, registrationCloseDate)}</HeroPill>}
+        actions={canRegister ? (
+          <>
+            <Button component="a" href="#tracks" variant="contained" color="secondary" size="large" sx={{ fontWeight: 900, px: 4, minHeight: 52 }}>Choose a track and register</Button>
+            <Button component={RouterLink} to={enquireTo} size="large" sx={{ color: '#fff', fontWeight: 800, minHeight: 52 }}>Ask a question</Button>
+          </>
+        ) : (
+          <Button component={RouterLink} to={enquireTo} variant="contained" color="secondary" size="large" sx={{ fontWeight: 900, px: 4, minHeight: 52 }}>Ask about entering</Button>
+        )}
+      />
 
-          <Box sx={{ display: 'flex', gap: { xs: 3, md: 5 }, flexWrap: { xs: 'wrap', md: 'nowrap' }, alignItems: 'flex-start' }}>
-            <Box sx={{ flex: 1, minWidth: 260 }}>
-              <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
-                {edition && (
-                  <Chip
-                    label={edition}
-                    sx={{ bgcolor: (t) => alpha(t.palette.primary.dark, 0.102), color: 'text.primary', fontWeight: 600 }}
-                  />
-                )}
-                {level && <Chip variant="outlined" label={level} sx={{ fontWeight: 600 }} />}
-                {format && <Chip variant="outlined" label={FORMAT_LABEL[format]} sx={{ fontWeight: 600 }} />}
-                {cadence && <Chip variant="outlined" label={CADENCE_LABEL[cadence]} sx={{ fontWeight: 600 }} />}
-              </Box>
+      <Section>
+        <Box>
 
-              <Typography variant="h1" component="h1" sx={{ mb: 1.5 }}>
-                {name}
-              </Typography>
-
-              {(dates || status) && (
-                <Typography variant="h4" component="p" sx={{ fontWeight: 400, color: 'text.secondary' }}>
-                  {[dates, statusLabel].filter(Boolean).join(' · ')}
+          <Box id="tracks" sx={{ scrollMarginTop: 96 }}>
+            {tracks.length > 0 ? (
+              <>
+                <DetailHeading title={tracks.length === 1 ? 'The track' : 'Tracks'} icon={<EmojiEventsIcon />} tight />
+                <Typography sx={{ color: 'text.secondary', mb: 4, maxWidth: 620 }}>
+                  Each participant or team enters one track. Choose the one that fits their age and interests — Know More has the full details.
                 </Typography>
-              )}
-
-              <Button component={RouterLink} to={enquireTo} variant="contained" size="large" sx={{ mt: 3 }}>
-                Ask about entering
-              </Button>
-            </Box>
-
-            {coverImage && (
-              <Box sx={{ width: { xs: '100%', md: 380 }, flexShrink: 0 }}>
-                <SmartImage src={coverImage} alt={name} ratio="4 / 3" />
+                <Box sx={{ display: 'grid', gap: { xs: 3, md: 3.5 }, gridTemplateColumns: { xs: '1fr', md: tracks.length === 1 ? 'minmax(0, 720px)' : 'repeat(2, minmax(0, 1fr))', lg: tracks.length >= 3 ? 'repeat(3, minmax(0, 1fr))' : undefined } }}>
+                  {tracks.map((t, i) => <TrackCard key={t.id} slug={slug} track={t} index={i} registration={registration} coverImage={coverImage} />)}
+                </Box>
+              </>
+            ) : (
+              <Box sx={{ maxWidth: 720 }}>
+                <Typography sx={{ color: 'text.secondary' }}>
+                  Track details for this edition aren&apos;t published yet — send an enquiry and we&apos;ll share them as soon as they&apos;re confirmed.
+                </Typography>
               </Box>
             )}
           </Box>
-      </DetailHero>
-
-      <Section>
-        <DetailLayout
-          aside={
-            <AsideCard>
-              <Box>
-                <Typography variant="overline" sx={{ color: 'text.secondary' }}>
-                  {statusLabel || 'Competition'}
-                </Typography>
-                <Typography variant="h4" component="p">
-                  {dates || 'Dates to be confirmed'}
-                </Typography>
-              </Box>
-              <Typography variant="body2" color="text.secondary">
-                Tell us your learners’ ages and which track interests them. We’ll send the entry
-                details and what to prepare.
-              </Typography>
-              <Button component={RouterLink} to={enquireTo} variant="contained" size="large" fullWidth>
-                Ask about entering
-              </Button>
-            </AsideCard>
-          }
-        >
-          {description && (
-            <Box sx={{ maxWidth: 760, mb: 6 }}>
-              <DetailHeading title={`About ${name}`} icon={<InfoOutlinedIcon />} />
-              <Typography sx={{ color: 'text.secondary', whiteSpace: 'pre-line', maxWidth: PROSE_MAX_WIDTH, lineHeight: 1.7 }}>
-                {description}
-              </Typography>
-            </Box>
-          )}
-
-          {tracks.length > 0 ? (
-            <>
-              <DetailHeading title={tracks.length === 1 ? 'The track' : 'Tracks'} icon={<EmojiEventsIcon />} tight />
-              <Typography sx={{ color: 'text.secondary', mb: 4, maxWidth: 620 }}>
-                Each learner or team picks one track to enter. Choose the one that fits their age and
-                interests.
-              </Typography>
-              <Box
-                sx={{
-                  display: 'grid',
-                  gap: { xs: 3, md: 3.5 },
-                  gridTemplateColumns: { xs: '1fr', md: tracks.length === 1 ? '1fr' : 'repeat(2, 1fr)' },
-                }}
-              >
-                {tracks.map((t) => (
-                  <TrackCard key={t.id} track={t} competitionName={name} />
-                ))}
-              </Box>
-            </>
-          ) : (
-            <Box sx={{ maxWidth: 720 }}>
-              <Typography sx={{ color: 'text.secondary' }}>
-                Track details for this edition aren&apos;t published yet — send an enquiry and we&apos;ll
-                share them as soon as they&apos;re confirmed.
-              </Typography>
-            </Box>
-          )}
 
           {coursePricing.length > 0 && (
             <Box sx={{ mt: 6, maxWidth: 900 }}>
               <DetailHeading title="Course pricing" icon={<PaymentsIcon />} tight />
-              <Typography sx={{ color: 'text.secondary', mb: 4 }}>
-                Individual course prices within this competition&apos;s curriculum.
-              </Typography>
+              <Typography sx={{ color: 'text.secondary', mb: 4 }}>Individual course prices within this competition&apos;s curriculum.</Typography>
               <Box sx={{ display: 'grid', gap: 5 }}>
                 {coursePricing.map((section, i) => (
                   <Box key={section.pathwayId || `ungrouped-${i}`}>
                     {section.pathwayName && (
-                      <Typography
-                        variant="overline"
-                        sx={{ display: 'block', color: section.pathwayColor || 'primary.dark', fontWeight: 800, letterSpacing: '0.06em', mb: 2 }}
-                      >
+                      <Typography variant="overline" sx={{ display: 'block', color: section.pathwayColor || 'primary.dark', fontWeight: 800, letterSpacing: '0.06em', mb: 2 }}>
                         {section.pathwayName}
                       </Typography>
                     )}
@@ -319,15 +208,15 @@ export default function CompetitionDetailPage() {
               </Box>
             </Box>
           )}
-        </DetailLayout>
+        </Box>
       </Section>
 
       <RelatedCompetitions currentSlug={slug} />
 
       <CTABanner
-        heading={`Enter a team for ${name}`}
-        body="Tell us your learners’ ages and which track interests them — we’ll share entry details, dates and what to prepare."
-        primary={{ label: 'Ask about entering', to: enquireTo }}
+        heading={canRegister ? `Register for ${name}` : `Enter ${name}`}
+        body={canRegister ? 'On your own or as a team — pick a track, register in a few minutes and pay the entry fee online.' : 'Tell us your learners’ ages and which track interests them — we’ll share entry details, dates and what to prepare.'}
+        primary={canRegister ? { label: 'See the tracks', to: `/competitions/${slug}#tracks` } : { label: 'Ask about entering', to: enquireTo }}
         secondary={{ label: 'All competitions', to: '/competitions' }}
       />
     </>

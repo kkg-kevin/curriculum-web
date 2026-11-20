@@ -39,6 +39,8 @@ const EstateTechClubPage = lazy(() => import('../pages/EstateTechClubPage.jsx'))
 const ClubSignupPage = lazy(() => import('../pages/ClubSignupPage.jsx'));
 const CompetitionsPage = lazy(() => import('../pages/CompetitionsPage.jsx'));
 const CompetitionDetailPage = lazy(() => import('../pages/CompetitionDetailPage.jsx'));
+const CompetitionTrackPage = lazy(() => import('../pages/CompetitionTrackPage.jsx'));
+const CompetitionRegisterPage = lazy(() => import('../pages/CompetitionRegisterPage.jsx'));
 // General events — showcases, open days (server: modules/general-events/).
 const EventsPage = lazy(() => import('../pages/EventsPage.jsx'));
 const EventDetailPage = lazy(() => import('../pages/EventDetailPage.jsx'));
@@ -83,6 +85,8 @@ export const routes = [
       { path: 'bootcamps/:slug/hubs/:hubId', element: <HubDetailPage /> },
       { path: 'competitions', element: <CompetitionsPage /> },
       { path: 'competitions/:slug', element: <CompetitionDetailPage /> },
+      { path: 'competitions/:slug/tracks/:trackSlug', element: <CompetitionTrackPage /> },
+      { path: 'competitions/:slug/register', element: <CompetitionRegisterPage /> },
       { path: 'events', element: <EventsPage /> },
       { path: 'events/registration/:token', element: <EventRegistrationPage /> },
       { path: 'events/:slug', element: <EventDetailPage /> },
