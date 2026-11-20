@@ -29,7 +29,7 @@ import { ProofChips, whenFromNow } from './eventBits.jsx';
  * full-screen box (search engines penalise those). After that, `EventBar` keeps a one-line
  * reminder at the top until they close it for the visit.
  */
-const QUIET_PATHS = [/^\/enroll/, /^\/checkout/, /^\/cart/, /^\/pay\//, /\/diagnostic/, /\/signup/, /\/join$/, /\/enroll$/, /^\/events(\/|$)/, /^\/affiliate/, /^\/become-an-affiliate/, /^\/get-started/];
+const QUIET_PATHS = [/^\/enroll/, /^\/checkout/, /^\/cart/, /^\/pay\//, /\/diagnostic/, /\/signup/, /\/join$/, /\/enroll$/, /^\/events(\/|$)/, /^\/affiliate/, /^\/become-an-affiliate/, /^\/get-started/, /^\/competitions\/[^/]+\/register/];
 const AFTER_MS = 8000;
 const HIDE_DAYS = 3;
 const shownKey = 'events.popup.shown';

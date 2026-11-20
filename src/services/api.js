@@ -108,6 +108,10 @@ export const publicApi = {
 
   listCompetitions: () => api.get('/api/public/competitions').then((r) => r.data),
   getCompetition: (idOrSlug) => api.get(`/api/public/competitions/${encodeURIComponent(idOrSlug)}`).then((r) => r.data),
+  // Registering for a track (20 Nov 2026): one participant or a whole team → { registrationNumber,
+  // status, amountDue, currency, invoiceNumber, pay } (pay = the Payment step's data; null when free).
+  registerForCompetition: (idOrSlug, payload) =>
+    api.post(`/api/public/competitions/${encodeURIComponent(idOrSlug)}/registrations`, payload).then((r) => r.data.data),
 
   // Hubs = the designated admin's ACTIVE, NON-SCHOOL learning hubs with their operational
   // schedule — for the enrolment flow's "Type" picker. `/types` lists the choosable hub types.

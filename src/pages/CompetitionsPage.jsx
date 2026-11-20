@@ -8,6 +8,7 @@ import Section from '../components/common/Section.jsx';
 import CTABanner from '../components/home/CTABanner.jsx';
 import { ErrorBlock, EmptyBlock } from '../components/common/StateViews.jsx';
 import CompetitionCard from '../components/cards/CompetitionCard.jsx';
+import FeaturedCompetition from '../components/competitions/FeaturedCompetition.jsx';
 import { usePublicCompetitions } from '../hooks/usePublicCompetitions.js';
 import { hasEnded } from '../utils/dates.js';
 import { CARD_GRID_COLUMNS, shortListSx } from '../theme/layout.js';
@@ -21,12 +22,7 @@ const GRID_SX = {
 function CardSkeleton() {
   return (
     <Box sx={{ borderRadius: 4, overflow: 'hidden', border: '1px solid', borderColor: 'divider', bgcolor: 'surface.card' }}>
-      <Skeleton variant="rectangular" height={138} />
-      <Box sx={{ p: 3 }}>
-        <Skeleton variant="text" width="80%" />
-        <Skeleton variant="text" width="55%" />
-        <Skeleton variant="text" width="35%" sx={{ mt: 2.5 }} />
-      </Box>
+      <Skeleton variant="rectangular" height={400} />
     </Box>
   );
 }
@@ -44,6 +40,9 @@ export default function CompetitionsPage() {
   const count = data?.length || 0;
   // "On now" only counts competitions whose last day hasn't passed.
   const liveCount = (data || []).filter((c) => !hasEnded(c.endDate)).length;
+  // The banner: the one taking registrations (soonest first), else the next that hasn't ended.
+  const featured = (data || []).find((c) => c.registration?.open && !hasEnded(c.endDate)) || (data || []).find((c) => !hasEnded(c.endDate)) || null;
+  const others = (data || []).filter((c) => c !== featured);
 
   return (
     <>
@@ -117,12 +116,21 @@ export default function CompetitionsPage() {
           />
         )}
 
-        {!isLoading && !isError && count > 0 && (
-          <Box sx={{ ...GRID_SX, ...shortListSx(data.length) }}>
-            {data.map((c) => (
-              <CompetitionCard key={c.id} competition={c} />
-            ))}
+        {!isLoading && !isError && featured && (
+          <Box sx={{ mb: others.length ? { xs: 5, md: 7 } : 0 }}>
+            <FeaturedCompetition competition={featured} />
           </Box>
+        )}
+
+        {!isLoading && !isError && others.length > 0 && (
+          <>
+            {featured && <Typography variant="h3" component="h2" sx={{ fontWeight: 900, mb: 3 }}>More competitions</Typography>}
+            <Box sx={{ ...GRID_SX, ...shortListSx(others.length) }}>
+              {others.map((c) => (
+                <CompetitionCard key={c.id} competition={c} />
+              ))}
+            </Box>
+          </>
         )}
       </Section>
 
