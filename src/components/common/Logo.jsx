@@ -1,5 +1,6 @@
 import { Link as RouterLink } from 'react-router-dom';
 import Box from '@mui/material/Box';
+import Img from './Img.jsx';
 
 /**
  * Brand logo: the "digifunzi" wordmark image (public/wordmark.png — the same file the portal
@@ -15,7 +16,7 @@ export default function Logo({ onClick, onDark = false }) {
       component={RouterLink}
       to="/"
       onClick={onClick}
-      aria-label="Digifunzi — home"
+      aria-label="Digifunzi home"
       sx={{
         display: 'inline-flex',
         alignItems: 'center',
@@ -27,8 +28,7 @@ export default function Logo({ onClick, onDark = false }) {
         letterSpacing: '-0.02em',
       }}
     >
-      <Box
-        component="img"
+      <Img
         src="/wordmark.png"
         alt="Digifunzi"
         // The file's real size — lets the browser hold the space before the image arrives.

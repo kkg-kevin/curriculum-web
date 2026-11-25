@@ -80,7 +80,7 @@ function ComingSoon() {
         Bootcamps are on the way
       </Typography>
       <Typography sx={{ color: 'text.secondary', mb: 4 }}>
-        We&apos;re putting together our first holiday bootcamps — dates, age groups and the projects
+        We&apos;re putting together our first holiday bootcamps: dates, age groups and the projects
         each one builds towards. Tell us your learner&apos;s age and we&apos;ll let you know as soon
         as bookings open.
       </Typography>
@@ -145,7 +145,7 @@ export default function BootcampsPage() {
     <>
       <SeoHead
         title="Holiday Bootcamps for Kids in Kenya"
-        description="Short, intensive holiday robotics and coding bootcamps for young learners in Kenya — a full build packed into a week or two, with a showcase at the end."
+        description="Short, intensive holiday robotics and coding bootcamps for young learners in Kenya: a full build packed into a week or two, with a showcase at the end."
       />
       <JsonLd
         data={[
@@ -159,7 +159,7 @@ export default function BootcampsPage() {
 
       <PageHeader
         title="Bootcamps"
-        lead="Short, intensive holiday programmes — a full robotics or coding build packed into a week or two, with a showcase at the end."
+        lead="Short, intensive holiday programmes: a full robotics or coding build packed into a week or two, with a showcase at the end."
       >
         {!isLoading && !isError && openCount > 0 && (
           <Box
@@ -229,7 +229,7 @@ export default function BootcampsPage() {
 
       <CTABanner
         heading="Not sure where to start?"
-        body="Pathways and guided projects run all year — a bootcamp is a fast way in, but not the only one. Tell us about your learner and we'll point you the right way."
+        body="Pathways and guided projects run all year. A bootcamp is a fast way in, but not the only one. Tell us about your learner and we'll point you the right way."
         primary={{ label: 'Talk to us', to: '/contact' }}
         secondary={{ label: 'Browse projects', to: '/store?category=projects' }}
       />

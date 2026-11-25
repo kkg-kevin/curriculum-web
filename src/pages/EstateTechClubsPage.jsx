@@ -44,7 +44,7 @@ export default function EstateTechClubsPage() {
   return (
     <>
       <SeoHead
-        title="Estate Tech Clubs — Coding & Robotics Clubs for Kids"
+        title="Estate Tech Clubs: Coding & Robotics for Kids"
         description="Digifunzi estate tech clubs bring coding, robotics and AI to kids close to home in Kiambu, plus an online club. Find a club near you, see its days and hours, and enquire."
       />
       <JsonLd

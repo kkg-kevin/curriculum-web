@@ -116,7 +116,7 @@ export default function CompetitionDetailPage() {
 
   const dates = formatDateRange(startDate, endDate);
   const statusLabel = competitionStatusLabel(status, endDate);
-  const enquireTo = `/contact?subject=${encodeURIComponent(`${name} — entry details`)}`;
+  const enquireTo = `/contact?subject=${encodeURIComponent(`${name}: entry details`)}`;
   const entryLabel = entryModesLabel(data);
   const canRegister = Boolean(registration?.open) && tracks.length > 0;
   const aboutHtml = hasRich(descriptionHtml) ? safeHtml(descriptionHtml) : '';
@@ -127,6 +127,7 @@ export default function CompetitionDetailPage() {
       <SeoHead
         title={titleWithKind(name, 'Competition')}
         description={description || `Register for ${name}.`}
+        about="A Digifunzi coding and robotics competition for kids in Kenya. See the tracks and register online."
         image={resolveMediaUrl(coverImage) || undefined}
       />
       <JsonLd
@@ -175,7 +176,7 @@ export default function CompetitionDetailPage() {
               <>
                 <DetailHeading title={tracks.length === 1 ? 'The track' : 'Tracks'} icon={<EmojiEventsIcon />} tight />
                 <Typography sx={{ color: 'text.secondary', mb: 4, maxWidth: 620 }}>
-                  Each participant or team enters one track. Choose the one that fits their age and interests — Know More has the full details.
+                  Each participant or team enters one track. Choose the one that fits their age and interests. Know More has the full details.
                 </Typography>
                 <Box sx={{ display: 'grid', gap: { xs: 3, md: 3.5 }, gridTemplateColumns: { xs: '1fr', md: tracks.length === 1 ? 'minmax(0, 720px)' : 'repeat(2, minmax(0, 1fr))', lg: tracks.length >= 3 ? 'repeat(3, minmax(0, 1fr))' : undefined } }}>
                   {tracks.map((t, i) => <TrackCard key={t.id} slug={slug} track={t} index={i} registration={registration} coverImage={coverImage} />)}
@@ -184,7 +185,7 @@ export default function CompetitionDetailPage() {
             ) : (
               <Box sx={{ maxWidth: 720 }}>
                 <Typography sx={{ color: 'text.secondary' }}>
-                  Track details for this edition aren&apos;t published yet — send an enquiry and we&apos;ll share them as soon as they&apos;re confirmed.
+                  Track details for this edition aren&apos;t published yet. Send an enquiry and we&apos;ll share them as soon as they&apos;re confirmed.
                 </Typography>
               </Box>
             )}
@@ -215,7 +216,7 @@ export default function CompetitionDetailPage() {
 
       <CTABanner
         heading={canRegister ? `Register for ${name}` : `Enter ${name}`}
-        body={canRegister ? 'On your own or as a team — pick a track, register in a few minutes and pay the entry fee online.' : 'Tell us your learners’ ages and which track interests them — we’ll share entry details, dates and what to prepare.'}
+        body={canRegister ? 'On your own or as a team: pick a track, register in a few minutes and pay the entry fee online.' : 'Tell us your learners’ ages and which track interests them, and we’ll share entry details, dates and what to prepare.'}
         primary={canRegister ? { label: 'See the tracks', to: `/competitions/${slug}#tracks` } : { label: 'Ask about entering', to: enquireTo }}
         secondary={{ label: 'All competitions', to: '/competitions' }}
       />

@@ -21,7 +21,7 @@ export const hero = {
 export const valueProps = [
   {
     title: 'Learn by building',
-    body: 'Every session ends with something that works — a robot that moves, a program that plays, a circuit that lights up.',
+    body: 'Every session ends with something that works: a robot that moves, a program that plays, a circuit that lights up.',
   },
   {
     title: 'Progression that makes sense',
@@ -43,7 +43,7 @@ export const sectionSummaries = [
   {
     title: 'Bootcamps',
     to: '/bootcamps',
-    blurb: 'Short, intensive holiday programmes — a full robotics or coding build packed into a week or two, with a showcase at the end.',
+    blurb: 'Short, intensive holiday programmes: a full robotics or coding build packed into a week or two, with a showcase at the end.',
   },
   {
     title: 'Home Schooling',
@@ -58,7 +58,7 @@ export const sectionSummaries = [
   {
     title: 'Schools',
     to: '/schools',
-    blurb: 'Robotics, AI and coding for primary and secondary schools — a full curriculum, the Quarky robot, teacher training and mentor support.',
+    blurb: 'Robotics, AI and coding for primary and secondary schools: a full curriculum, the Quarky robot, teacher training and mentor support.',
   },
   {
     title: 'Pathways',
@@ -68,7 +68,7 @@ export const sectionSummaries = [
   {
     title: 'Store',
     to: '/store',
-    blurb: 'The Quarky robot, kits and guided build projects your child keeps for life — paid by M-Pesa, bank or cash.',
+    blurb: 'The Quarky robot, kits and guided build projects your child keeps for life, paid by M-Pesa, bank or cash.',
   },
 ];
 

@@ -68,7 +68,7 @@ export default function ProductBuyPanel({ chips = [], name, tagline, kind, item,
 
       <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
         Buying for a school or club?{' '}
-        <Link component={RouterLink} to={`/contact?subject=${encodeURIComponent(`School quote — ${name}`)}`} sx={{ fontWeight: 700 }}>
+        <Link component={RouterLink} to={`/contact?subject=${encodeURIComponent(`School quote: ${name}`)}`} sx={{ fontWeight: 700 }}>
           Get a class-set quote
         </Link>
       </Typography>

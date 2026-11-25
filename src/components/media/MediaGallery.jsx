@@ -41,7 +41,7 @@ export default function MediaGallery({ images, alt, ratio = '16 / 10', fallback 
     <Box
       role="region"
       aria-roledescription="carousel"
-      aria-label={`${alt} — images`}
+      aria-label={`${alt}: images`}
       onKeyDown={(e) => {
         if (!many) return;
         if (e.key === 'ArrowLeft') go(-1);
@@ -87,7 +87,7 @@ export default function MediaGallery({ images, alt, ratio = '16 / 10', fallback 
                   '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
                 }}
               >
-                <FramedImage src={url} alt={many ? `${alt} — image ${i + 1} of ${urls.length}` : alt} ratio={ratio} eager={i === 0} />
+                <FramedImage src={url} alt={many ? `${alt}, image ${i + 1} of ${urls.length}` : alt} ratio={ratio} eager={i === 0} />
               </Box>
             ))}
           </Box>

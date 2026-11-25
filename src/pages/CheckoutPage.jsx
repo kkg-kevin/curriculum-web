@@ -84,10 +84,10 @@ function Placed({ result, phone }) {
     <Box sx={{ ...sectionSx, py: { xs: 3, sm: 4 } }}>
       <Box sx={{ textAlign: 'center', mb: 3 }}>
         <CheckCircleRoundedIcon sx={{ fontSize: 48, color: 'success.main', mb: 1 }} />
-        <Typography variant="h3" component="h2" sx={{ mb: 1 }}>Order {result.orderNumber} placed — now pay</Typography>
+        <Typography variant="h3" component="h2" sx={{ mb: 1 }}>Order {result.orderNumber} placed. Now pay</Typography>
         <Typography color="text.secondary" sx={{ maxWidth: 540, mx: 'auto' }}>
           We&apos;ve emailed you the details.{' '}
-          {result.fulfilment.method === 'pickup' && `You'll collect it at ${result.fulfilment.hubName} — we'll email you when it's ready.`}
+          {result.fulfilment.method === 'pickup' && `You'll collect it at ${result.fulfilment.hubName}. We'll email you when it's ready.`}
           {result.fulfilment.method === 'delivery' && "We'll email you when it's on its way."}
           {result.child && ' The projects open in your child’s learner account as soon as your payment is confirmed.'}
         </Typography>
@@ -98,8 +98,8 @@ function Placed({ result, phone }) {
         amountDue={result.amountDue}
         invoiceNumber={result.invoiceNumber}
         defaultPhone={phone}
-        paidMessage={result.child ? 'Paid — the projects are in your child’s account.' : 'Paid — thank you! We’ll get your order ready.'}
-        laterNote="Not paying right now? That’s fine — the email we’ve just sent you has a link to pay any time in the next 14 days."
+        paidMessage={result.child ? 'Paid. The projects are in your child’s account.' : 'Paid. Thank you! We’ll get your order ready.'}
+        laterNote="Not paying right now? That’s fine. The email we’ve just sent you has a link to pay any time in the next 14 days."
       />
 
       {result.child && (
@@ -268,7 +268,7 @@ export default function CheckoutPage() {
   return (
     <>
       <SeoHead title="Checkout" noindex />
-      <PageHeader title="Checkout" lead="A few details and you're done. You'll pay on the last step — by M-Pesa, bank or cash." />
+      <PageHeader title="Checkout" lead="A few details and you're done. You'll pay on the last step, by M-Pesa, bank or cash." />
       <Section py={{ xs: 5, md: 8 }}>
         <Box ref={flowRef} sx={{ maxWidth: 1080, mx: 'auto' }}>
           <Stepper activeStep={step} alternativeLabel sx={{ mb: 4 }}>
@@ -340,13 +340,13 @@ export default function CheckoutPage() {
                   ) : (
                     <>
                       <RadioGroup value={method} onChange={set('method')} sx={{ mb: 2, gap: 1 }}>
-                        {pickup?.enabled && <FormControlLabel value="pickup" control={<Radio />} label={<span><strong>{FULFILMENT_LABEL.pickup}</strong> — free</span>} />}
-                        {delivery?.enabled && <FormControlLabel value="delivery" control={<Radio />} label={<span><strong>{FULFILMENT_LABEL.delivery}</strong> — {Number(delivery.fee) > 0 ? formatKsh(delivery.fee, currency) : 'free'}</span>} />}
+                        {pickup?.enabled && <FormControlLabel value="pickup" control={<Radio />} label={<span><strong>{FULFILMENT_LABEL.pickup}</strong> (free)</span>} />}
+                        {delivery?.enabled && <FormControlLabel value="delivery" control={<Radio />} label={<span><strong>{FULFILMENT_LABEL.delivery}</strong> ({Number(delivery.fee) > 0 ? formatKsh(delivery.fee, currency) : 'free'})</span>} />}
                       </RadioGroup>
                       {method === 'pickup' && (
                         <Box sx={{ display: 'grid', gap: 1 }}>
                           <TextField select label="Hub" value={form.hubId} onChange={set('hubId')} fullWidth>
-                            {pickup.hubs.map((h) => <MenuItem key={h.id} value={h.id}>{h.name}{h.town ? ` — ${h.town}` : ''}</MenuItem>)}
+                            {pickup.hubs.map((h) => <MenuItem key={h.id} value={h.id}>{h.name}{h.town ? `, ${h.town}` : ''}</MenuItem>)}
                           </TextField>
                           {pickup.note && <Typography variant="body2" color="text.secondary">{pickup.note}</Typography>}
                         </Box>
@@ -372,7 +372,7 @@ export default function CheckoutPage() {
                   <Typography variant="h4" component="h2" sx={{ mb: 2 }}>Check your order</Typography>
                   {[
                     { title: 'You', to: 0, lines: [form.name, form.email, form.phone] },
-                    ...(hasProjects ? [{ title: 'Projects for', to: 0, lines: [form.childMode === 'new' ? `${form.childName} (age ${ageOn(form.childDateOfBirth)}) — username ${form.childUsername}` : `Your child @${form.childUsername}`] }] : []),
+                    ...(hasProjects ? [{ title: 'Projects for', to: 0, lines: [form.childMode === 'new' ? `${form.childName} (age ${ageOn(form.childDateOfBirth)}), username ${form.childUsername}` : `Your child @${form.childUsername}`] }] : []),
                     ...(hasPhysical ? [{
                       title: 'Getting it', to: 1,
                       lines: method === 'pickup'

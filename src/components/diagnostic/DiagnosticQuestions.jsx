@@ -167,7 +167,7 @@ function OrderingField({ item, value, onChange }) {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
       <Typography sx={{ fontSize: 14, color: 'text.secondary', fontWeight: 600 }}>
-        Use the arrows to put these in the right order — first at the top.
+        Use the arrows to put these in the right order, first at the top.
       </Typography>
       {order.map((step, i) => {
         const tint = LETTER_COLORS[i % LETTER_COLORS.length];
@@ -269,7 +269,7 @@ export function ItemField({ item, value, onChange }) {
 /** A short hint under the question for the kinds that need one. */
 export function kindHint(item) {
   if (item.kind === 'mcqMultiple') return 'Pick all the answers you think are right.';
-  if (item.kind === 'canDo') return 'Be honest — there’s no wrong answer here.';
+  if (item.kind === 'canDo') return 'Be honest. There’s no wrong answer here.';
   if (item.kind === 'fillBlank') return 'Type your answer.';
   return null;
 }

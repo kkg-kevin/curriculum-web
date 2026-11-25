@@ -32,7 +32,7 @@ export default function Lightbox({ urls, index, onIndex, onClose, alt }) {
       open={open}
       onClose={onClose}
       fullScreen
-      aria-label={`${alt} — full-screen images`}
+      aria-label={`${alt}: full-screen images`}
       PaperProps={{ sx: { bgcolor: 'rgba(8,14,26,0.96)', backgroundImage: 'none' } }}
       onKeyDown={(e) => {
         if (!many) return;
@@ -54,7 +54,7 @@ export default function Lightbox({ urls, index, onIndex, onClose, alt }) {
           <Box
             component="img"
             src={urls[index]}
-            alt={many ? `${alt} — image ${index + 1} of ${urls.length}` : alt}
+            alt={many ? `${alt}, image ${index + 1} of ${urls.length}` : alt}
             sx={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: 1 }}
           />
           <IconButton aria-label="Close" onClick={onClose} sx={{ position: 'absolute', top: 16, right: 16, color: '#fff', bgcolor: 'rgba(255,255,255,0.12)', '&:hover': { bgcolor: 'rgba(255,255,255,0.24)' } }}>

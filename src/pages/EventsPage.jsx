@@ -47,7 +47,7 @@ export default function EventsPage() {
   return (
     <>
       <SeoHead
-        title="Free Events for Families — Showcases & Open Days"
+        title="Free Events for Families: Showcases & Open Days"
         description="Free Digifunzi events in Kenya: see what young coders and robot builders have made, try it yourself, meet the mentors and find the right programme for your child."
       />
       <JsonLd
@@ -68,7 +68,7 @@ export default function EventsPage() {
           <Typography variant="overline" sx={{ color: 'secondary.dark', fontWeight: 900, letterSpacing: '0.12em' }}>Free · For the whole family</Typography>
           <Typography variant="h1" component="h1" sx={{ fontWeight: 900, mt: 0.5, mb: 1 }}>Come and see what kids can build</Typography>
           <Typography sx={{ color: 'text.secondary', fontSize: { xs: 16, md: 18 } }}>
-            Showcases, open days and talks — try the projects, meet the mentors, and find the right programme for your child.
+            Showcases, open days and talks. Try the projects, meet the mentors, and find the right programme for your child.
           </Typography>
         </Box>
 
@@ -77,7 +77,7 @@ export default function EventsPage() {
         {featured && <FeaturedEvent event={featured} />}
         {!upcoming.isLoading && !upcoming.isError && !featured && (
           <NotifyMe
-            title="No events on the calendar — yet"
+            title="No events on the calendar yet"
             lead="We run a showcase at the end of every bootcamp and open days through the year. Leave your details and we'll tell you the moment the next one is announced."
           />
         )}
@@ -96,7 +96,7 @@ export default function EventsPage() {
 
       <Section dots py={{ xs: 6, md: 9 }}>
         <Typography variant="h3" component="h2" sx={{ fontWeight: 900, mb: 1 }}>Why families come</Typography>
-        <Typography sx={{ color: 'text.secondary', mb: 3.5, maxWidth: 640 }}>An hour or two that answers the big question: what would my child actually do — and would they love it?</Typography>
+        <Typography sx={{ color: 'text.secondary', mb: 3.5, maxWidth: 640 }}>An hour or two that answers the big question: what would my child actually do, and would they love it?</Typography>
         <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))', lg: 'repeat(4, minmax(0, 1fr))' } }}>
           {WHY_COME.map((w, i) => (
             <Box key={w.title} sx={{ p: 2.5, borderRadius: 4, bgcolor: 'surface.card', border: '1px solid', borderColor: 'divider' }}>

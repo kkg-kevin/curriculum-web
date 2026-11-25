@@ -192,7 +192,7 @@ export default function StoreListPage() {
   return (
     <>
       <SeoHead
-        title="Store — Quarky Robot, Kits & Guided Build Projects"
+        title="Store: Quarky Robot Kits & Build Projects"
         // Nothing for sale yet → an empty page; keep it out of search until there is (sitemap.xml
         // drops any noindex page too — scripts/generate-sitemap.js).
         noindex={ready && count === 0}
@@ -262,7 +262,7 @@ export default function StoreListPage() {
         {ready && count === 0 && (
           <EmptyBlock
             title="The store is being stocked"
-            body="We're finalising our first kits and projects. Check back soon — or contact us and we'll tell you what's coming and put together a quote."
+            body="We're finalising our first kits and projects. Check back soon, or contact us and we'll tell you what's coming and put together a quote."
           />
         )}
 
@@ -330,7 +330,7 @@ export default function StoreListPage() {
               <Box sx={{ textAlign: 'center' }}>
                 <EmptyBlock
                   title={query.trim() ? `Nothing matches “${query.trim()}”` : 'Nothing in this category yet'}
-                  body="Try another search or category — or get in touch and tell us what you're after."
+                  body="Try another search or category, or get in touch and tell us what you're after."
                 />
                 <Button variant="outlined" sx={{ mt: 2 }} onClick={() => { setQuery(''); setCategory('all'); }}>
                   Show everything
@@ -355,7 +355,7 @@ export default function StoreListPage() {
 
       <CTABanner
         heading="Buying for a school or club?"
-        body="Tell us how many learners you have and which kits or projects you're interested in — we'll put together a quote with classroom pricing."
+        body="Tell us how many learners you have and which kits or projects you're interested in, and we'll put together a quote with classroom pricing."
         primary={{ label: 'Request a quote', to: '/contact?subject=School%20store%20enquiry' }}
         secondary={{ label: 'See our school programme', to: '/schools' }}
       />

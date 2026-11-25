@@ -23,7 +23,7 @@ export default function HomeSchoolingSignupPage() {
     <>
       <SeoHead
         title="Sign up for Home Schooling"
-        description="Create your family’s Digifunzi Home Schooling accounts — choose a package, add your children and your home details."
+        description="Create your family’s Digifunzi Home Schooling accounts: choose a package, add your children and your home details."
         noindex
       />
       <PageHeader

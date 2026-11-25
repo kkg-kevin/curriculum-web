@@ -149,7 +149,7 @@ export default function PathwayCard({ pathway, age = null }) {
             >
               <CheckCircleRoundedIcon sx={{ fontSize: 18, color: 'success.main', mt: 0.15 }} />
               <Typography variant="body2" sx={{ fontWeight: 600, lineHeight: 1.45 }}>
-                Age {age}: Stage {fitIndex + 1}{fit.name ? ` — ${fit.name}` : ''}
+                Age {age}: Stage {fitIndex + 1}{fit.name ? `: ${fit.name}` : ''}
               </Typography>
             </Box>
           ) : (
@@ -235,7 +235,7 @@ export default function PathwayCard({ pathway, age = null }) {
           open={plansOpen}
           onClose={() => setPlansOpen(false)}
           title={`${plans.length === 1 ? 'Plan' : 'Plans'} for ${name}`}
-          lead="Every stage’s courses, self-paced. Renews automatically — the courses stay open while it’s paid."
+          lead="Every stage’s courses, self-paced. Renews automatically, and the courses stay open while it’s paid."
           plans={plans}
           linkFor={(plan, period) => `${enrollTo}&plan=${encodeURIComponent(plan.id)}&period=${encodeURIComponent(period)}`}
           fallbackFeature="Every course of the pathway, self-paced"

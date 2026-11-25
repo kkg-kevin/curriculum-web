@@ -127,7 +127,7 @@ function Benefits() {
       <SectionHeading
         eyebrow="What your family gets"
         title="Structured learning, in your own home"
-        lead="Each child learns at their own level, taught at home by a Digifunzi educator — with progress you can follow."
+        lead="Each child learns at their own level, taught at home by a Digifunzi educator, with progress you can follow."
         align="center"
       />
       <Box sx={{ mt: { xs: 5, md: 7 }, display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' } }}>
@@ -297,7 +297,7 @@ function Faq({ packages }) {
   return (
     <Section tone="subtle">
       <Box sx={{ display: 'grid', gap: { xs: 4, md: 8 }, gridTemplateColumns: { xs: '1fr', md: '4fr 7fr' }, alignItems: 'start' }}>
-        <SectionHeading eyebrow="Questions" title="Good to know" lead="The things parents ask us most. Anything else — just ask." />
+        <SectionHeading eyebrow="Questions" title="Good to know" lead="The things parents ask us most. Anything else? Just ask." />
         <Box>
           <FaqList faqs={faqs} />
         </Box>
@@ -313,7 +313,7 @@ export default function HomeSchoolingPage() {
     <>
       <SeoHead
         title="Home Schooling Packages for Families in Kenya"
-        description="An educator teaches your children at home, each at the right level. Simple family packages — see prices and enquire for free."
+        description="An educator teaches your children at home, each at the right level. Simple family packages: see prices and enquire for free."
       />
       <JsonLd data={organizationSchema()} />
 
@@ -325,7 +325,7 @@ export default function HomeSchoolingPage() {
       <Box sx={{ pt: { xs: 7, md: 10 } }}>
         <CTABanner
           heading="Ready to bring learning home?"
-          body="Sign up in a few minutes — choose a package, add your children and your home. Rather talk first? Ask us anything."
+          body="Sign up in a few minutes: choose a package, add your children and your home. Rather talk first? Ask us anything."
           primary={{ label: 'Sign up now', to: homeSchoolingSignupPath() }}
           secondary={{ label: 'Ask a question', to: homeSchoolingEnquiryPath() }}
         />

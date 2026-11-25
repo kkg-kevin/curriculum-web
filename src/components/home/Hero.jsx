@@ -1,5 +1,6 @@
 import { Link as RouterLink } from 'react-router-dom';
 import Box from '@mui/material/Box';
+import Img from '../common/Img.jsx';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -170,13 +171,16 @@ function HeroStudents() {
         WebkitMaskImage: { md: 'linear-gradient(90deg, rgba(0,0,0,0.22) 22%, #000 64%)' },
       }}
     >
-      <Box
+      <Img
         className="df-anim-float"
-        component="img"
-        src="/hero-kids.png"
+        // WebP at two widths (19 KB / 37 KB) instead of the 318 KB, 2732px PNG: it's a faint
+        // background, so 1600px is plenty even on a wide screen.
+        src="/hero-kids-1600.webp"
+        srcSet="/hero-kids-960.webp 960w, /hero-kids-1600.webp 1600w"
+        sizes="100vw"
         alt=""
-        width={1366}
-        height={768}
+        width={1600}
+        height={900}
         sx={{
           display: 'block',
           width: '100%',

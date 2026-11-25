@@ -48,7 +48,7 @@ export default function CompetitionsPage() {
     <>
       <SeoHead
         title="Coding & Robotics Competitions for Kids"
-        description="Friendly, team-based coding, AI and robotics competitions for young learners in Kenya — pick a track, build a project, and present it to judges."
+        description="Friendly, team-based coding, AI and robotics competitions for young learners in Kenya. Pick a track, build a project, and present it to judges."
       />
       <JsonLd
         data={[
@@ -62,7 +62,7 @@ export default function CompetitionsPage() {
 
       <PageHeader
         title="Competitions"
-        lead="We run friendly, skills-building competitions that give learners a real goal to build towards — and a stage to show what they have made. Pick a track, build with your team, and present it to judges."
+        lead="We run friendly, skills-building competitions that give learners a real goal to build towards, and a stage to show what they have made. Pick a track, build with your team, and present it to judges."
       >
         {!isLoading && !isError && liveCount > 0 && (
           <Box
@@ -91,7 +91,7 @@ export default function CompetitionsPage() {
         <Box sx={{ maxWidth: 760, mb: 5 }}>
           <Typography sx={{ mb: 2, color: 'text.secondary' }}>
             Competitions are team-based and mentor-supported. The emphasis is on learning by building,
-            presenting clearly, and good sportsmanship — not just winning.
+            presenting clearly, and good sportsmanship, not just winning.
           </Typography>
           <Typography sx={{ color: 'text.secondary' }}>
             Most events are open to learners already enrolled in a Digifunzi pathway or bootcamp.

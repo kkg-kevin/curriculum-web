@@ -248,7 +248,7 @@ export const homeSchoolingBenefits = [
   {
     icon: 'level',
     title: 'The right level for each child',
-    body: 'Every child follows their own curriculum and grade, with their own courses — not a one-size-fits-all lesson.',
+    body: 'Every child follows their own curriculum and grade, with their own courses, not a one-size-fits-all lesson.',
   },
   {
     icon: 'progress',
@@ -258,12 +258,12 @@ export const homeSchoolingBenefits = [
   {
     icon: 'billing',
     title: 'One simple family fee',
-    body: 'One package price for the whole family, with a single invoice each billing period — weekly, monthly, quarterly or yearly, depending on the package.',
+    body: 'One package price for the whole family, with a single invoice each billing period: weekly, monthly, quarterly or yearly, depending on the package.',
   },
 ];
 
 export const homeSchoolingSteps = [
-  { title: 'Sign up', body: 'Choose your package and create logins for you and your children — it takes a few minutes.' },
+  { title: 'Sign up', body: 'Choose your package and create logins for you and your children. It takes a few minutes.' },
   { title: 'Pay and get approved', body: 'Pay your first invoice. As soon as we confirm it, your logins unlock.' },
   { title: 'Meet your educator', body: 'We place each child at the right level and assign an educator to teach them at home.' },
   { title: 'Watch them grow', body: 'Lessons, assessments and reports build a clear picture of each child’s progress, month after month.' },
@@ -284,19 +284,19 @@ export function homeSchoolingFaqs(lowestExtra) {
       q: 'Can I add another child later?',
       a: lowestExtra != null
         ? `Yes. Some packages let you add children for ${formatKsh(lowestExtra.amount)} per ${periodUnit(lowestExtra.billingPeriod)} each, or you can move to a larger package. Our team will confirm the new total, which starts from your next billing period.`
-        : 'Yes — you can move to a larger package at any time. Our team will confirm the new total, which starts from your next billing period.',
+        : 'Yes. You can move to a larger package at any time. Our team will confirm the new total, which starts from your next billing period.',
     },
     {
       q: 'How does payment work?',
-      a: 'Your family receives one invoice for each billing period of your package (every week, month, quarter or year) — the first one when you sign up, then automatically from the day you joined.',
+      a: 'Your family receives one invoice for each billing period of your package (every week, month, quarter or year): the first one when you sign up, then automatically from the day you joined.',
     },
     {
       q: 'How do I sign up and pay?',
-      a: 'Choose a package and click Sign up. You create logins for yourself (your email) and each child (a username), then pay the first month in cash to our team. Your logins unlock as soon as we confirm the payment — until then, signing in shows “payment pending”.',
+      a: 'Choose a package and click Sign up. You create logins for yourself (your email) and each child (a username), then pay the first month in cash to our team. Your logins unlock as soon as we confirm the payment. Until then, signing in shows “payment pending”.',
     },
     {
       q: 'Can I ask questions before signing up?',
-      a: 'Of course. Use “Ask a question” and our team will call you — it doesn’t commit you to anything.',
+      a: 'Of course. Use “Ask a question” and our team will call you. It doesn’t commit you to anything.',
     },
   ];
 }

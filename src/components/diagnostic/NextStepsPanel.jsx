@@ -190,7 +190,7 @@ export default function NextStepsPanel({
         Where to from here
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, mb: 2.5, maxWidth: 560 }}>
-        The diagnostic is a starting point. Pick whichever suits you — nothing here is a
+        The diagnostic is a starting point. Pick whichever suits you. Nothing here is a
         commitment.
       </Typography>
 
@@ -200,7 +200,7 @@ export default function NextStepsPanel({
             highlighted
             icon={<HowToRegIcon />}
             title={`Enroll now in ${bootcamp.name}`}
-            body="Set up an account right away — pay by cash and your account unlocks fully as soon as that's confirmed."
+            body="Set up an account right away. Pay by cash and your account unlocks fully as soon as that's confirmed."
             onClick={() => setShowBootcampEnroll(true)}
           />
         ) : (
@@ -210,7 +210,7 @@ export default function NextStepsPanel({
               icon={<HowToRegIcon />}
               title={`Enrol in ${pathwayName}`}
               body={hubs.length
-                ? `Runs at ${hubs.length} hub${hubs.length === 1 ? '' : 's'} — choose where the learner will attend.`
+                ? `Runs at ${hubs.length} hub${hubs.length === 1 ? '' : 's'}. Choose where the learner will attend.`
                 : 'We place the learner at the right course for their age and this result, and get them started.'}
               onClick={() => setShowHubs((v) => !v)}
               trailingIcon={chevron(showHubs)}

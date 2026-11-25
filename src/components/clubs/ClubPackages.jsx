@@ -43,7 +43,7 @@ export default function ClubPackages({ hub, packages }) {
         ))}
       </Box>
       <Typography variant="body2" color="text.secondary" sx={{ mt: 2.5 }}>
-        Prices are in Kenyan shillings, per the period chosen on each package{lowest ? ` — ${fromLabel(lowest).toLowerCase()}` : ''}. You pay the
+        Prices are in Kenyan shillings, per the period chosen on each package{lowest ? ` (${fromLabel(lowest).toLowerCase()})` : ''}. You pay the
         first period when you sign up; after that, one invoice each period, from the day you joined.
       </Typography>
     </DetailSection>

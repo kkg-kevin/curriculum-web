@@ -36,6 +36,8 @@ const BootcampEnrollPage = lazy(() => import('../pages/BootcampEnrollPage.jsx'))
 const HubDetailPage = lazy(() => import('../pages/HubDetailPage.jsx'));
 const EstateTechClubsPage = lazy(() => import('../pages/EstateTechClubsPage.jsx'));
 const EstateTechClubPage = lazy(() => import('../pages/EstateTechClubPage.jsx'));
+const LocationsPage = lazy(() => import('../pages/LocationsPage.jsx'));
+const LocationPage = lazy(() => import('../pages/LocationPage.jsx'));
 const ClubSignupPage = lazy(() => import('../pages/ClubSignupPage.jsx'));
 const CompetitionsPage = lazy(() => import('../pages/CompetitionsPage.jsx'));
 const CompetitionDetailPage = lazy(() => import('../pages/CompetitionDetailPage.jsx'));
@@ -92,6 +94,9 @@ export const routes = [
       { path: 'events/:slug', element: <EventDetailPage /> },
       { path: 'estate-tech-clubs', element: <EstateTechClubsPage /> },
       { path: 'estate-tech-clubs/:slug', element: <EstateTechClubPage /> },
+      // Town pages (25 Nov 2026): every town we teach in, and one page each.
+      { path: 'locations', element: <LocationsPage /> },
+      { path: 'locations/:slug', element: <LocationPage /> },
       { path: 'estate-tech-clubs/:slug/join', element: <ClubSignupPage /> },
       { path: 'home-schooling', element: <HomeSchoolingPage /> },
       { path: 'home-schooling/signup', element: <HomeSchoolingSignupPage /> },

@@ -103,8 +103,9 @@ export default function CompetitionTrackPage() {
   return (
     <>
       <SeoHead
-        title={titleWithKind(`${track.name} — ${competitionName}`, 'Competition track')}
+        title={titleWithKind(`${track.name}, ${competitionName}`, 'Competition track')}
         description={track.description || `${track.name}, a track of ${competitionName}.`}
+        about="A Digifunzi coding and robotics competition for kids in Kenya. See the tracks and register online."
         image={track.coverImage || data.coverImage || undefined}
       />
       <JsonLd

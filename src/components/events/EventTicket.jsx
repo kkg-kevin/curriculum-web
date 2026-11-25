@@ -55,7 +55,7 @@ export default function EventTicket({ token, code, name, partySize, event }) {
           </Box>
           <Typography sx={{ mt: 1, fontFamily: 'Consolas, "Courier New", monospace', fontSize: { xs: 26, sm: 30 }, fontWeight: 800, letterSpacing: '0.12em', color: 'text.primary' }}>{code}</Typography>
           <Typography variant="body2" color="text.secondary">
-            {online ? 'Your ticket code — the join link appears on this page the day before.' : 'Show this QR code at the entrance — or just tell us your ticket code.'}
+            {online ? 'Your ticket code. The join link appears on this page the day before.' : 'Show this QR code at the entrance, or just tell us your ticket code.'}
           </Typography>
           <Box className="no-print" sx={{ mt: 1 }}>
             <Button variant="outlined" startIcon={<PrintRoundedIcon />} onClick={() => window.print()}>Print or save as PDF</Button>

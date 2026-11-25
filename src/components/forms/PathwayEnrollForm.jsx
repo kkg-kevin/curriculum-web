@@ -201,32 +201,32 @@ export default function PathwayEnrollForm({ pathway, defaultHubId = null, defaul
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mt: 2, mb: 0.5 }}>
           <CheckCircleIcon color="success" />
           <Typography variant="h5" component="h2" sx={{ fontWeight: 800 }}>
-            {names.length > 1 ? `${childNames} are` : `${childNames} is`} enrolled in {pathway.name} — now pay
+            {names.length > 1 ? `${childNames} are` : `${childNames} is`} enrolled in {pathway.name}. Now pay
           </Typography>
         </Box>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
           {mutation.data?.data?.subscription
-            ? <>On the {mutation.data.data.subscription.plan} plan — {formatKsh(mutation.data.data.subscription.amount, payment?.currency)} a {periodUnit(mutation.data.data.subscription.billingPeriod)}, renewing automatically. The logins work right away; the pathway’s courses open as soon as your payment is confirmed — self-paced, no class needed.</>
+            ? <>On the {mutation.data.data.subscription.plan} plan: {formatKsh(mutation.data.data.subscription.amount, payment?.currency)} a {periodUnit(mutation.data.data.subscription.billingPeriod)}, renewing automatically. The logins work right away; the pathway’s courses open as soon as your payment is confirmed. They’re self-paced, with no class needed.</>
             : <>At {mutation.data?.data?.hub?.name || hub?.name}. The logins work right away but stay view-only until your payment is confirmed; the hub then puts {names.length > 1 ? 'them' : first(submitted.children[0]?.name)} in a class.</>}
         </Typography>
         <Box sx={{ mb: 2.5, display: 'grid', gap: 0.75 }}>
           {learners.map((l) => (
             <Box key={l.username} sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, p: 1.5, borderRadius: 2, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider' }}>
-              <Typography variant="body2"><strong>{first(l.name)}</strong> — {l.stage ? `${l.stage}, ` : ''}starts at {l.startsAt}</Typography>
+              <Typography variant="body2"><strong>{first(l.name)}</strong>: {l.stage ? `${l.stage}, ` : ''}starts at {l.startsAt}</Typography>
               {!mutation.data?.data?.subscription && <Typography variant="body2" sx={{ fontWeight: 700, whiteSpace: 'nowrap' }}>{formatKsh(l.amount, payment?.currency)}</Typography>}
             </Box>
           ))}
         </Box>
         {payment?.amount > 0 && (
           <PaymentStep pay={payment.pay} amountDue={payment.amount} invoiceNumber={payment.invoiceNumber} defaultPhone={submitted.phone}
-            paidMessage="Full access is on — log in with the details below." />
+            paidMessage="Full access is on. Log in with the details below." />
         )}
         <Box sx={{ mb: 2.5, display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' } }}>
           <Box sx={{ p: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', display: 'grid', gap: 1.25, alignContent: 'start' }}>
             <Typography sx={{ fontWeight: 800 }}>Your parent account</Typography>
             <CopyableField label="Email" value={parentAccount?.email} />
             <Typography variant="body2" color="text.secondary">
-              {parentAccount?.existing ? `Sign in with your existing password — ${childNames} ${names.length > 1 ? 'have' : 'has'} been added to your account.` : 'Sign in with the password you just chose.'}
+              {parentAccount?.existing ? `Sign in with your existing password. ${childNames} ${names.length > 1 ? 'have' : 'has'} been added to your account.` : 'Sign in with the password you just chose.'}
             </Typography>
           </Box>
           {submitted.children.map((c) => (
@@ -241,7 +241,7 @@ export default function PathwayEnrollForm({ pathway, defaultHubId = null, defaul
           <Button variant="contained" size="large" fullWidth href={`${APP_URL}/login`} target="_blank" rel="noopener noreferrer">Go to login</Button>
           {parentToken && (
             <Button variant="outlined" size="large" fullWidth startIcon={<PersonAddAltRoundedIcon />} onClick={enrolAnother}>
-              Enrol another child — no need to type your password again
+              Enrol another child without typing your password again
             </Button>
           )}
         </Box>
@@ -264,7 +264,7 @@ export default function PathwayEnrollForm({ pathway, defaultHubId = null, defaul
         <Box>
           <Typography sx={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'primary.main', mb: 0.5 }}>Plan & hub</Typography>
           <Typography variant="h4" component="h2" sx={{ fontWeight: 800 }}>Choose a plan and a hub</Typography>
-          <Typography color="text.secondary" sx={{ mt: 0.75 }}>Every stage’s courses, self-paced. It renews automatically — the courses stay open while it’s paid.</Typography>
+          <Typography color="text.secondary" sx={{ mt: 0.75 }}>Every stage’s courses, self-paced. It renews automatically, and the courses stay open while it’s paid.</Typography>
         </Box>
 
         <Box component="fieldset" sx={{ border: 0, p: 0, m: 0, display: 'grid', gap: 1.25 }}>
@@ -359,7 +359,7 @@ export default function PathwayEnrollForm({ pathway, defaultHubId = null, defaul
             <CheckCircleIcon color="success" />
             <Box sx={{ flex: 1, minWidth: 180 }}>
               <Typography sx={{ fontWeight: 700 }}>Signed in as {parent.name || parent.email}</Typography>
-              <Typography variant="body2" color="text.secondary">{parent.email} — the learners join this account.</Typography>
+              <Typography variant="body2" color="text.secondary">{parent.email}. The learners join this account.</Typography>
             </Box>
             <Button size="small" onClick={signOut}>Not you?</Button>
           </Box>
@@ -372,7 +372,7 @@ export default function PathwayEnrollForm({ pathway, defaultHubId = null, defaul
           <Alert severity="info" icon={false} sx={{ py: 0.25 }}>
             Already have a Digifunzi account (for another child)?{' '}
             <Button size="small" onClick={() => setShowSignIn(true)} sx={{ verticalAlign: 'baseline', px: 0.5, minWidth: 0 }}>Sign in</Button>
-            {' '}— we’ll fill in your details.
+            {' '}and we’ll fill in your details.
           </Alert>
           <TextField label="Your name (parent or guardian)" required {...register('parentName')} error={!!errors.parentName} helperText={errors.parentName?.message} />
           <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
@@ -410,7 +410,7 @@ export default function PathwayEnrollForm({ pathway, defaultHubId = null, defaul
               <Typography variant="body2" sx={{ color: est.course ? 'text.secondary' : 'warning.main' }}>
                 {est.course
                   ? `${est.stage?.name ? `${est.stage.name} · ` : ''}starts at ${est.course.name}`
-                  : `${pathway.name} isn’t offered for age ${est.age} — enquire instead and our team will help.`}
+                  : `${pathway.name} isn’t offered for age ${est.age}. Enquire instead and our team will help.`}
               </Typography>
             )}
             <Typography sx={{ fontWeight: 600, fontSize: 14, mb: -0.5 }}>Their own login</Typography>
@@ -428,7 +428,7 @@ export default function PathwayEnrollForm({ pathway, defaultHubId = null, defaul
       <ReferralCodeField value={referralCode} onChange={setReferralCode} />
 
       {plan && planTotal == null && (
-        <Alert severity="warning">{plan.name} takes {plan.allowExtraChildren ? `up to ${plan.maxChildren}` : plan.childrenIncluded} {plan.childrenIncluded === 1 && !plan.allowExtraChildren ? 'child' : 'children'} — choose a larger plan or remove a learner.</Alert>
+        <Alert severity="warning">{plan.name} takes {plan.allowExtraChildren ? `up to ${plan.maxChildren}` : plan.childrenIncluded} {plan.childrenIncluded === 1 && !plan.allowExtraChildren ? 'child' : 'children'}. Choose a larger plan or remove a learner.</Alert>
       )}
       {estimateTotal != null && (
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2, flexWrap: 'wrap', p: 2, borderRadius: 2, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider' }}>

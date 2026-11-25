@@ -44,7 +44,7 @@ export const privacyPolicy = {
     {
       heading: 'What we do not collect',
       paragraphs: [
-        'This website does not use advertising or analytics cookies, and it does not track you across other sites. It keeps two small things in your own browser: whether you chose the light or dark theme, and how you first reached this website (the first page you opened, the site that linked you here, and any campaign tag on that link). The second is sent to us only with a form you submit, so we know which of our pages and posts help families find us. If you came by someone’s referral link, or type their referral code when signing up, we note that code so they can be thanked for referring you — they see only your first name and what you signed up for, never your contact details. A visit more than 30 days later starts it afresh. Club pages show a map from Google Maps; when it loads, Google may set its own cookies under Google’s privacy policy. We do not take card or mobile-money details on this site.',
+        'This website does not use advertising or analytics cookies, and it does not track you across other sites. It keeps two small things in your own browser: whether you chose the light or dark theme, and how you first reached this website (the first page you opened, the site that linked you here, and any campaign tag on that link). The second is sent to us only with a form you submit, so we know which of our pages and posts help families find us. If you came by someone’s referral link, or type their referral code when signing up, we note that code so they can be thanked for referring you. They see only your first name and what you signed up for, never your contact details. A visit more than 30 days later starts it afresh. Club pages show a map from Google Maps; when it loads, Google may set its own cookies under Google’s privacy policy. We do not take card or mobile-money details on this site.',
       ],
     },
     {
@@ -119,7 +119,7 @@ export const affiliateTerms = {
   description: 'The terms for Digifunzi affiliates: how referrals are credited, what you earn, when you are paid, and the rules for sharing.',
   updated: '6 November 2026',
   intro:
-    'These terms apply to anyone who joins the Digifunzi affiliate programme — whether you applied on this website or joined from your Digifunzi account. By applying or joining you agree to them.',
+    'These terms apply to anyone who joins the Digifunzi affiliate programme, whether you applied on this website or joined from your Digifunzi account. By applying or joining you agree to them.',
   sections: [
     {
       heading: 'Joining',
@@ -134,13 +134,13 @@ export const affiliateTerms = {
         'A family is credited to you when they open your link and sign up within the number of days shown on the Become an affiliate page, or when they type your code while signing up.',
         'A code typed at sign-up counts over a link. If a family followed another affiliate’s link first, the first affiliate within that time keeps the credit.',
         'A sign-up by you or your own household (your account, email or phone number) is never credited to you.',
-        'A family who blocks or clears their browser’s storage, or signs up on a different device, may not carry your link with them — ask them to type your code.',
+        'A family who blocks or clears their browser’s storage, or signs up on a different device, may not carry your link with them, so ask them to type your code.',
       ],
     },
     {
       heading: 'What you earn',
       paragraphs: [
-        'You earn the share shown on the Become an affiliate page of what a family you referred actually pays — never on an invoice that is unpaid or only partly paid. For programmes paid every week, month, quarter or year, you earn on the number of paid periods shown there; one-off purchases earn once.',
+        'You earn the share shown on the Become an affiliate page of what a family you referred actually pays, never on an invoice that is unpaid or only partly paid. For programmes paid every week, month, quarter or year, you earn on the number of paid periods shown there; one-off purchases earn once.',
         'Each amount waits for the number of days shown before it can be paid out, in case a payment is reversed or refunded. Amounts linked to a reversed or refunded payment, a sign-up that was not genuine, or a breach of these terms are cancelled.',
         'We may change the share, the number of periods, the waiting time or the minimum payout for the future. A change never reduces an amount you have already earned.',
       ],
@@ -160,14 +160,14 @@ export const affiliateTerms = {
         'send spam, or message people who have not agreed to hear from you;',
         'make promises on our behalf about prices, results, places or discounts that we have not published;',
         'pretend to be Digifunzi, use our name in paid search ads or in a website or social account name that could be mistaken for ours;',
-        'collect families’ details for us, or sign families up yourself — they sign up on our website;',
+        'collect families’ details for us, or sign families up yourself (they sign up on our website);',
         'offer cash or gifts to families for signing up through you, unless we have agreed to it in writing.',
       ],
     },
     {
       heading: 'Privacy',
       paragraphs: [
-        'You see only the first name of each family you referred, what they signed up for and what you earned — never their contact details. We use your own details only to run the programme and pay you, as our Privacy Policy explains.',
+        'You see only the first name of each family you referred, what they signed up for and what you earned, never their contact details. We use your own details only to run the programme and pay you, as our Privacy Policy explains.',
         'Keep your account password to yourself. If you think someone else knows it, change it in your account, or use “Forgot password?” on the sign-in page.',
       ],
     },

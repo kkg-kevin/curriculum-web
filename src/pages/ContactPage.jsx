@@ -103,7 +103,7 @@ export default function ContactPage() {
               <RouterLink to="/enroll" style={{ color: 'inherit', fontWeight: 600 }}>
                 Enroll a learner
               </RouterLink>{' '}
-              form instead — it captures your child’s age and interests so our team can follow up faster.
+              form instead. It captures your child’s age and interests so our team can follow up faster.
             </Typography>
           </Box>
         </Box>

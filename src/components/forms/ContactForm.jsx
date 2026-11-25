@@ -71,7 +71,7 @@ export default function ContactForm({ useLeadsEndpoint = false, defaultMessage =
     <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate sx={{ display: 'grid', gap: 2 }}>
       <FormStatus
         status={status}
-        successMessage={mutation.data?.message || 'Thanks — your message has been received and our team will be in touch.'}
+        successMessage={mutation.data?.message || 'Thanks, your message has been received and our team will be in touch.'}
         error={mutation.error}
       />
 

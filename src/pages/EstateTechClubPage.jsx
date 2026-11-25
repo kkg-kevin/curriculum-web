@@ -21,6 +21,7 @@ import ClubPackages from '../components/clubs/ClubPackages.jsx';
 import { ClubFaq, ClubJoinSteps, ClubPriceCard, ClubQuickFacts } from '../components/clubs/ClubSections.jsx';
 import { cheapestPrice, fromLabel } from '../content/homeSchooling.js';
 import { CLUBS_PATH, clubJoinPath, clubSlug, scheduleLabel, sessionLines, sortDays } from '../utils/clubs.js';
+import { hubLocationPath } from '../utils/locations.js';
 
 /**
  * One Estate Tech Club (`/estate-tech-clubs/:slug`). The hub is found in GET /api/public/hubs by
@@ -89,11 +90,11 @@ export default function EstateTechClubPage() {
   const joinPath = clubJoinPath(hub);
   const description =
     club.description ||
-    `Coding, robotics and AI for kids at ${hub.name}${where ? `, ${where}` : ''}. Run by Digifunzi — see the days, hours and how to join.`;
+    `Coding, robotics and AI for kids at ${hub.name}${where ? `, ${where}` : ''}. Run by Digifunzi. See the days, hours and how to join.`;
 
   return (
     <>
-      <SeoHead title={hub.name} description={description} image={profile.photos?.[0] || profile.photo || undefined} />
+      <SeoHead title={hub.name} description={description} about="A Digifunzi Estate Tech Club: coding and robotics for kids, close to home." image={profile.photos?.[0] || profile.photo || undefined} />
       <JsonLd
         data={[
           organizationSchema(),
@@ -124,6 +125,12 @@ export default function EstateTechClubPage() {
               </Typography>
             </Box>
             <FactPills items={facts} sx={{ mt: 2.5 }} />
+            {/* Its town's page: everything else Digifunzi runs there (25 Nov 2026). */}
+            {hubLocationPath(hub) && (
+              <Typography component={RouterLink} to={hubLocationPath(hub)} variant="body2" sx={{ display: 'inline-block', mt: 1.5, fontWeight: 700, color: 'primary.main', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>
+                {hub.isVirtual ? 'More Digifunzi online →' : `More Digifunzi in ${String(hub.town || '').split(',')[0].trim()} →`}
+              </Typography>
+            )}
           </Box>
           <ActionRow sx={{ flexShrink: 0 }}>
             {/* Parents join online; a club with no package on the website yet falls back to an enquiry. */}
@@ -170,7 +177,7 @@ export default function EstateTechClubPage() {
       <CTABanner
         heading={`Want your child to join ${hub.name}?`}
         body={canJoin
-          ? 'Sign up in a few minutes — choose a package and create your family’s logins.'
+          ? 'Sign up in a few minutes: choose a package and create your family’s logins.'
           : "Send us your details and we'll get back to you about places, days and what your child will learn."}
         primary={canJoin ? { label: 'Join now', to: joinPath } : { label: 'Enquire now', to: enquire }}
         secondary={{ label: 'See all clubs', to: CLUBS_PATH }}

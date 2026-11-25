@@ -47,7 +47,7 @@ const NOT_FOUND_ROUTE = '/__prerender-not-found__';
 // reachable, otherwise we'd bake a "couldn't load" / empty page into static HTML.
 // Skipped routes still work as a normal client-rendered SPA via the index.html
 // fallback.
-const DATA_DRIVEN_STATIC = new Set(['/pathways', '/store', '/bootcamps', '/competitions', '/home-schooling', '/estate-tech-clubs', '/events']);
+const DATA_DRIVEN_STATIC = new Set(['/pathways', '/store', '/bootcamps', '/competitions', '/home-schooling', '/estate-tech-clubs', '/events', '/locations']);
 
 // Most sections' items carry a slug; a learning hub doesn't, so an Estate Tech Club's address is
 // made from its name — the same rule as src/utils/clubs.js's clubSlug.
@@ -206,7 +206,7 @@ async function main() {
     return;
   }
 
-  const [pathwaySlugs, projectSlugs, storeSlugs, bootcampSlugs, competitionSlugs, clubSlugs, eventSlugs] = await Promise.all([
+  const [pathwaySlugs, projectSlugs, storeSlugs, bootcampSlugs, competitionSlugs, clubSlugs, eventSlugs, locationSlugs] = await Promise.all([
     getApiSlugs('/api/public/pathways', '../src/mocks/fixtures/pathways.js', 'pathways'),
     getApiSlugs('/api/public/projects', '../src/mocks/fixtures/projects.js', 'projects'),
     getApiSlugs('/api/public/store', '../src/mocks/fixtures/store.js', 'storeList'),
@@ -214,6 +214,7 @@ async function main() {
     getApiSlugs('/api/public/competitions', '../src/mocks/fixtures/competitions.js', 'competitionList'),
     getApiSlugs('/api/public/hubs', '../src/mocks/fixtures/hubs.js', 'hubs', byNameSlug),
     getApiSlugs('/api/public/events', null, null),
+    getApiSlugs('/api/public/locations', '../src/mocks/fixtures/locations.js', 'locations'),
   ]);
 
 
@@ -234,6 +235,7 @@ async function main() {
     '/competitions': competitionSlugs,
     '/estate-tech-clubs': clubSlugs,
     '/events': eventSlugs,
+    '/locations': locationSlugs,
   };
 
   const routes = [
@@ -245,6 +247,7 @@ async function main() {
     ...competitionSlugs.map((s) => `/competitions/${s}`),
     ...clubSlugs.map((s) => `/estate-tech-clubs/${s}`),
     ...eventSlugs.map((s) => `/events/${s}`),
+    ...locationSlugs.map((s) => `/locations/${s}`),
     NOT_FOUND_ROUTE,
   ];
 
@@ -262,7 +265,8 @@ async function main() {
   let ok = 0;
   const broken = [];
   try {
-    for (const route of routes) {
+    // One try at loading a page and waiting for it to settle → { page, ready }.
+    const load = async (route) => {
       const page = await browser.newPage();
       await page.setViewport({ width: 1200, height: 900 });
       // Snapshot the light theme deterministically — the client adjusts to the
@@ -289,8 +293,18 @@ async function main() {
         await new Promise((r) => setTimeout(r, SETTLE_WAIT_MS));
         ready = await page.evaluate(() => window.__APP_READY__ === true);
       }
+      return { page, ready };
+    };
+
+    for (const route of routes) {
+      // A page that never settles is tried once more (a slow API answer, 25 Nov 2026: a club page
+      // snapshotted half-loaded, with the home page's title and no description). Still not settled
+      // → the build fails: that page would go up as a copy of the start-up shell.
+      let { page, ready } = await load(route);
       if (!ready) {
-        console.warn(`[prerender] ${route}: __APP_READY__ not reached in ${READY_TIMEOUT_MS}ms — snapshotting anyway`);
+        console.warn(`[prerender] ${route}: __APP_READY__ not reached in ${READY_TIMEOUT_MS}ms — trying once more`);
+        await page.close();
+        ({ page, ready } = await load(route));
       }
       await page.evaluate(dedupeHeadTags);
       // The saved page must never start hidden: the start-up skeleton's class is added again by
@@ -298,7 +312,7 @@ async function main() {
       await page.evaluate(() => document.documentElement.classList.remove('app-booting'));
 
       const html = await page.content();
-      const problem = brokenSnapshot(route, html, sections);
+      const problem = ready ? brokenSnapshot(route, html, sections) : `never finished loading (twice, ${READY_TIMEOUT_MS / 1000} s each)`;
       if (problem) broken.push(`${route}: ${problem}`);
       let outFile;
       if (route === NOT_FOUND_ROUTE) outFile = path.join(DIST, '404.html');
@@ -320,7 +334,8 @@ async function main() {
     console.error(
       `[prerender] ${broken.length} page(s) came out without their content:\n` +
         broken.map((b) => `  - ${b}`).join('\n') +
-        `\n[prerender] The API answered this script but not the browser it drives. Most likely its ` +
+        `\n[prerender] "Never finished loading": the API was slow or down — build again. Otherwise ` +
+        `the API answered this script but not the browser it drives. Most likely its ` +
         `PUBLIC_SITE_URL setting is missing http://localhost:${PORT} (cPanel → Setup Node.js App → ` +
         `${apiUrl} → Environment variables). Add it, restart the app and build again. ` +
         `Do not upload this build: search engines would read these pages as missing.`,

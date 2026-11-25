@@ -28,7 +28,7 @@ export default function PayPage() {
   return (
     <>
       <SeoHead title="Pay for your order" noindex />
-      <PageHeader title="Pay for your order" lead="Choose how to pay and tell us once you have — we'll confirm it and get things moving." />
+      <PageHeader title="Pay for your order" lead="Choose how to pay and tell us once you have. We'll confirm it and get things moving." />
       <Section py={{ xs: 5, md: 8 }}>
         <Box sx={{ maxWidth: 640, mx: 'auto' }}>
           {isLoading && <LoadingBlock label="Loading…" />}
@@ -36,7 +36,7 @@ export default function PayPage() {
           {data && data.paid && (
             <Box sx={{ textAlign: 'center', py: 4 }}>
               <CheckCircleRoundedIcon sx={{ fontSize: 52, color: 'success.main', mb: 1 }} />
-              <Typography variant="h3" component="h2" sx={{ mb: 1 }}>All paid — thank you!</Typography>
+              <Typography variant="h3" component="h2" sx={{ mb: 1 }}>All paid. Thank you!</Typography>
               <Typography color="text.secondary">Invoice {data.invoiceNumber} is settled. There&apos;s nothing more to pay.</Typography>
             </Box>
           )}
@@ -48,7 +48,7 @@ export default function PayPage() {
               next={data.next}
               invoiceNumber={data.invoiceNumber}
               initialNotices={data.notices || []}
-              paidMessage="Paid — thank you! We'll take it from here."
+              paidMessage="Paid. Thank you! We'll take it from here."
               laterNote="You can come back to this page from the link in your email whenever you're ready."
             />
           )}

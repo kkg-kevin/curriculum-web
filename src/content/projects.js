@@ -35,9 +35,9 @@ const rawProjects = [
     summary:
       'A first automation project: a light that comes on in the dark, a fan that runs when it is hot, a buzzer that warns of an open door. Buy once, build at your own pace.',
     description:
-      'Five short lessons introducing inputs, outputs and simple decision logic through a model "smart room". Learners wire each device, write the rule that controls it, then combine everything into one program. No prior coding needed — this is often a learner\'s very first project.',
+      'Five short lessons introducing inputs, outputs and simple decision logic through a model "smart room". Learners wire each device, write the rule that controls it, then combine everything into one program. No prior coding needed. This is often a learner\'s very first project.',
     price: { amount: 1800, currency: 'KES', unit: 'per learner', compareAt: null },
-    priceNote: 'One-time purchase — lifetime access. Classroom licences (10+ learners) are discounted.',
+    priceNote: 'One-time purchase with lifetime access. Classroom licences (10+ learners) are discounted.',
     status: 'available',
     badge: 'Great first project',
     image: null,
@@ -69,7 +69,7 @@ const rawProjects = [
       },
       {
         q: 'Do we need to buy anything else?',
-        a: 'You need a Quarky or compatible parts to build on — sold separately in the Store. The project itself is the lessons, wiring guides and code.',
+        a: 'You need a Quarky or compatible parts to build on, sold separately in the Store. The project itself is the lessons, wiring guides and code.',
       },
     ],
   },
@@ -81,13 +81,13 @@ const rawProjects = [
     nature: 'digital',
     level: 'intermediate',
     track: 'Robotics',
-    tagline: 'A guided build project — buy once, keep forever',
+    tagline: 'A guided build project: buy once, keep forever',
     summary:
       'A step-by-step project that takes a learner from a bare robot to one that drives a track on its own. Bought like an online course: lifetime access to every lesson, checkpoint and challenge.',
     description:
       'Learners work through eight guided lessons: reading the line sensor, tuning thresholds, turning on a junction, and finally a full autonomous lap. Each lesson has a short video, a build checklist and a code checkpoint the learner can compare against. Runs on a Quarky (sold separately) or any compatible robot. One purchase unlocks the whole project for one learner, with no time limit.',
     price: { amount: 2500, currency: 'KES', unit: 'per learner', compareAt: null },
-    priceNote: 'One-time purchase — lifetime access. Classroom licences (10+ learners) are discounted.',
+    priceNote: 'One-time purchase with lifetime access. Classroom licences (10+ learners) are discounted.',
     status: 'available',
     badge: 'Most popular',
     image: null,
@@ -96,7 +96,7 @@ const rawProjects = [
       '8 guided lessons with video walkthroughs',
       'Code checkpoints to compare your work against',
       'Works with Quarky or any compatible robot',
-      'Lifetime access — revisit any lesson any time',
+      'Lifetime access: revisit any lesson any time',
     ],
     includes: [
       'Lifetime access to all 8 lessons for one learner',
@@ -115,7 +115,7 @@ const rawProjects = [
     faqs: [
       {
         q: 'Is this a physical kit?',
-        a: 'No — this is the project itself: the lessons, guidance and code. You run it on a robot you already have, or buy a Quarky from the Store.',
+        a: 'No. This is the project itself: the lessons, guidance and code. You run it on a robot you already have, or buy a Quarky from the Store.',
       },
       {
         q: 'How long do we have access?',
@@ -123,7 +123,7 @@ const rawProjects = [
       },
       {
         q: 'Can a teacher buy this for a whole class?',
-        a: 'Yes. Ask us about a classroom licence — one purchase covering every learner in the group, at a lower per-learner price.',
+        a: 'Yes. Ask us about a classroom licence: one purchase covering every learner in the group, at a lower per-learner price.',
       },
     ],
   },
@@ -141,7 +141,7 @@ const rawProjects = [
     description:
       'Six lessons that blend hardware and data skills. Learners wire up temperature and humidity sensors, write code to log readings on a schedule, then move to a laptop to clean, chart and interpret the week of data they collected. Finishes with a short presentation brief. A gentle, real-world introduction to how data projects actually work.',
     price: { amount: 2500, currency: 'KES', unit: 'per learner', compareAt: null },
-    priceNote: 'One-time purchase — lifetime access. Classroom licences (10+ learners) are discounted.',
+    priceNote: 'One-time purchase with lifetime access. Classroom licences (10+ learners) are discounted.',
     status: 'available',
     badge: null,
     image: null,
@@ -162,14 +162,14 @@ const rawProjects = [
       { label: 'Format', value: 'Self-paced online project' },
       { label: 'Lessons', value: '6 (approx. 5 hours over a week)' },
       { label: 'Hardware needed', value: 'Quarky or compatible sensors (not included)' },
-      { label: 'Prerequisites', value: 'None — a good first data project' },
+      { label: 'Prerequisites', value: 'None. It’s a good first data project' },
     ],
     audience: 'Ages 11–16',
     usedIn: ['Working with Data', 'Data & AI pathway'],
     faqs: [
       {
         q: 'Do we need special equipment?',
-        a: 'A Quarky covers every sensor this project uses. If your school already has temperature/humidity sensors, those work too — the wiring guide covers the common ones.',
+        a: 'A Quarky covers every sensor this project uses. If your school already has temperature/humidity sensors, those work too. The wiring guide covers the common ones.',
       },
       {
         q: 'Why does it run over a week?',

@@ -95,7 +95,7 @@ function EmptyCart() {
         </Box>
         <Typography component="h2" sx={{ fontSize: '1.4rem', fontWeight: 800 }}>Your cart is empty</Typography>
         <Typography color="text.secondary" sx={{ mt: 1, maxWidth: 440, mx: 'auto' }}>
-          Browse our robots, kits and guided projects — add what you like and check out when you&apos;re ready.
+          Browse our robots, kits and guided projects. Add what you like and check out when you&apos;re ready.
         </Typography>
         <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center', flexWrap: 'wrap', mt: 3 }}>
           <Button component={RouterLink} to="/store" variant="contained" size="large">Visit the store</Button>

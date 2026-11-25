@@ -57,7 +57,7 @@ export default function EventRegistrationPage() {
     setBusy(true);
     try {
       await publicApi.saveEventDetails(token, { ...form, organisation: form.organisation || null });
-      setMessage({ severity: 'success', text: 'Thanks — saved.' });
+      setMessage({ severity: 'success', text: 'Thanks, saved.' });
       setAbout(null);
       refresh();
     } catch (err) {
@@ -132,7 +132,7 @@ export default function EventRegistrationPage() {
           bootcamp={event.bootcamp}
           interests={reg.interests}
           title="What your child could join"
-          lead="Bring your questions on the day — our mentors will help you choose."
+          lead="Bring your questions on the day. Our mentors will help you choose."
         />
 
         <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', alignItems: 'center' }}>

@@ -83,14 +83,15 @@ export default function StoreItemPage() {
   const notAvailable = stockStatus && stockStatus !== 'available';
   const galleryImages = [image, ...gallery].filter(Boolean);
   const enquireTo = `/enroll?interestedIn=${interestFor(storeCategory)}&referenceId=${encodeURIComponent(slug)}`;
-  const contactTo = `/contact?subject=${encodeURIComponent(`${name} — enquiry`)}`;
+  const contactTo = `/contact?subject=${encodeURIComponent(`${name}: enquiry`)}`;
   const buyItem = { id: data.id, slug, name, image, price };
 
   return (
     <>
       <SeoHead
         title={name}
-        description={tagline || description}
+        description={[tagline, description]}
+        about="From the Digifunzi Store: robotics, AI and coding kits and projects for kids in Kenya."
         image={resolveMediaUrl(image) || undefined}
         type="product"
       />
@@ -216,7 +217,7 @@ export default function StoreItemPage() {
 
       <CTABanner
         heading="Buying for a school or club?"
-        body="Tell us how many learners you have — we'll put together a quote with classroom pricing."
+        body="Tell us how many learners you have and we'll put together a quote with classroom pricing."
         primary={{ label: 'Request a quote', to: '/contact?subject=School%20store%20enquiry' }}
         secondary={{ label: 'Browse the store', to: '/store' }}
       />

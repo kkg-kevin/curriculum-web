@@ -131,7 +131,7 @@ export default function PathwayDetailPage() {
   const enrolLabel = paidEnrol ? 'Enrol & pay' : 'Enrol';
   const ages = pathwayAgeLabel(data);
   const enrolNote = diagnostic?.available
-    ? 'Starts with a short quiz for their age, so they begin at the right course — you can skip it.'
+    ? 'Starts with a short quiz for their age, so they begin at the right course. You can skip it.'
     : paidEnrol
       ? 'They start at the right stage and course for their age.'
       : 'Send your details and our team gets them set up at the right step.';
@@ -149,7 +149,7 @@ export default function PathwayDetailPage() {
 
   return (
     <>
-      <SeoHead title={`${name} Pathway`} description={description} type="article" />
+      <SeoHead title={`${name} Pathway`} description={description} about="A Digifunzi learning pathway in coding, robotics and AI for kids in Kenya, stage by stage." type="article" />
       <JsonLd
         data={[
           organizationSchema(),
@@ -230,7 +230,7 @@ export default function PathwayDetailPage() {
                   The courses
                 </Typography>
                 <Typography color="text.secondary" sx={{ mb: 3, maxWidth: 720 }}>
-                  Worked through in order — each one builds on the last.
+                  Worked through in order. Each one builds on the last.
                 </Typography>
                 <Box component="ol" sx={{ listStyle: 'none', m: 0, p: 0 }}>
                   {courses.map((course, i) => (
@@ -246,7 +246,7 @@ export default function PathwayDetailPage() {
                   Plans
                 </Typography>
                 <Typography color="text.secondary" sx={{ mb: 2.5, maxWidth: 720 }}>
-                  Pay as you go — every stage’s courses, self-paced. It renews automatically; if a payment is missed the courses pause and pick up where they left off once it’s paid.
+                  Pay as you go: every stage’s courses, self-paced. It renews automatically; if a payment is missed the courses pause and pick up where they left off once it’s paid.
                 </Typography>
                 <PathwayPlans plans={plans} enrollTo={`/enroll?flow=pathway&referenceId=${encodeURIComponent(slug)}`} period={chosenPeriod} onPeriodChange={choosePeriod} />
               </Box>

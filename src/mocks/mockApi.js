@@ -14,6 +14,7 @@ import { homeLearningPackages, homeLearningPackageDetail } from './fixtures/home
 import { bootcampList, bootcampDetail } from './fixtures/bootcamps.js';
 import { competitionList, competitionDetail } from './fixtures/competitions.js';
 import { hubList, hubTypeList, hubProfile } from './fixtures/hubs.js';
+import { locations, locationDetail } from './fixtures/locations.js';
 import { pathways, pathwayDetail } from './fixtures/pathways.js';
 import { HONEYPOT_FIELD } from '../components/forms/Honeypot.jsx';
 import {
@@ -137,6 +138,14 @@ export async function mockAdapter(config) {
   if (method === 'get' && m) {
     const detail = competitionDetail(decodeURIComponent(m[1]));
     return detail ? ok(detail, config) : fail(404, 'Competition not found', config);
+  }
+
+  // ---- GET /api/public/locations[/:slug] (the hubs by town, with what runs there) ----
+  if (method === 'get' && path === '/api/public/locations') return ok(locations, config);
+  m = path.match(/^\/api\/public\/locations\/([^/]+)$/);
+  if (method === 'get' && m) {
+    const town = locationDetail(decodeURIComponent(m[1]));
+    return town ? ok(town, config) : fail(404, 'Location not found', config);
   }
 
   // ---- GET /api/public/hubs/types (non-school hub types + counts) ----

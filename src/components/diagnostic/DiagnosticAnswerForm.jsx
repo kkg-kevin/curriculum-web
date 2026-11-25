@@ -127,7 +127,7 @@ export default function DiagnosticAnswerForm({ diagnostic, contactForm, onAnswer
               Hi{childName ? ` ${childName}` : ''}! Let&apos;s see what you already know.
             </Typography>
             <Typography sx={{ mt: 1, fontSize: 17, color: 'text.secondary' }}>
-              Just try your best. It&apos;s fine not to know some answers — this helps us pick where you start.
+              Just try your best. It&apos;s fine not to know some answers. This helps us pick where you start.
             </Typography>
           </Box>
         </Box>
@@ -164,7 +164,7 @@ export default function DiagnosticAnswerForm({ diagnostic, contactForm, onAnswer
           </Button>
           {onSkip && (
             <Button onClick={onSkip} sx={{ fontWeight: 700 }}>
-              Skip — do it after enrolling instead
+              Skip and do it after enrolling
             </Button>
           )}
         </Box>

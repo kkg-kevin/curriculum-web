@@ -33,8 +33,8 @@ const SHORT = {
 
 // What the family types in to tell us they've paid, per method.
 const REFERENCE = {
-  paybill: { label: 'M-Pesa code', placeholder: 'e.g. SJK3XYZ12A', help: 'From the M-Pesa confirmation message — 10 letters and numbers.' },
-  send_money: { label: 'M-Pesa code', placeholder: 'e.g. SJK3XYZ12A', help: 'From the M-Pesa confirmation message — 10 letters and numbers.' },
+  paybill: { label: 'M-Pesa code', placeholder: 'e.g. SJK3XYZ12A', help: 'From the M-Pesa confirmation message: 10 letters and numbers.' },
+  send_money: { label: 'M-Pesa code', placeholder: 'e.g. SJK3XYZ12A', help: 'From the M-Pesa confirmation message: 10 letters and numbers.' },
   bank_transfer: { label: 'Transfer reference', placeholder: 'e.g. FT26296ABC12', help: 'The reference your bank gave the transfer.' },
   cheque: { label: 'Cheque number', placeholder: 'e.g. 000123', help: '' },
 };
@@ -219,7 +219,7 @@ function NoticeForm({ method, token, amountDue, defaultPhone, onSent }) {
         </>
       )}
       <Button type="submit" variant="contained" disabled={sending || !valid} sx={{ justifySelf: { sm: 'start' } }}>
-        {sending ? 'Sending…' : isCash ? 'I’ll pay in cash' : 'I’ve paid — confirm my payment'}
+        {sending ? 'Sending…' : isCash ? 'I’ll pay in cash' : 'I’ve paid, confirm my payment'}
       </Button>
     </Box>
   );
@@ -232,8 +232,8 @@ function SentNotices({ notices }) {
       {notices.map((notice) => (
         <Alert key={notice.id} severity={notice.method === 'cash' ? 'info' : 'success'} icon={notice.method === 'cash' ? <HourglassTopRoundedIcon /> : <CheckCircleRoundedIcon />}>
           {notice.method === 'cash'
-            ? <>Got it — we’ll expect <strong>{formatKsh(notice.amount)}</strong> in cash. Your accounts switch on as soon as our team receives it.</>
-            : <>Thanks! We’ve got your {notice.methodLabel} of <strong>{formatKsh(notice.amount)}</strong>{notice.reference ? <> ({notice.reference})</> : null}. We’ll check it and switch your accounts on — usually within one working day.</>}
+            ? <>Got it. We’ll expect <strong>{formatKsh(notice.amount)}</strong> in cash. Your accounts switch on as soon as our team receives it.</>
+            : <>Thanks! We’ve got your {notice.methodLabel} of <strong>{formatKsh(notice.amount)}</strong>{notice.reference ? <> ({notice.reference})</> : null}. We’ll check it and switch your accounts on, usually within one working day.</>}
         </Alert>
       ))}
     </Box>
@@ -344,7 +344,7 @@ export default function PaymentStep({ pay, amountDue, invoiceNumber, defaultPhon
               )}
               <Instructions method={method} amountDue={payNow} />
               {method.key === 'paybill' && method.automatic ? (
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 1.5 }}>Payments with this account number are matched to your invoice by themselves — your accounts switch on within minutes.</Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 1.5 }}>Payments with this account number are matched to your invoice by themselves, and your accounts switch on within minutes.</Typography>
               ) : (
                 <NoticeForm key={`${method.key}-${payNow}`} method={method} token={pay.token} amountDue={payNow} defaultPhone={defaultPhone} onSent={(n) => setNotices((list) => [n, ...list.filter((x) => x.id !== n.id)])} />
               )}
@@ -352,7 +352,7 @@ export default function PaymentStep({ pay, amountDue, invoiceNumber, defaultPhon
           )}
 
           <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-            {laterNote || 'Not paying right now? That’s fine — your invoice is saved, and you’ll see it and how to pay when you sign in. Our team will also be in touch.'}
+            {laterNote || 'Not paying right now? That’s fine. Your invoice is saved, and you’ll see it and how to pay when you sign in. Our team will also be in touch.'}
           </Typography>
         </>
       )}

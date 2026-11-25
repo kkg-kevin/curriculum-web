@@ -122,7 +122,7 @@ export function ProjectNeeds({ requirements = [], storeItems = [], kitPrice = nu
               s === 'added' ? (
                 <Typography variant="body2" sx={{ color: 'success.dark', fontWeight: 700, display: 'flex', gap: 0.5, alignItems: 'center' }}><DoneAllRoundedIcon fontSize="small" /> Added to your cart</Typography>
               ) : s === 'have' ? (
-                <Typography variant="body2" sx={{ color: 'success.dark', fontWeight: 700, display: 'flex', gap: 0.5, alignItems: 'center' }}><CheckCircleRoundedIcon fontSize="small" /> Great — you&rsquo;re all set</Typography>
+                <Typography variant="body2" sx={{ color: 'success.dark', fontWeight: 700, display: 'flex', gap: 0.5, alignItems: 'center' }}><CheckCircleRoundedIcon fontSize="small" /> Great, you&rsquo;re all set</Typography>
               ) : (
                 <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                   <Button size="small" variant="outlined" startIcon={<AddShoppingCartRoundedIcon />} onClick={() => add(item)}>Add to cart too</Button>
@@ -141,9 +141,9 @@ export function ProjectNeeds({ requirements = [], storeItems = [], kitPrice = nu
 /** After paying: three steps, so nobody wonders what happens next. */
 export function ProjectHowItWorks() {
   const steps = [
-    { icon: ShoppingCartCheckoutRoundedIcon, title: 'Buy it', text: 'Add it to your cart and check out. You say which child it’s for — their Digifunzi login, or make one for them there and then.' },
+    { icon: ShoppingCartCheckoutRoundedIcon, title: 'Buy it', text: 'Add it to your cart and check out. You say which child it’s for: their Digifunzi login, or make one for them there and then.' },
     { icon: SchoolRoundedIcon, title: 'Pay, and it opens', text: 'Pay the way that suits you. As soon as your payment is confirmed, the project opens in your child’s learner account.' },
-    { icon: RocketLaunchRoundedIcon, title: 'They build, step by step', text: 'At their own pace, each step ending with something that works — and it’s theirs to come back to for life.' },
+    { icon: RocketLaunchRoundedIcon, title: 'They build, step by step', text: 'At their own pace, each step ending with something that works, and it’s theirs to come back to for life.' },
   ];
   return (
     <Box sx={{ display: 'grid', gap: 1.5, gridTemplateColumns: { xs: '1fr', md: 'repeat(3, minmax(0, 1fr))' } }}>
@@ -171,7 +171,7 @@ export function projectFaqs({ requirements = [], ages = null }) {
       : { q: 'What do we need at home?', a: 'A computer or laptop with internet. Nothing else to buy.' },
     { q: 'How does my child get the project after I pay?', a: 'At checkout you say which child it’s for: type their Digifunzi username, or choose a username and password for them there and then. It opens in their learner account as soon as your payment is confirmed, and you follow along from your parent account.' },
     { q: 'Can brothers and sisters share it?', a: 'Each purchase is for one learner, so their progress and work stay their own. Buying for a class or a club? Ask us for a class-set price.' },
-    { q: 'What if we have a question along the way?', a: 'Message our team on WhatsApp — real people who teach these projects in our classes.' },
+    { q: 'What if we have a question along the way?', a: 'Message our team on WhatsApp. They’re real people who teach these projects in our classes.' },
   ].filter(Boolean);
 }
 

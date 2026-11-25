@@ -38,7 +38,7 @@ export const INTEREST_OPTIONS = [
   { value: 'project', label: 'A project' },
   { value: 'quarky', label: 'The Quarky robot or a kit' },
   { value: 'competition', label: 'A competition', wire: 'general' },
-  { value: 'general', label: 'Not sure yet — help me choose' },
+  { value: 'general', label: 'Not sure yet, help me choose' },
 ];
 
 /**
@@ -202,7 +202,7 @@ export default function EnrollForm({
               Where would the learner attend?
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              {pathway?.name || 'This pathway'} runs at {pathwayHubs.length === 1 ? 'this hub' : 'these hubs'} — pick the one that suits you, then add your details.
+              {pathway?.name || 'This pathway'} runs at {pathwayHubs.length === 1 ? 'this hub' : 'these hubs'}. Pick the one that suits you, then add your details.
             </Typography>
             <Box sx={{ display: 'grid', gap: 1.5 }}>
               {pathwayHubs.map((hub) => {

@@ -159,13 +159,13 @@ export default function CompetitionRegisterPage() {
   if (!data.registration?.open || ownTracks.length === 0) {
     return (
       <Container maxWidth="md" sx={{ py: { xs: 5, md: 8 } }}>
-        <SeoHead title={`Register — ${data.name}`} noindex />
+        <SeoHead title={`Register for ${data.name}`} noindex />
         {back}
         <Typography variant="h2" component="h1" sx={{ mb: 2 }}>Register for {data.name}</Typography>
         <Alert severity="info">
           {!data.registration?.open
             ? data.registration?.opensOn ? `Registration opens on ${formatDate(data.registration.opensOn)}.` : 'Registration for this competition isn’t open right now.'
-            : 'This competition takes registrations on its tracks’ own forms — use Register now on a track.'}
+            : 'This competition takes registrations on its tracks’ own forms. Use Register now on a track.'}
         </Alert>
       </Container>
     );
@@ -181,8 +181,8 @@ export default function CompetitionRegisterPage() {
       if (p.name.trim().split(/\s+/).length < 2) errs[`p${i}name`] = 'First and last name';
       const age = ageOn(p.dateOfBirth);
       if (!p.dateOfBirth || age === null || age < 0) errs[`p${i}dob`] = 'Enter the date of birth';
-      else if (track?.ageMin != null && age < track.ageMin) errs[`p${i}dob`] = `Age ${age} — this track is for ${ageLine.toLowerCase()}`;
-      else if (track?.ageMax != null && age > track.ageMax) errs[`p${i}dob`] = `Age ${age} — this track is for ${ageLine.toLowerCase()}`;
+      else if (track?.ageMin != null && age < track.ageMin) errs[`p${i}dob`] = `Age ${age}: this track is for ${ageLine.toLowerCase()}`;
+      else if (track?.ageMax != null && age > track.ageMax) errs[`p${i}dob`] = `Age ${age}: this track is for ${ageLine.toLowerCase()}`;
     });
     if (contact.contactName.trim().length < 2) errs.contactName = 'Enter your name';
     if (!EMAIL.test(contact.contactEmail.trim())) errs.contactEmail = 'Enter a valid email';
@@ -223,13 +223,13 @@ export default function CompetitionRegisterPage() {
     const free = !result.amountDue;
     return (
       <Container maxWidth="md" sx={{ py: { xs: 5, md: 8 } }}>
-        <SeoHead title={`Registered — ${data.name}`} noindex />
+        <SeoHead title={`Registered for ${data.name}`} noindex />
         <Box sx={{ p: { xs: 2.5, md: 3.5 }, borderRadius: 3, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', mb: 3 }}>
           <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start' }}>
             <CheckCircleRoundedIcon sx={{ color: 'success.main', fontSize: 36, flexShrink: 0 }} />
             <Box>
               <Typography variant="h3" component="h1">
-                {free ? 'You’re registered!' : 'Registration received — one step left'}
+                {free ? 'You’re registered!' : 'Registration received. One step left'}
               </Typography>
               <Typography sx={{ color: 'text.secondary', mt: 0.5 }}>
                 {result.entryType === 'group' ? `Team ${result.teamName}` : result.participants[0]} · {result.trackName} · {result.competitionName}
@@ -247,8 +247,8 @@ export default function CompetitionRegisterPage() {
             amountDue={result.amountDue}
             invoiceNumber={result.invoiceNumber}
             defaultPhone={contact.contactPhone.trim()}
-            paidMessage="Paid — your registration is confirmed. We’ve emailed you the details."
-            laterNote="Not paying right now? That’s fine — the email we’ve just sent has a link to pay any time in the next 14 days. Your place is confirmed once the fee is paid."
+            paidMessage="Paid. Your registration is confirmed. We’ve emailed you the details."
+            laterNote="Not paying right now? That’s fine. The email we’ve just sent has a link to pay any time in the next 14 days. Your place is confirmed once the fee is paid."
           />
         )}
         <Box sx={{ mt: 3, display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
@@ -263,11 +263,11 @@ export default function CompetitionRegisterPage() {
 
   return (
     <Container maxWidth="md" sx={{ py: { xs: 4, md: 7 } }}>
-      <SeoHead title={`Register — ${data.name}`} noindex />
+      <SeoHead title={`Register for ${data.name}`} noindex />
       {back}
       <Typography variant="h2" component="h1">Register for {data.name}</Typography>
       <Typography sx={{ color: 'text.secondary', mt: 1, mb: 4 }}>
-        A few minutes — then pay the entry fee online.{data.registrationCloseDate ? ` Registration closes on ${formatDate(data.registrationCloseDate)}.` : ''}
+        It takes a few minutes, then you pay the entry fee online.{data.registrationCloseDate ? ` Registration closes on ${formatDate(data.registrationCloseDate)}.` : ''}
       </Typography>
 
       <Box component="form" noValidate onSubmit={submit} sx={{ display: 'grid', gap: 2.5 }}>
@@ -319,7 +319,7 @@ export default function CompetitionRegisterPage() {
               <TextField label="School / organisation (optional)" value={team.organisation} onChange={(ev) => setTeam({ ...team, organisation: ev.target.value })} helperText=" " />
             </Box>
             <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-              {teamSizeText(e)}{ageLine ? ` · ${ageLine}` : ''}. Add every member — one fee covers the whole team.
+              {teamSizeText(e)}{ageLine ? ` · ${ageLine}` : ''}. Add every member. One fee covers the whole team.
             </Typography>
             {members.map((m, i) => (
               <PersonFields
@@ -343,7 +343,7 @@ export default function CompetitionRegisterPage() {
         {track && type && (
           <Panel step={3} title="Your details">
             <Typography variant="body2" sx={{ color: 'text.secondary', mt: -1 }}>
-              The confirmation and the payment link go to this email{type === 'group' ? ' — usually the team’s teacher, coach or a parent' : ''}.
+              The confirmation and the payment link go to this email{type === 'group' ? ', usually the team’s teacher, coach or a parent' : ''}.
             </Typography>
             <TextField select label="You are" value={contact.contactRole} onChange={(ev) => setContact({ ...contact, contactRole: ev.target.value })}>
               {ROLES.map((r) => <MenuItem key={r.value} value={r.value}>{r.label}</MenuItem>)}

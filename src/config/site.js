@@ -77,6 +77,9 @@ export const STATIC_ROUTES = [
   { path: '/competitions' },
   { path: '/events' }, // general events — showcases, open days (API-driven)
   { path: '/estate-tech-clubs' },
+  // Town pages (25 Nov 2026). `needsApi`: listed in the sitemap only once pre-rendered — the API
+  // serves /api/public/locations from the 25 Nov backend on.
+  { path: '/locations', needsApi: true },
   { path: '/home-schooling' },
   { path: '/schools' },
   { path: '/store' },

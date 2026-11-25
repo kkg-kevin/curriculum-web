@@ -1,5 +1,6 @@
 import { Link as RouterLink } from 'react-router-dom';
 import Box from '@mui/material/Box';
+import Img from '../common/Img.jsx';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -15,7 +16,7 @@ import { actionRowSx } from '../common/ActionRow.jsx';
  */
 export default function CTABanner({
   heading = 'Ready to get started?',
-  body = 'Tell us a little about your learner and we’ll help you find the right programme — no commitment.',
+  body = 'Tell us a little about your learner and we’ll help you find the right programme, with no commitment.',
   primary = { label: 'Enroll a learner', to: '/enroll' },
   secondary = { label: 'Talk to us', to: '/contact' },
 }) {
@@ -83,13 +84,12 @@ export default function CTABanner({
             />
             {/* mascots — the boy at the left edge, the girl at the right, feet below the plate
                 edge so they read as leaning into frame rather than sitting cropped */}
-            <Box
+            <Img
               aria-hidden
-              component="img"
-              src="/mascot-boy.png"
+              src="/mascot-boy.webp"
               alt=""
-              width={312}
-              height={357}
+              width={480}
+              height={549}
               loading="lazy"
               sx={{
                 height: 'auto',
@@ -103,13 +103,12 @@ export default function CTABanner({
                 pointerEvents: 'none',
               }}
             />
-            <Box
+            <Img
               aria-hidden
-              component="img"
-              src="/mascot-girl.png"
+              src="/mascot-girl.webp"
               alt=""
-              width={307}
-              height={331}
+              width={480}
+              height={518}
               loading="lazy"
               sx={{
                 height: 'auto',
