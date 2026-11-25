@@ -152,7 +152,7 @@ export default function ProjectDetailPage() {
   const age = ageLabel(ageMin, ageMax);
   const path = projectPath(slug);
   const enquireTo = `/enroll?interestedIn=project&referenceId=${encodeURIComponent(slug)}`;
-  const contactTo = `/contact?subject=${encodeURIComponent(`${name} — project enquiry`)}`;
+  const contactTo = `/contact?subject=${encodeURIComponent(`${name}: project enquiry`)}`;
   const buyItem = { id: data.id, slug, name, image: coverImage, price, kitPrice };
 
   const coverFacts = [
@@ -167,7 +167,7 @@ export default function ProjectDetailPage() {
   const showBuildList = deliverables.length > 0 && (Boolean(coverImage) || deliverables.length > 4);
 
   const whatYouGet = [
-    { icon: <CheckCircleIcon />, title: 'Lifetime access for one learner', body: 'Theirs to come back to — redo a step or show it off any time.' },
+    { icon: <CheckCircleIcon />, title: 'Lifetime access for one learner', body: 'Theirs to come back to: redo a step or show it off any time.' },
     milestones.length > 0 && {
       icon: <FormatListNumberedIcon />,
       title: plural(milestones.length, 'guided step', 'guided steps'),
@@ -190,7 +190,8 @@ export default function ProjectDetailPage() {
     <>
       <SeoHead
         title={titleWithKind(name, 'Project')}
-        description={tagline || description}
+        description={[tagline, description]}
+        about="A guided build project from the Digifunzi Store for kids learning robotics, AI and coding in Kenya."
         image={resolveMediaUrl(coverImage) || undefined}
         type="product"
       />
@@ -293,7 +294,7 @@ export default function ProjectDetailPage() {
             <DetailHeading
               title="The build, step by step"
               icon={<FormatListNumberedIcon />}
-              lead="Worked through in order — each step builds on the last, and ends with something working."
+              lead="Worked through in order. Each step builds on the last and ends with something working."
               sx={{ mb: 1.5 }}
             />
             {shownSteps.map((m, i) => (
@@ -319,7 +320,7 @@ export default function ProjectDetailPage() {
         </Box>
 
         <Box sx={{ mb: 6 }}>
-          <DetailHeading title="After you buy" icon={<RouteRoundedIcon />} lead="No waiting for a class to start — they can begin the same day." />
+          <DetailHeading title="After you buy" icon={<RouteRoundedIcon />} lead="No waiting for a class to start. They can begin the same day." />
           <ProjectHowItWorks />
         </Box>
 
@@ -343,7 +344,7 @@ export default function ProjectDetailPage() {
 
       <CTABanner
         heading="Buying projects for a class?"
-        body="Tell us how many learners you have — we'll put together a classroom licence quote."
+        body="Tell us how many learners you have and we'll put together a classroom licence quote."
         primary={{ label: 'Request a quote', to: '/contact?subject=Classroom%20project%20licence' }}
         secondary={{ label: 'Back to the store', to: '/store' }}
       />

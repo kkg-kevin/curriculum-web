@@ -106,7 +106,7 @@ function SummaryBody({ pathway, info, paid }) {
         <>
           {plan.name}
           <Box component="span" sx={{ display: 'block', fontWeight: 500, color: 'text.secondary', fontSize: 13 }}>
-            {`Paid ${(PERIOD_LABEL[plan.billingPeriod] || 'monthly').toLowerCase()}`}{pricesOf(plan).length > 1 && step !== 'pay' ? ' — change it at Plan & hub' : ''}
+            {`Paid ${(PERIOD_LABEL[plan.billingPeriod] || 'monthly').toLowerCase()}`}{pricesOf(plan).length > 1 && step !== 'pay' ? ' (change it at Plan & hub)' : ''}
           </Box>
         </>
       ) : paid && cheapest ? `From ${formatKsh(cheapest.amount, cheapest.currency)} / ${periodUnit(cheapest.billingPeriod)}` : 'Our team confirms'}</Row>
@@ -130,11 +130,11 @@ function SummaryBody({ pathway, info, paid }) {
             <Typography sx={{ fontWeight: 800 }}>First payment</Typography>
             <Typography sx={{ fontWeight: 900, fontSize: '1.35rem' }}>{formatKsh(total, plan.currency)}</Typography>
           </Box>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: -0.75 }}>Then {formatKsh(total, plan.currency)} every {unit} — renews automatically.</Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: -0.75 }}>Then {formatKsh(total, plan.currency)} every {unit}, renewing automatically.</Typography>
         </>
       )}
       {!paid && (
-        <Typography variant="body2" color="text.secondary">Nothing to pay now — our team gets in touch to arrange a place.</Typography>
+        <Typography variant="body2" color="text.secondary">Nothing to pay now. Our team gets in touch to arrange a place.</Typography>
       )}
     </Box>
   );

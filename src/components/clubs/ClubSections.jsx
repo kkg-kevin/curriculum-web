@@ -84,10 +84,10 @@ export function ClubPriceCard({ fromPrice, details, joinPath }) {
 }
 
 const STEPS = [
-  { title: 'Sign up online', body: 'Choose a package and create logins for you and your children — a few minutes.' },
+  { title: 'Sign up online', body: 'Choose a package and create logins for you and your children. It takes a few minutes.' },
   { title: 'Pay the first month', body: 'Pay in cash to our team. Your logins unlock as soon as we confirm it.' },
   { title: 'We place your child', body: 'Each child joins the club class that suits their age and level.' },
-  { title: 'They start learning', body: 'Sessions, assessments and progress reports — all visible in your account.' },
+  { title: 'They start learning', body: 'Sessions, assessments and progress reports, all visible in your account.' },
 ];
 
 /** The four steps from signing up to the first session. */

@@ -106,7 +106,7 @@ function addNoindexHeader() {
 async function main() {
   ensureDist();
 
-  const [pathwaySlugs, projectSlugs, storeSlugs, bootcampSlugs, competitionSlugs, clubSlugs, eventSlugs] = await Promise.all([
+  const [pathwaySlugs, projectSlugs, storeSlugs, bootcampSlugs, competitionSlugs, clubSlugs, eventSlugs, locationSlugs] = await Promise.all([
     getSectionSlugs('pathways', '../src/mocks/fixtures/pathways.js', 'pathways'),
     getSectionSlugs('store/projects', '../src/mocks/fixtures/projects.js', 'projects'),
     getSectionSlugs('store', '../src/mocks/fixtures/store.js', 'storeList'),
@@ -114,12 +114,14 @@ async function main() {
     getSectionSlugs('competitions', '../src/mocks/fixtures/competitions.js', 'competitionList'),
     getSectionSlugs('estate-tech-clubs', '../src/mocks/fixtures/hubs.js', 'hubs', (x) => slugify(x.name)),
     getSectionSlugs('events', null, null),
+    getSectionSlugs('locations', '../src/mocks/fixtures/locations.js', 'locations'),
   ]);
 
 
   // `sitemap: false` routes (deliberately noindex, e.g. /enroll) are prerendered but not listed.
   const routes = [
-    ...STATIC_ROUTES.filter((r) => r.sitemap !== false).map((r) => r.path),
+    // `needsApi` routes only once pre-rendered (their API may not be out yet).
+    ...STATIC_ROUTES.filter((r) => r.sitemap !== false && (!r.needsApi || useMock || fs.existsSync(path.join(DIST, r.path, 'index.html')))).map((r) => r.path),
     ...pathwaySlugs.map((s) => `/pathways/${s}`),
     ...storeSlugs.map((s) => `/store/${s}`),
     ...projectSlugs.map((s) => `/store/projects/${s}`),
@@ -127,6 +129,7 @@ async function main() {
     ...competitionSlugs.map((s) => `/competitions/${s}`),
     ...clubSlugs.map((s) => `/estate-tech-clubs/${s}`),
     ...eventSlugs.filter((s) => s !== 'registration').map((s) => `/events/${s}`),
+    ...locationSlugs.map((s) => `/locations/${s}`),
   ];
   const skipped = routes.filter((r) => isNoindex(r));
   const entries = routes.filter((r) => !skipped.includes(r)).map((r) => urlEntry(pageUrl(r)));
@@ -150,7 +153,7 @@ Sitemap: ${siteUrl}/sitemap.xml
   console.log(
     `[sitemap] wrote ${entries.length} URLs (${pathwaySlugs.length} pathways, ${projectSlugs.length} projects, ` +
       `${storeSlugs.length} store items, ${bootcampSlugs.length} bootcamps, ${competitionSlugs.length} competitions, ` +
-      `${clubSlugs.length} estate tech clubs, ` +
+      `${clubSlugs.length} estate tech clubs, ${locationSlugs.length} locations, ` +
       `the rest static) + robots.txt`,
   );
   if (skipped.length > 0) console.log(`[sitemap] left out as noindex: ${skipped.join(', ')}`);

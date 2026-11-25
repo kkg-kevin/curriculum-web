@@ -10,7 +10,7 @@ export const BANDS = [
     min: 0,
     color: '#DC2626',
     soft: '#FEF2F2',
-    meaning: 'Most of this is new so far — a gentle, supported start will build confidence quickly.',
+    meaning: 'Most of this is new so far. A gentle, supported start will build confidence quickly.',
   },
   {
     label: 'Getting started',
@@ -26,7 +26,7 @@ export const BANDS = [
     min: 60,
     color: '#059669',
     soft: '#ECFDF5',
-    meaning: 'A solid grasp of the basics — ready to build on them.',
+    meaning: 'A solid grasp of the basics, ready to build on them.',
   },
   {
     label: 'Strong start',
@@ -34,7 +34,7 @@ export const BANDS = [
     min: 80,
     color: '#047857',
     soft: '#ECFDF5',
-    meaning: 'A confident result — ready for more of a challenge.',
+    meaning: 'A confident result, ready for more of a challenge.',
   },
 ];
 

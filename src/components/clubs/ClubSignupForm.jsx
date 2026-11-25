@@ -57,9 +57,9 @@ function Confirmation({ result }) {
       <Box sx={{ ...sectionSx, py: { xs: 3, sm: 4 } }}>
         <Box sx={{ textAlign: 'center' }}>
           <CheckCircleRoundedIcon sx={{ fontSize: 48, color: 'success.main', mb: 1 }} />
-          <Typography variant="h3" component="h2" sx={{ mb: 1 }}>Your accounts are ready — now pay</Typography>
+          <Typography variant="h3" component="h2" sx={{ mb: 1 }}>Your accounts are ready. Now pay</Typography>
           <Typography color="text.secondary" sx={{ maxWidth: 520, mx: 'auto', mb: 3 }}>
-            We’ve created your family’s accounts for <strong>{result.clubName}</strong> ({result.packageName}){result.amount != null && <> — {formatKsh(result.amount)} a {periodUnit(result.billingPeriod)}</>}. They unlock as soon as your first {periodUnit(result.billingPeriod)}’s payment is confirmed.
+            We’ve created your family’s accounts for <strong>{result.clubName}</strong> ({result.packageName}){result.amount != null && <>, at {formatKsh(result.amount)} a {periodUnit(result.billingPeriod)}</>}. They unlock as soon as your first {periodUnit(result.billingPeriod)}’s payment is confirmed.
           </Typography>
         </Box>
 
@@ -68,7 +68,7 @@ function Confirmation({ result }) {
           amountDue={result.amountDue}
           invoiceNumber={result.invoiceNumber}
           defaultPhone={result.parentPhone}
-          paidMessage="Your family’s accounts are active — sign in with the logins below."
+          paidMessage="Your family’s accounts are active. Sign in with the logins below."
         />
 
         <Box sx={{ textAlign: 'left', maxWidth: 560, mx: 'auto', mb: 3 }}>
@@ -76,7 +76,7 @@ function Confirmation({ result }) {
           <Box component="ul" sx={{ listStyle: 'none', p: 0, m: 0, display: 'grid', gap: 1 }}>
             <Box component="li" sx={{ p: 1.5, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
               <Typography sx={{ fontWeight: 700 }}>Parent</Typography>
-              <Typography variant="body2" color="text.secondary">Sign in with <strong>{result.parentEmail}</strong> and your password — you’ll see your children and invoices.</Typography>
+              <Typography variant="body2" color="text.secondary">Sign in with <strong>{result.parentEmail}</strong> and your password to see your children and invoices.</Typography>
             </Box>
             {result.children.map((child) => (
               <Box component="li" key={child.username} sx={{ p: 1.5, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
@@ -174,7 +174,7 @@ export default function ClubSignupForm({ hub, packages, initialSlug, initialChil
 
   const onSubmit = async (values) => {
     if (isBot(values)) {
-      setResult({ clubName: hub.name, packageName: pkg?.name, amountDue: 0, invoiceNumber: '—', parentEmail: values.parent.email, children: [] });
+      setResult({ clubName: hub.name, packageName: pkg?.name, amountDue: 0, invoiceNumber: '', parentEmail: values.parent.email, children: [] });
       return;
     }
     const parent = { ...values.parent };
@@ -252,7 +252,7 @@ export default function ClubSignupForm({ hub, packages, initialSlug, initialChil
                     </Typography>
                   </Box>
                   <Box sx={{ textAlign: 'right' }}>
-                    <Typography sx={{ fontWeight: 800 }}>{fits ? formatKsh(fits.amount) : '—'}</Typography>
+                    <Typography sx={{ fontWeight: 800 }}>{fits ? formatKsh(fits.amount) : 'Not available'}</Typography>
                     <Typography variant="caption" color="text.secondary">{fits ? `per ${periodUnit(fits.billingPeriod)}` : `not for ${count}`}</Typography>
                   </Box>
                 </Box>
@@ -274,7 +274,7 @@ export default function ClubSignupForm({ hub, packages, initialSlug, initialChil
           {pkg && price && (
             <Alert severity="info" icon={false} sx={{ mt: 2 }}>
               <strong>{formatKsh(price.amount)} a {periodUnit(price.billingPeriod)}</strong> for {childrenLabel(count)}
-              {price.childCount > count ? ` — includes ${childrenLabel(price.childCount)}, so there’s room for more at no extra cost` : ''}.
+              {price.childCount > count ? `. It includes ${childrenLabel(price.childCount)}, so there’s room for more at no extra cost` : ''}.
             </Alert>
           )}
         </Box>
@@ -361,7 +361,7 @@ export default function ClubSignupForm({ hub, packages, initialSlug, initialChil
             <Button startIcon={<AddRoundedIcon />} onClick={() => append({ ...EMPTY_CHILD })} sx={{ justifySelf: 'start' }}>Add another child</Button>
           )}
           {!price && pkg && (
-            <Alert severity="warning">{pkg.name} doesn’t cover {childrenLabel(count)} — go back to Package to choose a larger one.</Alert>
+            <Alert severity="warning">{pkg.name} doesn’t cover {childrenLabel(count)}. Go back to Package to choose a larger one.</Alert>
           )}
         </Box>
       )}
@@ -374,7 +374,7 @@ export default function ClubSignupForm({ hub, packages, initialSlug, initialChil
               { title: 'Club', to: 0, lines: [hub.name] },
               { title: 'Package', to: 0, lines: [`${pkg?.name || ''} for ${childrenLabel(count)}`, price ? `${formatKsh(price.amount)} a ${periodUnit(price.billingPeriod)}` : ''] },
               { title: 'Parent', to: 1, lines: [values.parent.name, values.parent.email, values.parent.phone] },
-              { title: 'Children', to: 2, lines: values.children.map((c) => `${c.firstName} ${c.lastName} — username ${c.username}`) },
+              { title: 'Children', to: 2, lines: values.children.map((c) => `${c.firstName} ${c.lastName}, username ${c.username}`) },
             ].map((section) => (
               <Box key={section.title} sx={{ display: 'flex', gap: 2, py: 1.5, borderTop: '1px solid', borderColor: 'divider' }}>
                 <Box sx={{ flexGrow: 1 }}>
@@ -389,7 +389,7 @@ export default function ClubSignupForm({ hub, packages, initialSlug, initialChil
           <Box sx={{ ...sectionSx, bgcolor: 'surface.subtle' }}>
             <Typography sx={{ fontWeight: 800, mb: 0.5 }}>How payment works</Typography>
             <Typography variant="body2" color="text.secondary">
-              Confirming creates your family’s accounts and your first invoice of <strong>{price ? formatKsh(price.amount) : '—'}</strong>, for your first {price ? periodUnit(price.billingPeriod) : 'period'} from today. After that an invoice comes every {price ? periodUnit(price.billingPeriod) : 'period'}.
+              Confirming creates your family’s accounts and your first invoice of <strong>{price ? formatKsh(price.amount) : 'the package price'}</strong>, for your first {price ? periodUnit(price.billingPeriod) : 'period'} from today. After that an invoice comes every {price ? periodUnit(price.billingPeriod) : 'period'}.
               Next you choose how to pay. Once the payment is confirmed your logins unlock and we place each child in a club class; until then, signing in shows “payment pending”.
             </Typography>
           </Box>

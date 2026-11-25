@@ -166,7 +166,7 @@ export default function EventRegisterFlow({ event, source = 'page', compact = fa
     return (
       <Box sx={{ display: 'grid', gap: 2.25 }}>
         <StepBar step="about" withAbout />
-        <Alert severity="success" sx={{ fontWeight: 600 }}>Your place is saved. A few taps help us make it great for your child — or skip.</Alert>
+        <Alert severity="success" sx={{ fontWeight: 600 }}>Your place is saved. A few taps help us make it great for your child, or skip.</Alert>
         <AboutYouFields questions={event.questions} value={about} onChange={setAbout} />
         <Box sx={{ display: 'flex', gap: 1.5, justifyContent: 'flex-end', flexDirection: { xs: 'column-reverse', sm: 'row' } }}>
           <Button variant="outlined" size="large" onClick={() => setStep('done')}>Skip</Button>
@@ -179,7 +179,7 @@ export default function EventRegisterFlow({ event, source = 'page', compact = fa
   if (step === 'done') {
     const already = result?.already;
     const waiting = (result?.registration?.status || result?.status) === 'waitlisted';
-    const shareText = `I'm going to ${event.title} (${event.when}) — it's free, come too: ${typeof window !== 'undefined' ? `${window.location.origin}/events/${event.slug}` : ''}`;
+    const shareText = `I'm going to ${event.title} (${event.when}). It's free, come too: ${typeof window !== 'undefined' ? `${window.location.origin}/events/${event.slug}` : ''}`;
     return (
       <Box sx={{ display: 'grid', gap: 2 }}>
         <StepBar step="done" withAbout={event.askAboutYou && !already} />
@@ -187,14 +187,14 @@ export default function EventRegisterFlow({ event, source = 'page', compact = fa
           {waiting ? <HourglassTopRoundedIcon color="warning" sx={{ fontSize: 40 }} /> : <CheckCircleRoundedIcon color="success" sx={{ fontSize: 40 }} />}
           <Box>
             <Typography variant="h5" component="p" sx={{ fontWeight: 800 }}>
-              {already ? 'You’re already registered' : waiting ? 'You’re on the waiting list' : 'You’re in — see you there!'}
+              {already ? 'You’re already registered' : waiting ? 'You’re on the waiting list' : 'You’re in. See you there!'}
             </Typography>
             <Typography sx={{ color: 'text.secondary', mt: 0.5 }}>
               {already
-                ? 'That email is already registered for this event — we’ve emailed the details to it again.'
+                ? 'That email is already registered for this event. We’ve emailed the details to it again.'
                 : waiting
-                  ? 'It’s full right now. If a place frees up it’s yours in turn — we’ll email you straight away.'
-                  : `Your ticket is on its way to ${form.email.trim()} — show its QR code at the entrance. We’ll remind you before the day.`}
+                  ? 'It’s full right now. If a place frees up it’s yours in turn, and we’ll email you straight away.'
+                  : `Your ticket is on its way to ${form.email.trim()}. Show its QR code at the entrance. We’ll remind you before the day.`}
             </Typography>
           </Box>
         </Box>
@@ -218,7 +218,7 @@ export default function EventRegisterFlow({ event, source = 'page', compact = fa
             interests={about.interests}
             limit={2}
             title="While you wait for the day"
-            lead="Have a look at what your child could join — you can ask our mentors about any of it on the day."
+            lead="Have a look at what your child could join. You can ask our mentors about any of it on the day."
             sx={{ mt: 1, '& h2': { fontSize: 20 }, '& > div:last-of-type': { gridTemplateColumns: '1fr' } }}
           />
         )}
@@ -262,7 +262,7 @@ export default function EventRegisterFlow({ event, source = 'page', compact = fa
       />
       {problem && <Alert severity="error">{problem}</Alert>}
       <Button type="submit" variant="contained" color="secondary" size="large" disabled={busy} sx={{ minHeight: 52, fontWeight: 900, fontSize: 16 }}>
-        {busy ? 'Saving…' : reg.full && reg.waitlist ? 'Join the waiting list' : form.partySize > 1 ? `Reserve ${form.partySize} places — free` : 'Reserve my place — free'}
+        {busy ? 'Saving…' : reg.full && reg.waitlist ? 'Join the waiting list' : form.partySize > 1 ? `Reserve ${form.partySize} free places` : 'Reserve my free place'}
       </Button>
       <Typography variant="body2" sx={{ textAlign: 'center', color: 'text.secondary', fontWeight: 600, mt: -0.5 }}>
         Free · No payment details · Cancel any time

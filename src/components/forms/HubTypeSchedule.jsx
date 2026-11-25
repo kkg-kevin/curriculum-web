@@ -59,7 +59,7 @@ function ScheduleCard({ hub }) {
         {isVirtual ? <LanguageIcon sx={{ fontSize: 16 }} /> : <PlaceIcon sx={{ fontSize: 16 }} />}
         <Typography variant="body2">
           {isVirtual
-            ? 'Online — join from anywhere'
+            ? 'Online, join from anywhere'
             : hub.town || (isHybrid ? 'In person, plus an online option' : 'Location to be confirmed')}
         </Typography>
       </Box>
@@ -94,7 +94,7 @@ function ScheduleCard({ hub }) {
       </Box>
       {(s.days || []).length === 0 && (
         <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-          Days to be confirmed — our team will let you know.
+          Days to be confirmed. Our team will let you know.
         </Typography>
       )}
     </Box>
@@ -132,14 +132,14 @@ export default function HubTypeSchedule({ value, onChange, error }) {
         value={hubType || ''}
         onChange={(e) => setType(e.target.value)}
         error={Boolean(error)}
-        helperText={error || 'Where you’d like the learner to attend — schools run their own admissions.'}
+        helperText={error || 'Where you’d like the learner to attend. Schools run their own admissions.'}
         disabled={typesLoading}
       >
         <option value="">Choose a type…</option>
         {types.map((t) => (
           <option key={t.type} value={t.type} disabled={t.hubCount === 0}>
             {t.label}
-            {t.hubCount === 0 ? ' — none available yet' : ''}
+            {t.hubCount === 0 ? ' (none available yet)' : ''}
           </option>
         ))}
       </TextField>
@@ -153,7 +153,7 @@ export default function HubTypeSchedule({ value, onChange, error }) {
           {!hubsLoading && hubs.length === 0 && (
             <Typography variant="body2" color="text.secondary">
               No {types.find((t) => t.type === hubType)?.label?.toLowerCase() || 'hub'} is listed
-              yet — submit anyway and our team will follow up with options.
+              yet. Submit anyway and our team will follow up with options.
             </Typography>
           )}
 
@@ -170,7 +170,7 @@ export default function HubTypeSchedule({ value, onChange, error }) {
               {hubs.map((h) => (
                 <option key={h.id} value={h.id}>
                   {h.name}
-                  {h.town ? ` — ${h.town}` : ''}
+                  {h.town ? `, ${h.town}` : ''}
                 </option>
               ))}
             </TextField>

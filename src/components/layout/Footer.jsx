@@ -40,6 +40,7 @@ const COLUMNS = [
       { label: 'Estate Tech Clubs', to: '/estate-tech-clubs' },
       { label: 'Schools', to: '/schools' },
       { label: 'Pathways', to: '/pathways' },
+      { label: 'Where we teach', to: '/locations' },
     ],
   },
   {

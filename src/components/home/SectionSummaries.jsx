@@ -117,7 +117,7 @@ export default function SectionSummaries() {
       <SectionHeading
         eyebrow="Programmes"
         title="Ways to learn with us"
-        lead="Holiday bootcamps, home schooling, estate tech clubs, school programmes, structured pathways and the robots to build with — designed to fit together into one path."
+        lead="Holiday bootcamps, home schooling, estate tech clubs, school programmes, structured pathways and the robots to build with, designed to fit together into one path."
         sx={{ mb: { xs: 5, md: 7 } }}
       />
 

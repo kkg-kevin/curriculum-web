@@ -154,7 +154,7 @@ function Fact({ label, value, first = false, screen = false }) {
           lineHeight: 1.35,
         }}
       >
-        {value || '—'}
+        {value || 'Not given'}
       </div>
     </div>
   );
@@ -544,7 +544,7 @@ const DiagnosticReportDocument = forwardRef(function DiagnosticReportDocument(
             lineHeight: 1.6,
           }}
         >
-          {band.meaning} This is a starting-point check, not a formal assessment — it helps place {learner}{' '}
+          {band.meaning} This is a starting-point check, not a formal assessment. It helps place {learner}{' '}
           {pathwayName ? `at the right course in the ${pathwayName} pathway.` : `for ${subjectName || 'the programme'}.`}
         </p>
       </div>
@@ -558,14 +558,14 @@ const DiagnosticReportDocument = forwardRef(function DiagnosticReportDocument(
               title="Doing well"
               tone={{ color: '#047857', soft: '#ECFDF5', border: '#A7F3D0' }}
               items={strengths}
-              empty="No area reached 60% yet — every area is a place to grow."
+              empty="No area reached 60% yet. Every area is a place to grow."
               screen={screen}
             />
             <HighlightList
               title="Areas to work on"
               tone={{ color: '#B45309', soft: '#FFFBEB', border: '#FDE68A' }}
               items={focus}
-              empty="Every area scored 60% or more — a strong start across the board."
+              empty="Every area scored 60% or more: a strong start across the board."
               screen={screen}
             />
           </div>
@@ -594,7 +594,7 @@ const DiagnosticReportDocument = forwardRef(function DiagnosticReportDocument(
         </div>
         <p style={{ margin: 0, fontSize: 12, color: INK_MUTED, lineHeight: 1.6 }}>
           Our team will use this result to recommend where {learner} should start. To talk it through or to enrol, contact us
-          using the details below — we&apos;re happy to help.
+          using the details below. We&apos;re happy to help.
         </p>
       </div>
 

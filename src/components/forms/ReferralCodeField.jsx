@@ -47,10 +47,10 @@ export default function ReferralCodeField({ value, onChange, sx }) {
   }
   const settled = code.length >= 4 && debounced === code && check.data;
   const helper = !code
-    ? 'Optional — from a friend or a partner who told you about us'
+    ? 'Optional: from a friend or a partner who told you about us'
     : code.length < 4 ? 'Codes are at least 4 letters and numbers'
-      : settled && check.data.valid ? (fromLink && code === fromLink ? 'From the link you followed — thank you!' : 'Code recognised — thank you!')
-        : settled && !check.data.valid ? 'We don’t recognise this code — check it, or leave it empty'
+      : settled && check.data.valid ? (fromLink && code === fromLink ? 'From the link you followed. Thank you!' : 'Code recognised. Thank you!')
+        : settled && !check.data.valid ? 'We don’t recognise this code. Check it, or leave it empty'
           : ' ';
   return (
     <TextField

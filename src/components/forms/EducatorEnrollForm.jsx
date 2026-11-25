@@ -98,11 +98,11 @@ export default function EducatorEnrollForm({ bootcampSlug, bootcampName, default
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mt: 2, mb: 0.5 }}>
           <CheckCircleIcon color="success" />
           <Typography variant="h5" component="h2" sx={{ fontWeight: 800 }}>
-            You’re enrolled in {bootcampName}{hasPrice ? ' — now pay' : ''}
+            You’re enrolled in {bootcampName}{hasPrice ? '. Now pay' : ''}
           </Typography>
         </Box>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5 }}>
-          Your account is ready. Sign in to follow your training (as TOT learner) — it opens fully
+          Your account is ready. Sign in to follow your training (as TOT learner). It opens fully
           {hasPrice ? ' as soon as your payment is confirmed.' : ' once the hub confirms your place.'}
         </Typography>
 
@@ -112,11 +112,11 @@ export default function EducatorEnrollForm({ bootcampSlug, bootcampName, default
             amountDue={payment.amount}
             invoiceNumber={payment.invoiceNumber}
             defaultPhone={submittedPhone}
-            paidMessage="Your training is on — sign in with the details below."
+            paidMessage="Your training is on. Sign in with the details below."
           />
         ) : (
           <Alert severity="info" sx={{ mb: 2.5 }}>
-            The price is still to be confirmed — {payment?.hubName || 'the hub'} will be in touch.
+            The price is still to be confirmed. {payment?.hubName || 'The hub'} will be in touch.
           </Alert>
         )}
 
@@ -151,7 +151,7 @@ export default function EducatorEnrollForm({ bootcampSlug, bootcampName, default
         <Box>
           <Typography variant="h6" component="h2" gutterBottom>Where would you like to train?</Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            {bootcampName} runs at more than one hub — pick the one that works best for you.
+            {bootcampName} runs at more than one hub. Pick the one that works best for you.
           </Typography>
           {bootcampLoading && <Skeleton variant="rounded" height={72} sx={{ mb: 1.5 }} />}
           <Box sx={{ display: 'grid', gap: 1.5 }}>

@@ -22,7 +22,7 @@ export default function HomePage() {
   return (
     <>
       <SeoHead
-        title="Digifunzi — Robotics, AI & Coding for Kids in Kenya"
+        title="Digifunzi: Robotics, AI & Coding for Kids in Kenya"
         titleTemplate={false}
         description="Digifunzi is an impact-driven digital literacy programme teaching robotics, AI and coding to kids aged 5–17, at home, in learning hubs and in schools."
       />

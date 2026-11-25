@@ -157,7 +157,7 @@ export default function DiagnosticPage() {
             <Typography color="text.primary">Diagnostic</Typography>
           </Breadcrumbs>
           <Typography variant="h1" component="h1" sx={{ fontSize: { xs: 28, md: 36 } }}>
-            {isReport ? `How ${learnerLabel} did` : stage ? `${pathwayName} — ${stage.name} Diagnostic` : `${pathwayName} Diagnostic`}
+            {isReport ? `How ${learnerLabel} did` : stage ? `${pathwayName}: ${stage.name} Diagnostic` : `${pathwayName} Diagnostic`}
           </Typography>
           {isReport && (
             <Typography
@@ -182,12 +182,12 @@ export default function DiagnosticPage() {
               // Outside the range (the stage's, or the whole pathway's): say what the range is.
               if (rangeText && (a < diagMinAge || a > diagMaxAge)) {
                 return stage
-                  ? `The ${stage.name} diagnostic is for ${rangeText} — the learner is ${a}. Try the ${pathwayName} diagnostic for every age.`
-                  : `This diagnostic is for ${rangeText} — the learner is ${a}.`;
+                  ? `The ${stage.name} diagnostic is for ${rangeText}, and the learner is ${a}. Try the ${pathwayName} diagnostic for every age.`
+                  : `This diagnostic is for ${rangeText}, and the learner is ${a}.`;
               }
               // Inside the pathway's range but between stages that have a diagnostic.
               if (diagGroups.length > 0 && !groupForAge(diagGroups, a)) {
-                return `There is no diagnostic for age ${a} yet — it's offered for ${diagGroups.map((g) => ageLabel(g.minAge, g.maxAge).toLowerCase()).join(', ')}.`;
+                return `There is no diagnostic for age ${a} yet. It's offered for ${diagGroups.map((g) => ageLabel(g.minAge, g.maxAge).toLowerCase()).join(', ')}.`;
               }
               return null;
             }}
@@ -201,7 +201,7 @@ export default function DiagnosticPage() {
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', flexWrap: 'wrap' }}>
               <Typography sx={{ fontWeight: 600 }}>
-                {ageGroup ? `${groupLabel(ageGroup)} diagnostic` : 'Diagnostic'} — for a learner aged {age}
+                {ageGroup ? `${groupLabel(ageGroup)} diagnostic` : 'Diagnostic'} for a learner aged {age}
               </Typography>
               <Button size="small" onClick={changeAge}>
                 Change date of birth

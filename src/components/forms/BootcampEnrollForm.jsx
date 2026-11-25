@@ -180,7 +180,7 @@ export function ParentSignIn({ onSignedIn, onCancel }) {
     <Box sx={{ p: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', display: 'grid', gap: 1.5 }}>
       <Typography sx={{ fontWeight: 700 }}>Sign in to your Digifunzi account</Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mt: -1 }}>
-        The account you use for your other children — we’ll fill in your details.
+        The account you use for your other children. We’ll fill in your details.
       </Typography>
       {error && <Alert severity="error">{error}</Alert>}
       <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
@@ -355,7 +355,7 @@ export default function BootcampEnrollForm({
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mt: 2, mb: 0.5 }}>
           <CheckCircleIcon color="success" />
           <Typography variant="h5" component="h2" sx={{ fontWeight: 800 }}>
-            {names.length > 1 ? `${childNames} are` : `${childNames} is`} enrolled in {bootcampName} — now pay
+            {names.length > 1 ? `${childNames} are` : `${childNames} is`} enrolled in {bootcampName}. Now pay
           </Typography>
         </Box>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5 }}>
@@ -372,7 +372,7 @@ export default function BootcampEnrollForm({
               amountDue={payment.amount}
               invoiceNumber={payment.invoiceNumber}
               defaultPhone={submittedPhone}
-              paidMessage="Full access is on — log in with the details below."
+              paidMessage="Full access is on. Log in with the details below."
             />
             {payment.children > 1 && (
               <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: -2, mb: 2.5, textAlign: 'center' }}>
@@ -383,14 +383,14 @@ export default function BootcampEnrollForm({
                 sum of every priced course (or module), since enrollment covers the whole bootcamp. */}
             {payment.mode === 'by_course' && (
               <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: payment.children > 1 ? -1.5 : -2, mb: 2.5, textAlign: 'center' }}>
-                The price combines this bootcamp’s individually priced courses/modules — see the
+                The price combines this bootcamp’s individually priced courses/modules. See the
                 “Pathway courses” section on the bootcamp page for the breakdown.
               </Typography>
             )}
           </>
         ) : (
           <Alert severity="info" sx={{ mb: 2.5 }}>
-            The price is still to be confirmed — {payment?.hubName || 'your hub'} will be in touch about paying.
+            The price is still to be confirmed. {payment?.hubName || 'Your hub'} will be in touch about paying.
           </Alert>
         )}
 
@@ -400,7 +400,7 @@ export default function BootcampEnrollForm({
             <CopyableField label="Email" value={parentAccount?.email} />
             <Typography variant="body2" color="text.secondary">
               {parentAccount?.existing
-                ? `Sign in with your existing password — ${childNames} ${names.length > 1 ? 'have' : 'has'} been added to your account.`
+                ? `Sign in with your existing password. ${childNames} ${names.length > 1 ? 'have' : 'has'} been added to your account.`
                 : 'Sign in with the password you just chose.'}
             </Typography>
           </Box>
@@ -426,7 +426,7 @@ export default function BootcampEnrollForm({
           </Button>
           {parentToken && (
             <Button variant="outlined" size="large" fullWidth startIcon={<PersonAddAltRoundedIcon />} onClick={enrolAnother}>
-              Enrol another child — no need to type your password again
+              Enrol another child without typing your password again
             </Button>
           )}
         </Box>
@@ -453,7 +453,7 @@ export default function BootcampEnrollForm({
             Where should {defaultLearnerName || 'the learner'} attend?
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            {bootcampName} runs at more than one hub — pick the one that works best.
+            {bootcampName} runs at more than one hub. Pick the one that works best.
           </Typography>
 
           {bootcampLoading && <Skeleton variant="rounded" height={72} sx={{ mb: 1.5 }} />}
@@ -500,7 +500,7 @@ export default function BootcampEnrollForm({
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
           We’ll set up your account and each learner’s right away so you can get started. Next you choose how to
-          pay — the accounts unlock fully as soon as the payment is confirmed.
+          pay. The accounts unlock fully as soon as the payment is confirmed.
         </Typography>
       </Box>
 
@@ -531,7 +531,7 @@ export default function BootcampEnrollForm({
             <CheckCircleIcon color="success" />
             <Box sx={{ flex: 1, minWidth: 180 }}>
               <Typography sx={{ fontWeight: 700 }}>Signed in as {parent.name || parent.email}</Typography>
-              <Typography variant="body2" color="text.secondary">{parent.email} — the learners join this account.</Typography>
+              <Typography variant="body2" color="text.secondary">{parent.email}. The learners join this account.</Typography>
             </Box>
             <Button size="small" onClick={signOut}>Not you?</Button>
           </Box>
@@ -550,7 +550,7 @@ export default function BootcampEnrollForm({
           <Alert severity="info" icon={false} sx={{ py: 0.25 }}>
             Already have a Digifunzi account (for another child)?{' '}
             <Button size="small" onClick={() => setShowSignIn(true)} sx={{ verticalAlign: 'baseline', px: 0.5, minWidth: 0 }}>Sign in</Button>
-            {' '}— we’ll fill in your details.
+            {' '}and we’ll fill in your details.
           </Alert>
           <TextField
             label="Your name (parent or guardian)"

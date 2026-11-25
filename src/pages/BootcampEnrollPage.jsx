@@ -150,7 +150,7 @@ export default function BootcampEnrollPage() {
     const below = bootcamp.ageMin != null && a < bootcamp.ageMin;
     const above = bootcamp.ageMax != null && a > bootcamp.ageMax;
     return below || above
-      ? `${bootcamp.name} is for ${bootcampAges.toLowerCase()}, and your child is ${a}. You can still continue — or ask us first which bootcamp suits them.`
+      ? `${bootcamp.name} is for ${bootcampAges.toLowerCase()}, and your child is ${a}. You can still continue, or ask us first which bootcamp suits them.`
       : null;
   };
   // The diagnostic was removed or went out of range between loading the bootcamp and starting it.
@@ -207,7 +207,7 @@ export default function BootcampEnrollPage() {
           </Typography>
           {isReport ? (
             <Typography variant="h4" component="p" sx={{ fontWeight: 400, color: 'text.secondary', maxWidth: 640, mt: 1.5 }}>
-              Here&apos;s the graded report — enrol in {bootcamp.name} when you&apos;re ready.
+              Here&apos;s the graded report. Enrol in {bootcamp.name} when you&apos;re ready.
             </Typography>
           ) : (
             bootcamp.tagline && <Typography color="text.secondary" sx={{ maxWidth: 640, mt: 1 }}>{bootcamp.tagline}</Typography>
@@ -247,7 +247,7 @@ export default function BootcampEnrollPage() {
                 <LockOutlinedIcon fontSize="small" sx={{ color: 'text.secondary', mt: 0.25 }} />
                 <Typography variant="body2" color="text.secondary">
                   We only use the date of birth to {hasDiagnostic ? 'choose the right questions and level' : 'place you at the right level'}.
-                  No account is needed yet — you&apos;ll create {forEducators ? 'yours' : 'the logins'} when you enrol.
+                  No account is needed yet. You&apos;ll create {forEducators ? 'yours' : 'the logins'} when you enrol.
                 </Typography>
               </Box>
             </Box>
@@ -260,7 +260,7 @@ export default function BootcampEnrollPage() {
         {step === STEP.QUESTIONS && (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', flexWrap: 'wrap' }}>
-              <Typography sx={{ fontWeight: 600 }}>{forEducators ? 'Your diagnostic' : `Diagnostic — for a learner aged ${age}`}</Typography>
+              <Typography sx={{ fontWeight: 600 }}>{forEducators ? 'Your diagnostic' : `Diagnostic for a learner aged ${age}`}</Typography>
               <Button size="small" onClick={changeAge}>
                 Change date of birth
               </Button>

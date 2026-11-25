@@ -95,7 +95,7 @@ export function ProofChips({ event, onDark = false, sx }) {
   const reg = event.registration || {};
   const chips = [];
   if (event.free) chips.push({ key: 'free', label: 'Free', icon: <CheckRoundedIcon />, tone: 'success' });
-  if (reg.open && reg.full && reg.waitlist) chips.push({ key: 'full', label: 'Full — join the waiting list', icon: <LocalFireDepartmentRoundedIcon />, tone: 'warning' });
+  if (reg.open && reg.full && reg.waitlist) chips.push({ key: 'full', label: 'Full: join the waiting list', icon: <LocalFireDepartmentRoundedIcon />, tone: 'warning' });
   else if (reg.open && reg.seatsLeft != null) chips.push({ key: 'left', label: `Only ${reg.seatsLeft} ${reg.seatsLeft === 1 ? 'place' : 'places'} left`, icon: <LocalFireDepartmentRoundedIcon />, tone: 'warning' });
   if (event.going) chips.push({ key: 'going', label: `${event.going} people coming`, icon: <GroupsRoundedIcon />, tone: 'info' });
   if (event.ages) chips.push({ key: 'ages', label: event.ages, icon: <ChildCareRoundedIcon />, tone: 'neutral' });
@@ -123,7 +123,7 @@ export function ProofChips({ event, onDark = false, sx }) {
 export function ShareRow({ event, compact = false, sx }) {
   const [copied, setCopied] = useState(false);
   const url = typeof window !== 'undefined' ? `${window.location.origin}/events/${event.slug}` : `/events/${event.slug}`;
-  const text = `${event.title} — ${event.when}. It's free: ${url}`;
+  const text = `${event.title}, ${event.when}. It's free: ${url}`;
   const copy = async () => {
     try { await window.navigator.clipboard.writeText(url); setCopied(true); window.setTimeout(() => setCopied(false), 2000); } catch { /* blocked */ }
   };
@@ -138,16 +138,16 @@ export function ShareRow({ event, compact = false, sx }) {
 
 /** Why come to a Digifunzi event — for the Events page (the event page has its own "What to expect"). */
 export const WHY_COME = [
-  { title: 'See it for real', text: 'Learners show the games, robots and apps they built — and let your child try them.' },
+  { title: 'See it for real', text: 'Learners show the games, robots and apps they built, and let your child try them.' },
   { title: 'Meet the mentors', text: 'Talk to the people who would teach your child, and ask them anything.' },
   { title: 'Find the right fit', text: 'Leave knowing which bootcamp, club or pathway suits your child’s age and interests.' },
-  { title: 'Free for the family', text: 'Bring the children, grandparents and friends — register once for everyone.' },
+  { title: 'Free for the family', text: 'Bring the children, grandparents and friends. Register once for everyone.' },
 ];
 
 export const EVENT_FAQS = [
   { q: 'Do I have to pay?', a: 'No. Our events are free. We ask you to register so we can keep a place for you and plan for everyone coming.' },
-  { q: 'Can I bring my children and other family members?', a: 'Yes — please do. When you register, tell us how many of you are coming (up to the number shown on the form).' },
-  { q: 'My child hasn’t done any coding. Is that a problem?', a: 'Not at all. Events are made for families who are curious — no experience needed. It’s a great way to see where your child could start.' },
+  { q: 'Can I bring my children and other family members?', a: 'Yes, please do. When you register, tell us how many of you are coming (up to the number shown on the form).' },
+  { q: 'My child hasn’t done any coding. Is that a problem?', a: 'Not at all. Events are made for families who are curious. No experience is needed. It’s a great way to see where your child could start.' },
   { q: 'What if I can’t make it any more?', a: 'Use the link in your confirmation email to cancel, so someone on the waiting list can have your place. You can register again any time while places last.' },
   { q: 'Will you call me afterwards?', a: 'Only if you ask us to. You’ll get your confirmation and a reminder before the day. If you tick “keep me posted”, we’ll tell you about programmes and future events.' },
 ];
@@ -168,7 +168,7 @@ export function NotifyMe({ title = 'Tell me about the next event', lead = 'Leave
       await publicApi.submitLead({ parentName: form.name.trim(), parentEmail: form.email.trim(), parentPhone: form.phone.trim(), interestedIn: 'general', note: 'Wants to hear about upcoming events (Events page).' });
       setState({ busy: false, done: true, error: null });
     } catch (err) {
-      setState({ busy: false, done: false, error: err?.message || 'That didn’t go through — please try again.' });
+      setState({ busy: false, done: false, error: err?.message || 'That didn’t go through. Please try again.' });
     }
   };
   return (
@@ -179,7 +179,7 @@ export function NotifyMe({ title = 'Tell me about the next event', lead = 'Leave
         <Typography sx={{ color: 'text.secondary' }}>{lead}</Typography>
       </Box>
       {state.done ? (
-        <Alert severity="success" sx={{ fontWeight: 600 }}>Thanks, {form.name.trim().split(/\s+/)[0]} — you&rsquo;ll be the first to know.</Alert>
+        <Alert severity="success" sx={{ fontWeight: 600 }}>Thanks, {form.name.trim().split(/\s+/)[0]}. You&rsquo;ll be the first to know.</Alert>
       ) : (
         <Box component="form" noValidate onSubmit={submit} sx={{ display: 'grid', gap: 1.5 }}>
           <TextField label="Your name" value={form.name} onChange={set('name')} autoComplete="name" />
@@ -253,7 +253,7 @@ export function RegisterBar({ event, targetId = 'register' }) {
   }, [targetId]);
   const reg = event.registration || {};
   if (!reg.open) return null;
-  const note = [reg.full && reg.waitlist ? 'Full — waiting list open' : reg.seatsLeft != null ? `Only ${reg.seatsLeft} places left` : null, whenFromNow(event.startsAt)].filter(Boolean).join(' · ');
+  const note = [reg.full && reg.waitlist ? 'Full: waiting list open' : reg.seatsLeft != null ? `Only ${reg.seatsLeft} places left` : null, whenFromNow(event.startsAt)].filter(Boolean).join(' · ');
   return (
     <>
       <GlobalStyles styles={(t) => ({ [t.breakpoints.down('lg')]: { ':root': { '--floating-bottom-offset': formVisible ? '0px' : '76px' } } })} />

@@ -30,7 +30,7 @@ const LIST = {
   ],
   project: [
     { icon: <SchoolOutlinedIcon />, text: 'Opens in your child’s learner account once paid' },
-    { icon: <AllInclusiveRoundedIcon />, text: 'Lifetime access — revisit any step, any time' },
+    { icon: <AllInclusiveRoundedIcon />, text: 'Lifetime access: revisit any step, any time' },
     { icon: <PaymentsOutlinedIcon />, text: 'Pay by M-Pesa, bank or cash after checkout' },
   ],
 };

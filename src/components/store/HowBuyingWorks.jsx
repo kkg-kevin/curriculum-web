@@ -5,7 +5,7 @@ import PhoneIphoneRoundedIcon from '@mui/icons-material/PhoneIphoneRounded';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 
 const STEPS = [
-  { icon: <AddShoppingCartRoundedIcon />, title: 'Add what you need', body: 'Pick kits, bundles or projects — your cart keeps them while you browse.' },
+  { icon: <AddShoppingCartRoundedIcon />, title: 'Add what you need', body: 'Pick kits, bundles or projects. Your cart keeps them while you browse.' },
   { icon: <PhoneIphoneRoundedIcon />, title: 'Check out and pay', body: 'Give your details, then pay by M-Pesa, bank or cash. We confirm by email.' },
   { icon: <Inventory2OutlinedIcon />, title: 'Collect, or we deliver', body: 'Pick it up at a Digifunzi hub or have it brought to you. Projects open in your child’s account.' },
 ];

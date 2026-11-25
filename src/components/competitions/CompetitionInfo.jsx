@@ -108,15 +108,15 @@ export function CompetitionInfoPanel({ competition }) {
         )}
         {modes.length > 0 && (
           <Row icon={<GroupsRoundedIcon />} title="How you can enter">
-            {modes.includes('individual') && <Strong>On your own — one participant</Strong>}
-            {modes.includes('group') && <Strong>As a team{sizes ? ` — ${sizes}` : ''}</Strong>}
+            {modes.includes('individual') && <Strong>On your own: one participant</Strong>}
+            {modes.includes('group') && <Strong>As a team{sizes ? `: ${sizes}` : ''}</Strong>}
           </Row>
         )}
         {fees.length > 0 && (
           <Row icon={<PaymentsRoundedIcon />} title="Entry fees · every track">
             {fees.map((x) => (
               <Typography key={x.label} sx={{ fontSize: 14.5, lineHeight: 1.5, color: '#fff' }}>
-                <strong>{x.label} · {x.amount}</strong>{x.note && x.amount !== 'Free' ? <Box component="span" sx={{ color: 'rgba(255,255,255,0.75)', fontSize: 13 }}> — {x.note}</Box> : null}
+                <strong>{x.label} · {x.amount}</strong>{x.note && x.amount !== 'Free' ? <Box component="span" sx={{ color: 'rgba(255,255,255,0.75)', fontSize: 13 }}> ({x.note})</Box> : null}
               </Typography>
             ))}
           </Row>
@@ -174,14 +174,14 @@ export default function CompetitionInfo({ competition }) {
         )}
         {modes.length > 0 && (
           <InfoCard icon={<GroupsRoundedIcon />} title="How you can enter">
-            {modes.includes('individual') && <Line strong>On your own — one participant</Line>}
-            {modes.includes('group') && <Line strong>As a team{sizes ? ` — ${sizes}` : ''}</Line>}
+            {modes.includes('individual') && <Line strong>On your own: one participant</Line>}
+            {modes.includes('group') && <Line strong>As a team{sizes ? `: ${sizes}` : ''}</Line>}
             <Line>{modes.length === 2 ? 'Each track says which it takes.' : 'One person registers the whole team.'}</Line>
           </InfoCard>
         )}
         {fees.length > 0 && (
           <InfoCard icon={<PaymentsRoundedIcon />} title="Entry fees">
-            {fees.map((x) => <Line key={x.label} strong>{x.label} · {x.amount}{x.note && x.amount !== 'Free' ? ` — ${x.note}` : ''}</Line>)}
+            {fees.map((x) => <Line key={x.label} strong>{x.label} · {x.amount}{x.note && x.amount !== 'Free' ? ` (${x.note})` : ''}</Line>)}
             <Line>The same for every track.</Line>
           </InfoCard>
         )}

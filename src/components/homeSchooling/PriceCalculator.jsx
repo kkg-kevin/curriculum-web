@@ -84,7 +84,7 @@ export default function PriceCalculator({ packages, isLoading }) {
           )}
           {sparePlaces > 0 && (
             <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-              Includes {childrenLabel(best.price.childCount)} — room for {sparePlaces} more at no extra cost.
+              Includes {childrenLabel(best.price.childCount)}, with room for {sparePlaces} more at no extra cost.
             </Typography>
           )}
           <Button

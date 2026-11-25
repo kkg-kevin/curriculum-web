@@ -76,24 +76,24 @@ export default function BecomeAffiliatePage() {
       <Section>
         <Box sx={{ maxWidth: 980, mx: 'auto', display: 'grid', gap: 4 }}>
           <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' } }}>
-            <Step icon={ShareRoundedIcon} title="1. Share your link" text="Once you're approved you get your own link, a short code and a Digifunzi account to follow them. Share them on WhatsApp, at your school, church or estate — anywhere." />
+            <Step icon={ShareRoundedIcon} title="1. Share your link" text="Once you're approved you get your own link, a short code and a Digifunzi account to follow them. Share them on WhatsApp, at your school, church or estate, anywhere." />
             <Step icon={FamilyRestroomRoundedIcon} title="2. Families sign up" text={`A family who opens your link (within ${p?.attributionDays || 30} days), or types your code when signing up, is credited to you.${p?.programmes?.length ? ` Counts for: ${p.programmes.join(', ')}.` : ''}`} />
-            <Step icon={PaymentsRoundedIcon} title="3. You get paid" text={`You earn when they pay${p?.holdDays ? `; each amount can be paid out ${p.holdDays} days later` : ''}. Ask for a payout from ${p ? formatKsh(p.minimumPayout) : 'the minimum'} — by M-Pesa or bank.`} />
+            <Step icon={PaymentsRoundedIcon} title="3. You get paid" text={`You earn when they pay${p?.holdDays ? `; each amount can be paid out ${p.holdDays} days later` : ''}. Ask for a payout from ${p ? formatKsh(p.minimumPayout) : 'the minimum'}, by M-Pesa or bank.`} />
           </Box>
 
           {p?.team && (
-            <Alert severity="info" sx={{ fontWeight: 600 }}>You&rsquo;re joining {p.team.managerName}&rsquo;s affiliate team. You earn exactly the same — {p.team.managerName} leads the team.</Alert>
+            <Alert severity="info" sx={{ fontWeight: 600 }}>You&rsquo;re joining {p.team.managerName}&rsquo;s affiliate team. You earn exactly the same; {p.team.managerName} leads the team.</Alert>
           )}
           {programme.isLoading ? <LoadingBlock /> : p && !p.open ? (
             <Alert severity="info">We&rsquo;re not taking affiliate applications right now. Please check back later, or <RouterLink to="/contact">contact us</RouterLink>.</Alert>
           ) : apply.isSuccess ? (
             <Box sx={{ ...card, textAlign: 'center', py: 5 }}>
               <CheckCircleRoundedIcon color="success" sx={{ fontSize: 52, mb: 1 }} />
-              <Typography variant="h4" component="h2" sx={{ fontWeight: 800, mb: 1 }}>Thank you — we&rsquo;ve got your application</Typography>
+              <Typography variant="h4" component="h2" sx={{ fontWeight: 800, mb: 1 }}>Thank you, we&rsquo;ve got your application</Typography>
               <Typography color="text.secondary" sx={{ maxWidth: 560, mx: 'auto' }}>
                 {p?.requireApproval === false
                   ? 'Check your email: your link, your code and a link to set the password of your Digifunzi account are on their way.'
-                  : 'Our team will look at it and email you once you’re approved — with your own link, your code and how to sign in to your Digifunzi account.'}
+                  : 'Our team will look at it and email you once you’re approved, with your own link, your code and how to sign in to your Digifunzi account.'}
               </Typography>
             </Box>
           ) : (

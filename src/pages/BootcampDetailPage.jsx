@@ -196,7 +196,7 @@ export default function BootcampDetailPage() {
         </Button>
         <Typography variant="body2" color="text.secondary" sx={{ mt: 1.5, textAlign: 'center', fontSize: '0.8rem' }}>
           {forEducators
-            ? 'Training of trainers for educators — enrol and pay online.'
+            ? 'Training of trainers for educators. Enrol and pay online.'
             : 'Starts with a short diagnostic matched to your child’s age.'}
         </Typography>
       </Box>
@@ -207,7 +207,10 @@ export default function BootcampDetailPage() {
     <>
       <SeoHead
         title={titleWithKind(name, 'Bootcamp')}
-        description={tagline || description}
+        description={[tagline, description]}
+        about={forEducators
+          ? 'A Digifunzi training bootcamp for educators in robotics, AI and coding. See the dates and hubs, and enrol online.'
+          : 'A Digifunzi holiday bootcamp in robotics, AI and coding for kids in Kenya. See the dates and hubs, and enrol online.'}
         image={resolveMediaUrl(coverImage) || undefined}
       />
       {/* A bootcamp is something that happens on dates at a place — one EducationEvent per
@@ -224,7 +227,7 @@ export default function BootcampDetailPage() {
           ...upcomingRuns.map((run) =>
             eventSchema({
               type: 'EducationEvent',
-              name: run.hub?.name ? `${name} — ${run.hub.name}` : name,
+              name: run.hub?.name ? `${name} at ${run.hub.name}` : name,
               description: tagline || description,
               startDate: run.startDate,
               endDate: run.endDate,
@@ -491,7 +494,7 @@ export default function BootcampDetailPage() {
             {upcomingRuns.length === 0 && (
               <Box sx={{ mb: 7 }}>
                 <Typography variant="body2" color="text.secondary">
-                  Dates for the next run aren&apos;t published yet — send an enquiry and we&apos;ll let
+                  Dates for the next run aren&apos;t published yet. Send an enquiry and we&apos;ll let
                   you know the moment they are.
                 </Typography>
               </Box>
@@ -584,7 +587,7 @@ export default function BootcampDetailPage() {
 
       <CTABanner
         heading="Booking for a school or club?"
-        body="Tell us how many learners you have and which bootcamp you're interested in — we'll put together a group quote and dates that work."
+        body="Tell us how many learners you have and which bootcamp you're interested in, and we'll put together a group quote and dates that work."
         primary={{ label: 'Request a quote', to: '/contact?subject=School%20bootcamp%20enquiry' }}
         secondary={{ label: 'Browse all bootcamps', to: '/bootcamps' }}
       />

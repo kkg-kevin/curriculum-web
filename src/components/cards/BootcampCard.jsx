@@ -159,7 +159,7 @@ export default function BootcampCard({ bootcamp }) {
               minHeight: '4.8em',
             }}
           >
-            {tagline || 'A short, intensive holiday programme — a full build packed into a week or two.'}
+            {tagline || 'A short, intensive holiday programme: a full build packed into a week or two.'}
           </Typography>
 
           <Box

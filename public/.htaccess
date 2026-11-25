@@ -54,7 +54,7 @@
   #    store item/bootcamp/competition/estate tech club added since the last build, the diagnostic and report
   #    pages, hub pages, sign-up — get the bare SPA shell (200.html), never the prerendered home
   #    page. A slug that turns out not to exist renders the NotFound page (noindex) client-side.
-  RewriteRule ^(pathways|store|bootcamps|competitions|estate-tech-clubs)(/.*)?$ /200.html [L]
+  RewriteRule ^(pathways|store|bootcamps|competitions|estate-tech-clubs|locations)(/.*)?$ /200.html [L]
   RewriteRule ^home-schooling(/signup)?/?$ /200.html [L]
   RewriteRule ^(about|contact|enroll|privacy|terms)/?$ /200.html [L]
   # Buying: the cart, its checkout, and paying an order later from the link in its email

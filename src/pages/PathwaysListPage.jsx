@@ -106,7 +106,7 @@ function AgePicker({ pathways, age, onChange, matches }) {
           <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }} aria-live="polite">
             {matches === 0
               ? 'No pathway for this age yet.'
-              : `${matches} ${matches === 1 ? 'pathway fits' : 'pathways fit'} — each shows the stage they'd start in.`}
+              : `${matches} ${matches === 1 ? 'pathway fits' : 'pathways fit'}. Each shows the stage they'd start in.`}
           </Typography>
           <Button size="small" onClick={() => onChange(null)} sx={{ ml: { sm: 'auto' } }}>
             Show every pathway
@@ -144,7 +144,7 @@ export default function PathwaysListPage() {
     <>
       <SeoHead
         title="Coding, Robotics & AI Pathways for Kids"
-        description="Guided tracks of courses a child works through in order — robotics, coding, AI, data, digital design and more — building real skills one course at a time."
+        description="Guided tracks of courses a child works through in order (robotics, coding, AI, data, digital design and more), building real skills one course at a time."
       />
       <JsonLd
         data={[
@@ -158,7 +158,7 @@ export default function PathwaysListPage() {
 
       <PageHeader
         title="Learning Pathways"
-        lead="A pathway is a set of courses a child works through in order, in stages by age — each course builds on the last. Pick your child's age to see where they'd start."
+        lead="A pathway is a set of courses a child works through in order, in stages by age. Each course builds on the last. Pick your child's age to see where they'd start."
       >
         {!isLoading && !isError && count > 0 && (
           <Box
@@ -189,7 +189,7 @@ export default function PathwaysListPage() {
         {!isLoading && !isError && count === 0 && (
           <EmptyBlock
             title="Pathways are being finalised"
-            body="Check back soon — or contact us and we’ll talk through the tracks we’re running this term."
+            body="Check back soon, or contact us and we’ll talk through the tracks we’re running this term."
           />
         )}
         {!isLoading && !isError && count > 0 && (
@@ -205,7 +205,7 @@ export default function PathwaysListPage() {
             {age != null && list.length === 0 && (
               <EmptyBlock
                 title={`Nothing for age ${age === ADULT_AGE ? '18+' : age} yet`}
-                body="Contact us and we’ll tell you what’s coming up — or look through every pathway."
+                body="Contact us and we’ll tell you what’s coming up, or look through every pathway."
               />
             )}
           </>

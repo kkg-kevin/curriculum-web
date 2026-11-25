@@ -229,7 +229,7 @@ export async function downloadReportPdf(node, filename = 'diagnostic-report.pdf'
   });
 
   pdf.setProperties({
-    title: meta.subtitle ? `${title} — ${meta.subtitle}` : title,
+    title: meta.subtitle ? `${title}: ${meta.subtitle}` : title,
     author: ORG.name,
     creator: ORG.name,
   });

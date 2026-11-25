@@ -32,7 +32,7 @@ export default function ClubSignupPage() {
     <>
       <SeoHead
         title={hub ? `Join ${hub.name}` : 'Join an Estate Tech Club'}
-        description="Sign your children up for a Digifunzi Estate Tech Club — choose a package and create your family’s logins."
+        description="Sign your children up for a Digifunzi Estate Tech Club: choose a package and create your family’s logins."
         noindex
       />
       <PageHeader

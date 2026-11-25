@@ -97,7 +97,7 @@ export default function MpesaPayNow({ pay, amountDue, defaultPhone = '', paidMes
         <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start' }}>
           <CheckCircleRoundedIcon color="success" />
           <Box>
-            <Typography sx={{ fontWeight: 800 }}>Payment received — thank you!</Typography>
+            <Typography sx={{ fontWeight: 800 }}>Payment received. Thank you!</Typography>
             <Typography variant="body2" color="text.secondary">
               {request.receiptNumber ? `M-Pesa ${request.receiptNumber}. ` : ''}
               {paidMessage || 'Your account is active. You can sign in now.'}
@@ -125,7 +125,7 @@ export default function MpesaPayNow({ pay, amountDue, defaultPhone = '', paidMes
               {failed && (
                 <Alert severity="warning">
                   {request?.status === 'pending'
-                    ? 'We didn’t hear back yet. If you paid, your account switches on by itself in a few minutes — otherwise try again.'
+                    ? 'We didn’t hear back yet. If you paid, your account switches on by itself in a few minutes. Otherwise, try again.'
                     : request?.message || 'The payment didn’t go through.'}
                 </Alert>
               )}

@@ -92,7 +92,7 @@ function LearnerStep({ pathway, groups, restrictTo, defaultDateOfBirth, defaultQ
     <StepCard
       eyebrow="The learner"
       title="When was the learner born?"
-      lead="Their age decides their stage — the courses made for their age group."
+      lead="Their age decides their stage: the courses made for their age group."
     >
       <Box
         component="form"
@@ -100,7 +100,7 @@ function LearnerStep({ pathway, groups, restrictTo, defaultDateOfBirth, defaultQ
         onSubmit={handleSubmit(({ dateOfBirth }) => {
           const a = ageOn(dateOfBirth);
           if (outsideStage) {
-            setError('dateOfBirth', { message: `${restrictTo.name} is for ${ageLabel(restrictTo.diagnostic.minAge, restrictTo.diagnostic.maxAge).toLowerCase()} — the learner is ${a}. Go back to the pathway and choose the stage for their age.` });
+            setError('dateOfBirth', { message: `${restrictTo.name} is for ${ageLabel(restrictTo.diagnostic.minAge, restrictTo.diagnostic.maxAge).toLowerCase()}, and the learner is ${a}. Go back to the pathway and choose the stage for their age.` });
             return;
           }
           onSubmit(dateOfBirth, a, Boolean(group) && quiz);
@@ -125,7 +125,7 @@ function LearnerStep({ pathway, groups, restrictTo, defaultDateOfBirth, defaultQ
               </Box>
             </Box>
           ) : (
-            <Alert severity="warning">{pathway.name} doesn’t have a stage for age {age} yet. You can still carry on — our team will help find the right fit.</Alert>
+            <Alert severity="warning">{pathway.name} doesn’t have a stage for age {age} yet. You can still carry on, and our team will help find the right fit.</Alert>
           )
         )}
 
@@ -252,14 +252,14 @@ export default function PathwayEnrolJourney({ pathway, slug, stageSlug = null, p
               <Typography sx={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'primary.main', mb: 0.5 }}>Quick quiz</Typography>
               <Typography variant="h4" component="h2" sx={{ fontWeight: 800 }}>{ageGroup ? `${ageGroup.name} quiz` : 'Quick quiz'}</Typography>
               <Typography color="text.secondary" sx={{ mt: 0.75 }}>
-                For a learner aged {age}{ageGroup ? ` (${ageLabel(ageGroup.minAge, ageGroup.maxAge).toLowerCase()})` : ''}. It isn’t a test to pass — it places them at the right course.
+                For a learner aged {age}{ageGroup ? ` (${ageLabel(ageGroup.minAge, ageGroup.maxAge).toLowerCase()})` : ''}. It isn’t a test to pass. It places them at the right course.
                 {' '}<Button size="small" onClick={() => setStep(STEP.AGE)} sx={{ verticalAlign: 'baseline', px: 0.75, minWidth: 0 }}>Change date of birth</Button>
               </Typography>
             </Box>
             {diagnosticQuery.isLoading && <LoadingBlock label="Loading questions…" />}
             {diagnosticQuery.isError && (
               <>
-                <ErrorBlock error={{ message: diagnosticQuery.error?.status === 404 ? 'There’s no quiz for that age right now — carry on to enrol.' : diagnosticQuery.error?.message }} />
+                <ErrorBlock error={{ message: diagnosticQuery.error?.status === 404 ? 'There’s no quiz for that age right now. Carry on to enrol.' : diagnosticQuery.error?.message }} />
                 <Button variant="contained" onClick={() => { setSkippedQuiz(true); setStep(STEP.ENROL); }} sx={{ justifySelf: 'start' }}>Continue to enrol</Button>
               </>
             )}

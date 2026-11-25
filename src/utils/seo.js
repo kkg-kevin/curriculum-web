@@ -30,11 +30,31 @@ export function metaDescription(text) {
   return `${(lastSpace > 80 ? cut.slice(0, lastSpace) : cut).replace(/[\s,;:.—–-]+$/, '')}…`;
 }
 
+// Below this, a description reads thin to Google and in the search result.
+const DESCRIPTION_MIN = 110;
+
 /**
- * "<name> — <kind>" for a detail page title, unless the name already says what it is
+ * A page's meta description built from what it has, in order of preference — e.g. a detail page's
+ * [tagline, description, a sentence about the kind of page] — joining them sentence by sentence
+ * until it reaches ~110 characters, then trimmed like metaDescription. A part already contained in
+ * what's there is skipped, so a description that starts with its tagline doesn't repeat it.
+ */
+export function pageDescription(...parts) {
+  let out = '';
+  for (const part of parts.flat()) {
+    const clean = String(part || '').replace(/\s+/g, ' ').trim();
+    if (!clean || out.toLowerCase().includes(clean.toLowerCase())) continue;
+    out = out ? `${out}${/[.!?…]$/.test(out) ? '' : '.'} ${clean}` : clean;
+    if (out.length >= DESCRIPTION_MIN) break;
+  }
+  return metaDescription(out);
+}
+
+/**
+ * "<name> (<kind>)" for a detail page title, unless the name already says what it is
  * ("Digifunzi Holiday Bootcamp" doesn't need " — Bootcamp" tacked on).
  */
 export function titleWithKind(name, kind) {
   if (!name) return kind;
-  return name.toLowerCase().includes(kind.toLowerCase()) ? name : `${name} — ${kind}`;
+  return name.toLowerCase().includes(kind.toLowerCase()) ? name : `${name} (${kind})`;
 }

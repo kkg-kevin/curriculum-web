@@ -103,7 +103,7 @@ export default function EnrollPage() {
         defaultInterest={defaultInterest}
         referenceId={homeSchoolingPackage ? homeSchoolingPackage.slug : referenceId}
         referenceLabel={homeSchoolingPackage
-          ? `Home Schooling — ${homeSchoolingPackage.name} (${childrenLabel(familyChildren || homeSchoolingPackage.childrenIncluded)})`
+          ? `Home Schooling: ${homeSchoolingPackage.name} (${childrenLabel(familyChildren || homeSchoolingPackage.childrenIncluded)})`
           : isHomeSchooling ? 'Home Schooling' : referenceLabel}
         defaultMessage={[note, baseMessage].filter(Boolean).join('\n') || undefined}
         defaults={defaults}
@@ -134,7 +134,7 @@ export default function EnrollPage() {
             hasQuiz ? 'an optional quick quiz' : null,
             paidPathway ? 'a plan and a hub' : null,
             'your details',
-          ].filter(Boolean).join(', ').replace(/, ([^,]*)$/, ' and $1') + (paidPathway ? ' — then pay.' : ' — then our team gets in touch to arrange a place.')}
+          ].filter(Boolean).join(', ').replace(/, ([^,]*)$/, ' and $1') + (paidPathway ? ', then pay.' : ', then our team gets in touch to arrange a place.')}
         >
           <Button component={RouterLink} to={`/pathways/${encodeURIComponent(referenceId)}`} startIcon={<ArrowBackRoundedIcon />} sx={{ mt: 2 }}>
             Back to {pathwayName}
@@ -150,9 +150,9 @@ export default function EnrollPage() {
             ? 'Tell us what you’re interested in and we’ll confirm the price, arrange payment and get you set up. No account or commitment needed to ask.'
             : isPathwayFlow
               ? paidPathway
-                ? 'Start with the learner’s date of birth — if there’s a diagnostic for their age, a short quiz places them at the right course (you can skip it). Then choose a hub, add your details and pay.'
-                : 'Start with the learner’s date of birth — if there’s a diagnostic for their age, a short quiz places them at the right course (you can skip it). Then pick where they would attend and add your details; our team will get in touch to arrange a place.'
-              : 'Tell us about your child and what you’re interested in. This isn’t a payment or a binding sign-up — our team will get in touch to talk through options and next steps.'
+                ? 'Start with the learner’s date of birth. If there’s a diagnostic for their age, a short quiz places them at the right course (you can skip it). Then choose a hub, add your details and pay.'
+                : 'Start with the learner’s date of birth. If there’s a diagnostic for their age, a short quiz places them at the right course (you can skip it). Then pick where they would attend and add your details; our team will get in touch to arrange a place.'
+              : 'Tell us about your child and what you’re interested in. This isn’t a payment or a binding sign-up. Our team will get in touch to talk through options and next steps.'
         }
       />
       )}

@@ -63,7 +63,7 @@ function RegisterCard({ event, invited }) {
         )}
       </Box>
       {event.state === 'cancelled' ? (
-        <Alert severity="warning">{event.cancelReason ? `From our team: ${event.cancelReason}` : 'We’re sorry — this one won’t go ahead.'}</Alert>
+        <Alert severity="warning">{event.cancelReason ? `From our team: ${event.cancelReason}` : 'We’re sorry, this one won’t go ahead.'}</Alert>
       ) : event.state === 'ended' ? (
         <Alert severity="info">Thanks to everyone who came. See what&rsquo;s coming up next.</Alert>
       ) : (
@@ -95,7 +95,7 @@ export default function EventDetailPage() {
     return (
       <Container maxWidth="md" sx={{ py: 8 }}>
         <SeoHead title="Event not found" noindex />
-        <ErrorBlock error={{ message: notFound ? 'We couldn’t find that event — it may have been taken down.' : error?.message }} onRetry={notFound ? undefined : refetch} />
+        <ErrorBlock error={{ message: notFound ? 'We couldn’t find that event. It may have been taken down.' : error?.message }} onRetry={notFound ? undefined : refetch} />
         <Box sx={{ textAlign: 'center', mt: 2 }}><Button component={RouterLink} to="/events" variant="outlined">All events</Button></Box>
       </Container>
     );
@@ -113,7 +113,7 @@ export default function EventDetailPage() {
 
   return (
     <>
-      <SeoHead title={`${event.title} — ${event.kindLabel}`} description={event.descriptionText || event.tagline || `${event.title}: ${event.when}, ${event.where}. Free — register now.`} image={image || undefined} />
+      <SeoHead title={`${event.title}: ${event.kindLabel}`} description={[event.tagline, event.descriptionText, `${event.title}: ${event.when}, ${event.where}.`]} about="A free Digifunzi event for families. Register online to save your place." image={image || undefined} />
       <JsonLd
         data={[
           organizationSchema(),
@@ -206,9 +206,9 @@ export default function EventDetailPage() {
                 <Typography variant="h4" component="h2" sx={{ fontWeight: 900 }}>{online ? 'How to join' : 'Getting there'}</Typography>
                 <Typography sx={{ color: 'text.secondary' }}>
                   {online
-                    ? 'It’s online — your join link comes in your confirmation email and again in your reminder.'
+                    ? 'It’s online. Your join link comes in your confirmation email and again in your reminder.'
                     : [event.venueName, event.venueAddress].filter(Boolean).join(', ') || event.where}
-                  {event.format === 'hybrid' ? ' You can also join online — the link is in your email.' : ''}
+                  {event.format === 'hybrid' ? ' You can also join online. The link is in your email.' : ''}
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                   {event.mapUrl && !online && <Button variant="outlined" startIcon={<MapRoundedIcon />} href={event.mapUrl} target="_blank" rel="noopener">Directions</Button>}
@@ -226,7 +226,7 @@ export default function EventDetailPage() {
             <ExplorePrograms
               bootcamp={event.bootcamp}
               title={event.state === 'ended' ? 'Keep the excitement going' : 'Can’t wait for the day?'}
-              lead="These are the programmes your child could join — have a look before you come, and bring your questions."
+              lead="These are the programmes your child could join. Have a look before you come, and bring your questions."
             />
           </Box>
         </Box>

@@ -5,13 +5,13 @@
  */
 export const getStarted = {
   title: 'How would you like your child to learn?',
-  lead: 'Choose a programme and enrol yourself — it only takes a few minutes.',
+  lead: 'Choose a programme and enrol yourself. It only takes a few minutes.',
   options: [
     {
       key: 'bootcamps',
       title: 'Bootcamps',
       hint: 'Holiday programmes',
-      body: 'Short, intensive holiday programmes — a full robotics or coding build in a week or two, with a showcase at the end.',
+      body: 'Short, intensive holiday programmes: a full robotics or coding build in a week or two, with a showcase at the end.',
       steps: ['Pick a bootcamp', 'Your child takes a short diagnostic', 'Enrol and create their login'],
       cta: 'Choose a bootcamp',
       to: '/bootcamps',

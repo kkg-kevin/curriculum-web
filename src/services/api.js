@@ -113,6 +113,11 @@ export const publicApi = {
   registerForCompetition: (idOrSlug, payload) =>
     api.post(`/api/public/competitions/${encodeURIComponent(idOrSlug)}/registrations`, payload).then((r) => r.data.data),
 
+  // Locations (25 Nov 2026) = those hubs grouped by town, each town with the bootcamps and
+  // pathways running there — the /locations pages (server: public-location.service.js).
+  listLocations: () => api.get('/api/public/locations').then((r) => r.data),
+  getLocation: (slug) => api.get(`/api/public/locations/${encodeURIComponent(slug)}`).then((r) => r.data),
+
   // Hubs = the designated admin's ACTIVE, NON-SCHOOL learning hubs with their operational
   // schedule — for the enrolment flow's "Type" picker. `/types` lists the choosable hub types.
   listHubTypes: () => api.get('/api/public/hubs/types').then((r) => r.data),

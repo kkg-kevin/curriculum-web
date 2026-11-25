@@ -79,7 +79,7 @@ export default function PriceTag({ price, size = 'sm', onColor = false, sx }) {
             color: onColor ? 'rgba(255,255,255,0.75)' : 'text.disabled',
           }}
         >
-          Indicative price — final pricing confirmed at enquiry
+          Indicative price. Final pricing is confirmed at enquiry
         </Typography>
       )}
     </Box>
